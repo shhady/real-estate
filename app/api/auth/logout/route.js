@@ -3,22 +3,18 @@ import { cookies } from 'next/headers';
 
 export async function POST() {
   try {
-    // Clear the token cookie with proper settings
-    cookies().delete('token', {
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    });
-    
+    // Clear the token cookie
+    const cookieStore = cookies();
+    cookieStore.delete('token');
+
     // Create response with proper headers
     const response = NextResponse.json(
       { message: 'Logged out successfully' },
       { status: 200 }
     );
 
-    // Add CORS headers
-    response.headers.set('Access-Control-Allow-Credentials', 'true');
-    response.headers.set('Access-Control-Allow-Origin', process.env.NEXT_PUBLIC_API_URL || '*');
+    // Set cookie deletion in response headers
+    response.cookies.delete('token');
     
     return response;
   } catch (error) {

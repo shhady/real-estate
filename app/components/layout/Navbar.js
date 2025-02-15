@@ -9,37 +9,38 @@ const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
 
-  // Get the base URL for API calls
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-
   useEffect(() => {
     // Check if user is authenticated
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${baseUrl}/api/auth/check`);
-        setIsAuthenticated(res.ok);
+        const res = await fetch('/api/auth/check');
+        const data = await res.json();
+        setIsAuthenticated(data.authenticated);
       } catch (error) {
+        console.error('Auth check error:', error);
         setIsAuthenticated(false);
       }
     };
 
     checkAuth();
-  }, [baseUrl]);
+  }, []);
 
   const handleLogout = async () => {
     try {
-      const res = await fetch(`${baseUrl}/api/auth/logout`, {
+      const res = await fetch('/api/auth/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        },
-        credentials: 'include'
+        }
       });
-      
+
       if (res.ok) {
+        // Clear authentication state
         setIsAuthenticated(false);
+        // Navigate to home page
         router.push('/');
-        window.location.reload();
+        // Force a complete page refresh
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('Logout error:', error);
