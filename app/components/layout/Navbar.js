@@ -27,12 +27,17 @@ const Navbar = () => {
     try {
       const res = await fetch('/api/auth/logout', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
       
       if (res.ok) {
         setIsAuthenticated(false);
-        router.push('/sign-in');
-        router.refresh();
+        // First navigate to home page
+        router.push('/');
+        // Then force a full page refresh
+        window.location.reload();
       }
     } catch (error) {
       console.error('Logout error:', error);

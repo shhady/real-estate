@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
     default: 'agent',
   },
   profileImage: {
-    url: String,
+    secure_url: String,
     publicId: String,
   },
   socialMedia: {
