@@ -1,0 +1,12 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "react/no-unescaped-entities": "off"
+  },
+  "parserOptions": {
+    "requireConfigFile": false,
+    "babelOptions": {
+      "presets": ["next/babel"]
+    }
+  }
+} 

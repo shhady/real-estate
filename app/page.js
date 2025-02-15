@@ -1,6 +1,7 @@
 import Hero from './components/home/Hero';
 import PropertyCard from './components/ui/PropertyCard';
 import { FaHome, FaSearch, FaUserTie, FaHandshake } from 'react-icons/fa';
+import { Suspense } from 'react';
 import connectDB from '@/app/lib/mongodb';
 import Property from '@/app/models/Property';
 import User from '@/app/models/User';
@@ -62,7 +63,14 @@ export default async function Home() {
 
   return (
     <div>
-      <Hero />
+      <Suspense fallback={<div className="h-[600px] bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+          <p className="mt-2 text-gray-600">טוען...</p>
+        </div>
+      </div>}>
+        <Hero />
+      </Suspense>
 
       {/* Features Section */}
       <section className="py-16 bg-gray-50">

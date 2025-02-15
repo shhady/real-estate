@@ -8,17 +8,9 @@ const Hero = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState({
-    location: '',
-    propertyType: ''
+    location: searchParams?.get('location') || '',
+    propertyType: searchParams?.get('type') || ''
   });
-
-  useEffect(() => {
-    // Initialize filters from URL params
-    setFilters({
-      location: searchParams.get('location') || '',
-      propertyType: searchParams.get('type') || ''
-    });
-  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
