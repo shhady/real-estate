@@ -20,7 +20,7 @@ const propertySchema = new mongoose.Schema({
   propertyType: {
     type: String,
     required: true,
-    enum: ['House', 'Apartment', 'Condo', 'Villa', 'Land'],
+    enum: ['house', 'apartment', 'condo', 'villa', 'land'],
   },
   status: {
     type: String,

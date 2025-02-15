@@ -20,7 +20,7 @@ export async function GET(request) {
 
     const query = {};
     if (location) query.location = { $regex: location, $options: 'i' };
-    if (type) query.propertyType = type.toLowerCase();
+    if (type) query.propertyType = { $regex: `^${type}$`, $options: 'i' };
     if (status) query.status = status;
     if (minPrice || maxPrice) {
       query.price = {};

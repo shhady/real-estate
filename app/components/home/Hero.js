@@ -1,15 +1,24 @@
 'use client';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { FaSearch } from 'react-icons/fa';
 
 const Hero = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState({
     location: '',
     propertyType: ''
   });
+
+  useEffect(() => {
+    // Initialize filters from URL params
+    setFilters({
+      location: searchParams.get('location') || '',
+      propertyType: searchParams.get('type') || ''
+    });
+  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
