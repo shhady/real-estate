@@ -20,26 +20,32 @@ export async function GET() {
           .select('title description price location images status bedrooms bathrooms area propertyType')
           .lean();
 
+        // Helper function to safely convert MongoDB ObjectId to string
+        const safeToString = (obj) => obj ? obj.toString() : null;
+        
+        // Helper function to safely format date
+        const safeDate = (date) => date ? new Date(date).toISOString() : null;
+
         // Serialize the agent data
         const serializedAgent = {
           ...agent,
-          _id: agent._id.toString(),
-          createdAt: agent.createdAt?.toISOString(),
-          updatedAt: agent.updatedAt?.toISOString(),
+          _id: safeToString(agent._id),
+          createdAt: safeDate(agent.createdAt),
+          updatedAt: safeDate(agent.updatedAt),
           profileImage: agent.profileImage ? {
-            secure_url: agent.profileImage.secure_url,
+            url: agent.profileImage.secure_url,
             publicId: agent.profileImage.publicId
           } : null,
           properties: properties.map(prop => ({
             ...prop,
-            _id: prop._id.toString(),
-            user: prop.user.toString(),
-            createdAt: prop.createdAt?.toISOString(),
-            updatedAt: prop.updatedAt?.toISOString(),
-            images: prop.images.map(img => ({
+            _id: safeToString(prop._id),
+            user: safeToString(prop.user),
+            createdAt: safeDate(prop.createdAt),
+            updatedAt: safeDate(prop.updatedAt),
+            images: prop.images?.map(img => ({
               secure_url: img.secure_url,
               publicId: img.publicId
-            }))
+            })) || []
           }))
         };
 
@@ -74,12 +80,11 @@ export async function POST(request) {
 
     // Remove password from response
     const agentWithoutPassword = {
-      _id: agent._id,
+      _id: agent._id.toString(),
       fullName: agent.fullName,
       email: agent.email,
       role: agent.role,
       profileImage: agent.profileImage,
-      
     };
 
     return NextResponse.json(agentWithoutPassword, { status: 201 });
