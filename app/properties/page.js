@@ -6,6 +6,8 @@ import PropertyCard from '@/app/components/ui/PropertyCard';
 import PropertyFilters from '@/app/components/properties/PropertyFilters';
 import PropertyList from '@/app/components/properties/PropertyList';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'נכסים למכירה ולהשכרה | Real Estate',
   description: 'עיין במגוון הנכסים שלנו למכירה ולהשכרה. מצא את הנכס המושלם עבורך עם מערכת החיפוש המתקדמת שלנו.',
@@ -112,10 +114,10 @@ export default function PropertiesPage() {
           </p>
         </div>
 
-        {/* Filters */}
-        <PropertyFilters />
+        <Suspense fallback={<div>טוען פילטרים...</div>}>
+          <PropertyFilters />
+        </Suspense>
 
-        {/* Properties List with Suspense */}
         <Suspense fallback={<div className="text-center py-8">טוען נכסים...</div>}>
           <PropertyList />
         </Suspense>

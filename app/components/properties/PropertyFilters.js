@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FaSearch, FaFilter } from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
 
 const propertyTypes = [
   { value: 'House', label: 'בית פרטי' },
@@ -49,8 +49,6 @@ export default function PropertyFilters() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Build query string from filters
     const params = new URLSearchParams();
     
     Object.entries(filters).forEach(([key, value]) => {
@@ -58,11 +56,7 @@ export default function PropertyFilters() {
         params.set(key, value);
       }
     });
-    
-    // Reset to first page when filters change
-    params.set('page', '1');
-    
-    // Navigate with new filters
+
     router.push(`/properties?${params.toString()}`);
     setIsOpen(false);
   };
@@ -88,13 +82,13 @@ export default function PropertyFilters() {
           onClick={() => setIsOpen(!isOpen)}
           className="lg:hidden inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
         >
-          <FaFilter className="h-5 w-5" />
+          <FaSearch className="h-5 w-5" />
           <span className="mr-2">סינון</span>
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className={`${isOpen ? 'block' : 'hidden'} lg:block`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {/* Location */}
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
@@ -106,8 +100,8 @@ export default function PropertyFilters() {
               name="location"
               value={filters.location}
               onChange={handleInputChange}
-              placeholder="הזן מיקום..."
               className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder="הזן מיקום"
             />
           </div>
 
@@ -121,14 +115,14 @@ export default function PropertyFilters() {
               name="type"
               value={filters.type}
               onChange={handleInputChange}
-              className=" text-black  w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">הכל</option>
-              {propertyTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
+              <option value="House">בית פרטי</option>
+              <option value="Apartment">דירה</option>
+              <option value="Condo">דירת גן</option>
+              <option value="Villa">וילה</option>
+              <option value="Land">מגרש</option>
             </select>
           </div>
 
@@ -145,15 +139,12 @@ export default function PropertyFilters() {
               className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">הכל</option>
-              {propertyStatus.map(status => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
+              <option value="For Sale">למכירה</option>
+              <option value="For Rent">להשכרה</option>
             </select>
           </div>
 
-          {/* Price Range */}
+          {/* Min Price */}
           <div>
             <label htmlFor="minPrice" className="block text-sm font-medium text-gray-700 mb-1">
               מחיר מינימלי
@@ -164,12 +155,12 @@ export default function PropertyFilters() {
               name="minPrice"
               value={filters.minPrice}
               onChange={handleInputChange}
-              placeholder="₪"
-              min="0"
               className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder="מחיר מינימלי"
             />
           </div>
 
+          {/* Max Price */}
           <div>
             <label htmlFor="maxPrice" className="block text-sm font-medium text-gray-700 mb-1">
               מחיר מקסימלי
@@ -180,9 +171,8 @@ export default function PropertyFilters() {
               name="maxPrice"
               value={filters.maxPrice}
               onChange={handleInputChange}
-              placeholder="₪"
-              min="0"
               className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder="מחיר מקסימלי"
             />
           </div>
 
@@ -199,16 +189,16 @@ export default function PropertyFilters() {
               className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">הכל</option>
-              {bedroomOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5+</option>
             </select>
           </div>
         </div>
 
-        <div className="mt-4 flex gap-2 justify-end space-x-4">
+        <div className="mt-4 flex gap-2 justify-end">
           <button
             type="button"
             onClick={clearFilters}
