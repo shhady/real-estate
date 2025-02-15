@@ -76,11 +76,11 @@ const Hero = () => {
                 className="w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">סוג נכס</option>
-                <option value="House">בית פרטי</option>
-                <option value="Apartment">דירה</option>
-                <option value="Condo">דירת גן</option>
-                <option value="Villa">וילה</option>
-                <option value="Land">מגרש</option>
+                <option value="house">בית פרטי</option>
+                <option value="apartment">דירה</option>
+                <option value="condo">דירת גן</option>
+                <option value="villa">וילה</option>
+                <option value="land">מגרש</option>
               </select>
             </div>
             <button

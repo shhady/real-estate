@@ -10,7 +10,7 @@ export async function GET(request) {
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 9;
     const location = searchParams.get('location');
-    const propertyType = searchParams.get('propertyType');
+    const type = searchParams.get('type');
     const status = searchParams.get('status');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
@@ -20,7 +20,7 @@ export async function GET(request) {
 
     const query = {};
     if (location) query.location = { $regex: location, $options: 'i' };
-    if (propertyType) query.propertyType = propertyType;
+    if (type) query.propertyType = type.toLowerCase();
     if (status) query.status = status;
     if (minPrice || maxPrice) {
       query.price = {};
