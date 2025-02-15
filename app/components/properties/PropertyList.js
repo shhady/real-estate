@@ -39,7 +39,7 @@ export default function PropertyList() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">טוען נכסים...</div>;
+    return <div className="text-center py-8 text-black">טוען נכסים...</div>;
   }
 
   return (

@@ -5,11 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch } from 'react-icons/fa';
 
 const propertyTypes = [
-  { value: 'House', label: 'בית פרטי' },
-  { value: 'Apartment', label: 'דירה' },
-  { value: 'Condo', label: 'דירת גן' },
-  { value: 'Villa', label: 'וילה' },
-  { value: 'Land', label: 'מגרש' }
+  { value: 'house', label: 'בית פרטי' },
+  { value: 'apartment', label: 'דירה' },
+  { value: 'condo', label: 'דירת גן' },
+  { value: 'villa', label: 'וילה' },
+  { value: 'land', label: 'מגרש' }
 ];
 
 const propertyStatus = [
@@ -30,14 +30,26 @@ export default function PropertyFilters() {
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   
+  // Get the initial type from URL
+  const initialType = searchParams?.get('type')?.toLowerCase() || '';
+  
   const [filters, setFilters] = useState({
-    location: searchParams.get('location') || '',
-    type: searchParams.get('type') || '',
-    status: searchParams.get('status') || '',
-    minPrice: searchParams.get('minPrice') || '',
-    maxPrice: searchParams.get('maxPrice') || '',
-    bedrooms: searchParams.get('bedrooms') || ''
+    location: searchParams?.get('location') || '',
+    type: initialType,
+    status: searchParams?.get('status') || '',
+    minPrice: searchParams?.get('minPrice') || '',
+    maxPrice: searchParams?.get('maxPrice') || '',
+    bedrooms: searchParams?.get('bedrooms') || ''
   });
+
+  // Update filters when URL changes
+  useEffect(() => {
+    const type = searchParams?.get('type')?.toLowerCase() || '';
+    setFilters(prev => ({
+      ...prev,
+      type: type
+    }));
+  }, [searchParams]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -118,11 +130,11 @@ export default function PropertyFilters() {
               className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">הכל</option>
-              <option value="House">בית פרטי</option>
-              <option value="Apartment">דירה</option>
-              <option value="Condo">דירת גן</option>
-              <option value="Villa">וילה</option>
-              <option value="Land">מגרש</option>
+              <option value="house">בית פרטי</option>
+              <option value="apartment">דירה</option>
+              <option value="condo">דירת גן</option>
+              <option value="villa">וילה</option>
+              <option value="land">מגרש</option>
             </select>
           </div>
 
