@@ -33,7 +33,7 @@ export async function GET() {
           createdAt: safeDate(agent.createdAt),
           updatedAt: safeDate(agent.updatedAt),
           profileImage: agent.profileImage ? {
-            url: agent.profileImage.secure_url,
+            secure_url: agent.profileImage.secure_url,
             publicId: agent.profileImage.publicId
           } : null,
           properties: properties.map(prop => ({
