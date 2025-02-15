@@ -65,7 +65,7 @@ const Hero = () => {
                 value={filters.location}
                 onChange={handleChange}
                 placeholder="איזור"
-                className="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-12 w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
@@ -74,7 +74,7 @@ const Hero = () => {
                 name="propertyType"
                 value={filters.propertyType}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-12 w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">סוג נכס</option>
                 <option value="house">בית פרטי</option>
