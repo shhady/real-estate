@@ -1,8 +1,10 @@
+import { Suspense } from 'react';
 import connectDB from '@/app/lib/mongodb';
 import Property from '@/app/models/Property';
 import User from '@/app/models/User';
 import PropertyCard from '@/app/components/ui/PropertyCard';
 import PropertyFilters from '@/app/components/properties/PropertyFilters';
+import PropertyList from '@/app/components/properties/PropertyList';
 
 export const metadata = {
   title: 'נכסים למכירה ולהשכרה | Real Estate',
@@ -99,63 +101,24 @@ async function getProperties(searchParams) {
   }
 }
 
-export default async function PropertiesPage({ searchParams }) {
-  const { properties, pagination } = await getProperties(searchParams);
-
+export default function PropertiesPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">נכסים למכירה ולהשכרה</h1>
           <p className="mt-4 text-xl text-gray-600">
-            מצא את הנכס המושלם עבורך מתוך {pagination.totalItems} נכסים
+            מצא את הנכס המושלם עבורך
           </p>
         </div>
 
         {/* Filters */}
         <PropertyFilters />
 
-        {/* Properties Grid */}
-        {properties.length > 0 ? (
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {properties.map((property) => (
-              <PropertyCard key={property._id} property={property} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-medium text-gray-900">לא נמצאו נכסים</h3>
-            <p className="mt-2 text-gray-600">נסה לשנות את מסנני החיפוש שלך</p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="mt-8 flex justify-center">
-            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => {
-                const isCurrentPage = pageNum === pagination.currentPage;
-                // Create new URLSearchParams with current search params
-                const newSearchParams = new URLSearchParams(searchParams);
-                newSearchParams.set('page', pageNum.toString());
-                
-                return (
-                  <a
-                    key={pageNum}
-                    href={`/properties?${newSearchParams.toString()}`}
-                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium
-                      ${isCurrentPage 
-                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
-                  >
-                    {pageNum}
-                  </a>
-                );
-              })}
-            </nav>
-          </div>
-        )}
+        {/* Properties List with Suspense */}
+        <Suspense fallback={<div className="text-center py-8">טוען נכסים...</div>}>
+          <PropertyList />
+        </Suspense>
       </div>
     </div>
   );

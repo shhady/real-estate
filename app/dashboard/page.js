@@ -1,9 +1,13 @@
+import { Suspense } from 'react';
 import { FaEye, FaWhatsapp, FaEnvelope, FaPhone, FaHome, FaPlus, FaUserTie, FaChartBar } from 'react-icons/fa';
 import connectDB from '@/app/lib/mongodb';
 import Property from '@/app/models/Property';
 import User from '@/app/models/User';
 import { getUser } from '@/app/lib/auth';
 import Link from 'next/link';
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 export default async function DashboardPage() {
   try {
@@ -34,7 +38,11 @@ export default async function DashboardPage() {
       .select('title createdAt status price inquiries')
       .sort({ createdAt: -1 })
       .limit(5)
-      .lean();
+      .lean()
+      .catch(err => {
+        console.error('Error fetching properties:', err);
+        return [];
+      });
 
     // Calculate total inquiries across all properties
     const totalInquiries = properties.reduce((total, property) => {
@@ -162,6 +170,12 @@ export default async function DashboardPage() {
     );
   } catch (error) {
     console.error('Error in DashboardPage:', error);
-    return null;
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>אירעה שגיאה בטעינת הנתונים. אנא נסה שוב מאוחר יותר.</p>
+        </div>
+      </div>
+    );
   }
 }
