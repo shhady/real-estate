@@ -45,7 +45,7 @@ export default function ImageCarousel({ images }) {
       {/* Main Image Container */}
       <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] rounded-lg overflow-hidden">
         <Image
-          src={images[currentIndex].secure_url}
+          src={images[currentIndex]?.secure_url}
           alt={`תמונה ${currentIndex + 1}`}
           fill
           className="object-cover"

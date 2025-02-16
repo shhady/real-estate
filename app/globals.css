@@ -2,6 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Lexical Editor Styles */
+.editor-container {
+  position: relative;
+  background: white;
+  min-height: 300px;
+  color: #111827;
+}
+
+.editor-inner {
+  position: relative;
+}
+
+.editor-input {
+  min-height: 300px;
+  resize: none;
+  font-size: 16px;
+  caret-color: #111827;
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 15px 10px;
+  direction: rtl;
+  color: #111827;
+}
+
+.editor-placeholder {
+  color: #9ca3af;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 15px;
+  right: 10px;
+  font-size: 16px;
+  user-select: none;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.editor-text-bold {
+  font-weight: bold;
+}
+
+.editor-text-italic {
+  font-style: italic;
+}
+
+.editor-text-underline {
+  text-decoration: underline;
+}
+
+.editor-quote {
+  margin: 0;
+  margin-right: 20px;
+  margin-bottom: 10px;
+  font-size: 15px;
+  color: #4b5563;
+  border-right-color: #d1d5db;
+  border-right-width: 4px;
+  border-right-style: solid;
+  padding-right: 16px;
+}
+
+.editor-list-ol {
+  padding: 0;
+  margin: 0;
+  margin-right: 16px;
+  list-style-position: inside;
+  color: #111827;
+}
+
+.editor-list-ul {
+  padding: 0;
+  margin: 0;
+  margin-right: 16px;
+  list-style-position: inside;
+  color: #111827;
+}
+
+/* Existing styles if any */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

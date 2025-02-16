@@ -96,7 +96,15 @@ export default async function PropertyPage({ params }) {
 
                 <div className="mb-6">
                   <h2 className="text-xl font-semibold mb-3">תיאור הנכס</h2>
-                  <p className="text-gray-600 whitespace-pre-line">{property.description}</p>
+                  <div 
+                    className="text-gray-600"
+                    dangerouslySetInnerHTML={{ 
+                      __html: property.description.startsWith('<') ? 
+                        property.description : 
+                        `<p>${property.description}</p>` 
+                    }}
+                  />
+                  {/* <p className="text-gray-600 whitespace-pre-line">{property.description}</p> */}
                 </div>
 
                 {property.features && property.features.length > 0 && (
