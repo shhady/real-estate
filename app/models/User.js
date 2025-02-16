@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  slug:{
+    type: String,
+    unique: true,
+  },
   email: {
     type: String,
     required: true,

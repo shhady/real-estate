@@ -36,9 +36,9 @@ export async function POST(request) {
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('24h')
       .sign(secret);
-
+    const newCookie = await cookies();
     // Set cookie
-    cookies().set('token', token, {
+    newCookie.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',

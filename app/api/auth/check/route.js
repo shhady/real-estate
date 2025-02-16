@@ -6,22 +6,43 @@ export async function GET() {
     const user = await getUser();
     
     if (!user) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
+      return new NextResponse(
+        JSON.stringify({ authenticated: false }),
+        {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store'
+          }
+        }
       );
     }
 
-    return NextResponse.json({
-      authenticated: true,
-      userId: user.userId,
-      role: user.role
-    });
+    return new NextResponse(
+      JSON.stringify({
+        authenticated: true,
+        userId: user.userId,
+        role: user.role
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store'
+        }
+      }
+    );
   } catch (error) {
     console.error('Auth check error:', error);
-    return NextResponse.json(
-      { error: 'Error checking authentication' },
-      { status: 500 }
+    return new NextResponse(
+      JSON.stringify({ authenticated: false, error: 'Error checking authentication' }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store'
+        }
+      }
     );
   }
 } 

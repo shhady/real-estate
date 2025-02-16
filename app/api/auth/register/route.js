@@ -7,11 +7,11 @@ export async function POST(request) {
   try {
     await connectDB();
     const { 
-      fullName, 
+      fullName,
+      fullNameEnglish,
       email, 
       password, 
       phone, 
-      whatsapp, 
       bio, 
       profileImage,
       licenseNumber,
@@ -32,16 +32,17 @@ export async function POST(request) {
     // Create user with profile image if provided
     const user = await User.create({
       fullName,
+      slug: fullNameEnglish.toLowerCase().replace(/\s+/g, ''), // Use English name for slug
       email,
       password,
       phone,
-      whatsapp,
+      whatsapp:phone,
       bio,
       licenseNumber,
       activityArea,
       role: 'agent',
       profileImage: profileImage ? {
-        url: profileImage.secure_url,
+        secure_url: profileImage.secure_url,
         publicId: profileImage.publicId
       } : undefined,
       socialMedia: {

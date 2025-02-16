@@ -3,6 +3,7 @@ import connectDB from '@/app/lib/mongodb';
 import User from '@/app/models/User';
 import Property from '@/app/models/Property';
 import AgentProfile from '@/app/components/agents/AgentProfile';
+import mongoose from 'mongoose';
 
 export default async function AgentPage({ params }) {
   const { id } = await params;
@@ -10,17 +11,25 @@ export default async function AgentPage({ params }) {
   try {
     await connectDB();
     
-    // Fetch agent details with analytics
-    const agent = await User.findById(id)
-      .select('-password')
-      .lean();
+    let agent;
+    
+    // Check if the id is a valid MongoDB ObjectId
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      // Try to find agent by ID
+      agent = await User.findById(id).select('-password').lean();
+    }
+    
+    // If not found by ID or if ID is not a valid ObjectId, try to find by slug
+    if (!agent) {
+      agent = await User.findOne({ slug: id }).select('-password').lean();
+    }
 
     if (!agent) {
       notFound();
     }
 
     // Fetch agent's properties
-    const properties = await Property.find({ user: id })
+    const properties = await Property.find({ user: agent._id })
       .populate('user', 'fullName email phone')
       .select('title description price location images status bedrooms bathrooms area propertyType createdAt updatedAt')
       .lean();

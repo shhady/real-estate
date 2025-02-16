@@ -9,21 +9,21 @@ export default function SignUpPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     fullName: '',
+    fullNameEnglish: '',
     email: '',
     password: '',
     confirmPassword: '',
     phone: '',
-    whatsapp: '',
     bio: '',
     licenseNumber: '',
     activityArea: '',
     calendlyLink: '',
+    profileImage: null,
     socialMedia: {
       instagram: '',
       facebook: ''
     }
   });
-  const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,13 +36,13 @@ export default function SignUpPage() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setProfileImage(file);
+      setFormData(prev => ({ ...prev, profileImage: file }));
       setImagePreview(URL.createObjectURL(file));
     }
   };
-
+  console.log(formData);
   const removeImage = () => {
-    setProfileImage(null);
+    setFormData(prev => ({ ...prev, profileImage: null }));
     setImagePreview(null);
   };
 
@@ -59,14 +59,15 @@ export default function SignUpPage() {
     }
 
     try {
+      let profileImageData = null;
+
       // Upload image to Cloudinary if selected
-      let imageData = null;
-      if (profileImage) {
+      if (formData.profileImage) {
         const imageFormData = new FormData();
-        imageFormData.append('file', profileImage);
+        imageFormData.append('file', formData.profileImage);
         imageFormData.append('upload_preset', 'real-estate');
 
-        const uploadRes = await fetch(
+        const cloudinaryRes = await fetch(
           `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
           {
             method: 'POST',
@@ -74,14 +75,18 @@ export default function SignUpPage() {
           }
         );
 
-        if (!uploadRes.ok) {
-          throw new Error('Error uploading image');
+        if (!cloudinaryRes.ok) {
+          throw new Error('Failed to upload image');
         }
 
-        imageData = await uploadRes.json();
+        const imageData = await cloudinaryRes.json();
+        profileImageData = {
+          secure_url: imageData.secure_url,
+          publicId: imageData.public_id
+        };
       }
 
-      // Register user
+      // Register user with Cloudinary image data
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -89,10 +94,7 @@ export default function SignUpPage() {
         },
         body: JSON.stringify({
           ...formData,
-          profileImage: imageData ? {
-            url: imageData.secure_url,
-            publicId: imageData.public_id
-          } : null
+          profileImage: profileImageData
         }),
       });
 
@@ -102,23 +104,8 @@ export default function SignUpPage() {
         throw new Error(data.error || 'Error during registration');
       }
 
-      // Automatically log in the user after successful registration
-      const loginRes = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        }),
-      });
-
-      if (!loginRes.ok) {
-        router.push('/sign-in');
-      } else {
-        router.push('/dashboard');
-      }
+      // Redirect to sign-in page after successful registration
+      router.push('/sign-in?registered=true');
       router.refresh();
     } catch (error) {
       setError(error.message);
@@ -201,7 +188,7 @@ export default function SignUpPage() {
 
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                שם מלא
+                שם מלא בעברית
               </label>
               <div className="mt-1">
                 <input
@@ -211,9 +198,28 @@ export default function SignUpPage() {
                   required
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className=" text-black appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="fullNameEnglish" className="block text-sm font-medium text-gray-700">
+                שם מלא באנגלית (ישמש כתובת URL)
+              </label>
+              <div className="mt-1">
+                <input
+                  id="fullNameEnglish"
+                  name="fullNameEnglish"
+                  type="text"
+                  required
+                  value={formData.fullNameEnglish}
+                  onChange={handleChange}
+                  placeholder="e.g. John Doe"
+                  className="text-black appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <p className="mt-1 text-sm text-gray-500">יופיע בכתובת האתר שלך: domain.com/agents/johndoe</p>
             </div>
 
             <div>
@@ -251,7 +257,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            <div>
+            {/* <div>
               <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700">
                 וואטסאפ (אופציונלי)
               </label>
@@ -265,7 +271,7 @@ export default function SignUpPage() {
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
-            </div>
+            </div> */}
 
             <div>
               <label htmlFor="bio" className="block text-sm font-medium text-gray-700">

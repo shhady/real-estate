@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie } from 'react-icons/fa';
+import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar } from 'react-icons/fa';
 import { notFound } from 'next/navigation';
 import connectDB from '@/app/lib/mongodb';
 import Property from '@/app/models/Property';
@@ -23,7 +23,7 @@ export default async function PropertyPage({ params }) {
       .populate({
         path: 'user',
         model: User,
-        select: 'fullName email phone whatsapp bio profileImage'
+        select: 'fullName email phone whatsapp bio profileImage calendlyLink'
       })
       .lean();
 
@@ -79,17 +79,17 @@ export default async function PropertyPage({ params }) {
                 <div className="grid grid-cols-3 gap-6 py-6 border-y border-gray-200 mb-6">
                   <div className="flex flex-col items-center">
                     <FaBed className="h-6 w-6 text-blue-600 mb-2" />
-                    <span className="text-lg font-semibold">{property.bedrooms}</span>
+                    <span className="text-lg text-black font-semibold">{property.bedrooms}</span>
                     <span className="text-sm text-gray-600">חדרים</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <FaBath className="h-6 w-6 text-blue-600 mb-2" />
-                    <span className="text-lg font-semibold">{property.bathrooms}</span>
+                    <span className="text-lg text-black font-semibold">{property.bathrooms}</span>
                     <span className="text-sm text-gray-600">חדרי רחצה</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <FaRuler className="h-6 w-6 text-blue-600 mb-2" />
-                    <span className="text-lg font-semibold">{property.area}</span>
+                    <span className="text-lg text-black font-semibold">{property.area}</span>
                     <span className="text-sm text-gray-600">מ"ר</span>
                   </div>
                 </div>
@@ -179,13 +179,25 @@ export default async function PropertyPage({ params }) {
                     וואטסאפ
                   </a>
                 )}
+                  {property.user.calendlyLink && (
+                        <a
+                          href={`${property.user.calendlyLink}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          // onClick={() => handleContactClick('email')}
+                          className="bg-gray-400 flex items-center justify-center w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                        >
+                          <FaCalendar className="ml-2" />
+                          <span>קבע פגישה</span>
+                        </a>
+                      )}
                 {property.user.email && (
                   <a
                     href={`mailto:${property.user.email}?subject=התעניינות בנכס: ${property.title}`}
                     className="flex items-center justify-center w-full px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     <FaEnvelope className="ml-2" />
-                    שלח הודעה
+                    שלח אימייל
                   </a>
                 )}
               </div>

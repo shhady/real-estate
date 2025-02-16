@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -10,7 +10,16 @@ export default function SignInPage() {
     password: ''
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Check if redirected from registration
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('registered') === 'true') {
+      setSuccess('ההרשמה הושלמה בהצלחה! אנא התחבר');
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,7 +47,8 @@ export default function SignInPage() {
       }
 
       router.push('/dashboard');
-      router.refresh();
+      // Force a complete page refresh to update the Navbar state
+      window.location.href = '/dashboard';
     } catch (error) {
       setError(error.message);
     } finally {
@@ -66,6 +76,11 @@ export default function SignInPage() {
             {error && (
               <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
                 {error}
+              </div>
+            )}
+            {success && (
+              <div className="bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded">
+                {success}
               </div>
             )}
 

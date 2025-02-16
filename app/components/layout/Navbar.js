@@ -16,14 +16,20 @@ const Navbar = () => {
         const res = await fetch('/api/auth/check', {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store'
           },
-          // Add cache control to prevent caching
-          cache: 'no-store'
+          cache: 'no-store',
+          credentials: 'include'
         });
 
         if (!res.ok) {
-          console.error('Auth check failed:', await res.text());
+          setIsAuthenticated(false);
+          return;
+        }
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
           setIsAuthenticated(false);
           return;
         }
@@ -37,7 +43,7 @@ const Navbar = () => {
     };
 
     checkAuth();
-  }, []);
+  }, [router.pathname]);
 
   const handleLogout = async () => {
     try {
