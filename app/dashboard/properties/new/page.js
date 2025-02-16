@@ -262,7 +262,7 @@ Description to convert: ${formData.description}`
                 value={formData.title}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
             </div>
 
@@ -276,7 +276,7 @@ Description to convert: ${formData.description}`
                 value={formData.price}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
             </div>
 
@@ -289,14 +289,14 @@ Description to convert: ${formData.description}`
                 value={formData.propertyType}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               >
                 <option value="">בחר סוג נכס</option>
-                <option value="House">בית פרטי</option>
-                <option value="Apartment">דירה</option>
-                <option value="Condo">דירת גן</option>
-                <option value="Villa">וילה</option>
-                <option value="Land">מגרש</option>
+                <option value="house">בית פרטי</option>
+                <option value="apartment">דירה</option>
+                <option value="condo">דירת גן</option>
+                <option value="villa">וילה</option>
+                <option value="land">מגרש</option>
               </select>
             </div>
 
@@ -309,7 +309,7 @@ Description to convert: ${formData.description}`
                 value={formData.status}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               >
                 <option value="">בחר סטטוס</option>
                 <option value="For Sale">למכירה</option>
@@ -327,7 +327,7 @@ Description to convert: ${formData.description}`
                 value={formData.location}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
             </div>
 
@@ -341,7 +341,7 @@ Description to convert: ${formData.description}`
                 value={formData.area}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
             </div>
 
@@ -355,7 +355,7 @@ Description to convert: ${formData.description}`
                 value={formData.bedrooms}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
             </div>
 
@@ -369,7 +369,7 @@ Description to convert: ${formData.description}`
                 value={formData.bathrooms}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
             </div>
           </div>
@@ -396,7 +396,7 @@ Description to convert: ${formData.description}`
               onChange={handleChange}
               required
               rows={4}
-              className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+              className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
             />
 
             {/* Preview Section */}

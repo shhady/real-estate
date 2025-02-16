@@ -2,12 +2,11 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendarAlt, FaAward, FaBed, FaBath, FaRuler, FaInstagram, FaFacebook, FaEye } from 'react-icons/fa';
+import { FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendarAlt, FaAward, FaBed, FaBath, FaRuler, FaInstagram, FaFacebook, FaEye, FaCalendar } from 'react-icons/fa';
 import PropertyCard from '@/app/components/ui/PropertyCard';
 import Link from 'next/link';
 
 export default function AgentProfile({ agent }) {
-  // Initialize state with default values that match server-side rendering
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [filters, setFilters] = useState({
@@ -16,137 +15,125 @@ export default function AgentProfile({ agent }) {
     bedrooms: '',
     propertyType: ''
   });
-
-  // Initialize analytics state with safe defaults
+  console.log(agent)
+  // Initialize analytics state with the data from props
   const [analytics, setAnalytics] = useState({
-    profileViews: {
-      total: agent.analytics?.profileViews?.total || 0,
-      unique: agent.analytics?.profileViews?.unique || 0
-    },
-    interactions: {
-      whatsapp: {
-        total: agent.analytics?.interactions?.whatsapp?.total || 0,
-        unique: agent.analytics?.interactions?.whatsapp?.unique || 0
-      },
-      email: {
-        total: agent.analytics?.interactions?.email?.total || 0,
-        unique: agent.analytics?.interactions?.email?.unique || 0
-      },
-      phone: {
-        total: agent.analytics?.interactions?.phone?.total || 0,
-        unique: agent.analytics?.interactions?.phone?.unique || 0
-      }
-    }
+    profileViews: agent.interactions?.profileViews || 0,
+    whatsapp: agent.interactions?.whatsapp || 0,
+    email: agent.interactions?.email || 0,
+    phone: agent.interactions?.phone || 0
   });
 
-  // Only start client-side rendering after mount
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    let isMounted = true;
 
-  // Track view when profile is loaded
-  useEffect(() => {
-    const trackView = async () => {
-      try {
-        const res = await fetch(`/api/agents/${agent._id}/track`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ type: 'view' }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          // Update analytics while preserving existing values if new ones are undefined
-          setAnalytics(prev => ({
-            profileViews: {
-              total: data.profileViews?.total ?? prev.profileViews.total,
-              unique: data.profileViews?.unique ?? prev.profileViews.unique
-            },
-            interactions: {
-              whatsapp: {
-                total: data.interactions?.whatsapp?.total ?? prev.interactions.whatsapp.total,
-                unique: data.interactions?.whatsapp?.unique ?? prev.interactions.whatsapp.unique
-              },
-              email: {
-                total: data.interactions?.email?.total ?? prev.interactions.email.total,
-                unique: data.interactions?.email?.unique ?? prev.interactions.email.unique
-              },
-              phone: {
-                total: data.interactions?.phone?.total ?? prev.interactions.phone.total,
-                unique: data.interactions?.phone?.unique ?? prev.interactions.phone.unique
-              }
-            }
-          }));
-        }
-      } catch (error) {
-        console.error('Error tracking view:', error);
+    if (!mounted) {
+      setMounted(true);
+      // Only track view if we have an agent ID
+      if (agent?._id) {
+        trackView();
       }
-    };
-
-    if (mounted) {
-      trackView();
     }
-  }, [agent._id, mounted]);
 
-  const trackInteraction = async (type, propertyId = null) => {
+    return () => {
+      isMounted = false;
+    };
+  }, [mounted, agent._id]);
+
+  const trackView = async () => {
     try {
-      const response = await fetch(`/api/agents/${agent._id}/track`, {
+      const res = await fetch(`/api/agents/${agent._id}/track`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ type, propertyId }),
+        body: JSON.stringify({ type: 'profile' }),
+        // Add cache control to prevent caching
+        cache: 'no-store'
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to track interaction');
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Track view error:', errorText);
+        return;
       }
 
-      const data = await response.json();
-      
-      // Update analytics while preserving existing values
-      setAnalytics(prev => ({
-        profileViews: {
-          total: data.profileViews?.total ?? prev.profileViews.total,
-          unique: data.profileViews?.unique ?? prev.profileViews.unique
+      const data = await res.json();
+      if (data.agent?.interactions) {
+        setAnalytics({
+          profileViews: data.agent.interactions.profileViews || 0,
+          whatsapp: data.agent.interactions.whatsapp || 0,
+          email: data.agent.interactions.email || 0,
+          phone: data.agent.interactions.phone || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error tracking view:', error);
+    }
+  };
+
+  const trackInteraction = async (type) => {
+    try {
+      const res = await fetch(`/api/agents/${agent._id}/track`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        interactions: {
-          whatsapp: {
-            total: data.interactions?.whatsapp?.total ?? prev.interactions.whatsapp.total,
-            unique: data.interactions?.whatsapp?.unique ?? prev.interactions.whatsapp.unique
-          },
-          email: {
-            total: data.interactions?.email?.total ?? prev.interactions.email.total,
-            unique: data.interactions?.email?.unique ?? prev.interactions.email.unique
-          },
-          phone: {
-            total: data.interactions?.phone?.total ?? prev.interactions.phone.total,
-            unique: data.interactions?.phone?.unique ?? prev.interactions.phone.unique
-          }
-        }
-      }));
+        body: JSON.stringify({ type }),
+        // Add cache control to prevent caching
+        cache: 'no-store'
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Track interaction error:', errorText);
+        return;
+      }
+
+      const data = await res.json();
+      if (data.agent?.interactions) {
+        setAnalytics({
+          profileViews: data.agent.interactions.profileViews || 0,
+          whatsapp: data.agent.interactions.whatsapp || 0,
+          email: data.agent.interactions.email || 0,
+          phone: data.agent.interactions.phone || 0
+        });
+      }
     } catch (error) {
       console.error('Error tracking interaction:', error);
     }
   };
 
   const handleContactClick = (type) => {
-    trackInteraction(type);
-  };
-
-  const handlePropertyClick = (propertyId) => {
-    // You could track property views here if needed
-    trackInteraction('view', propertyId);
+    try {
+      trackInteraction(type);
+      if (type === 'phone' && agent.phone) {
+        window.location.href = `tel:${agent.phone}`;
+      }
+    } catch (error) {
+      console.error('Error handling contact click:', error);
+    }
   };
 
   const handleSocialMediaClick = (platform) => {
-    // You could add social media tracking here if needed
-    const url = platform === 'instagram' 
-      ? `https://instagram.com/${agent.socialMedia?.instagram}`
-      : `https://facebook.com/${agent.socialMedia?.facebook}`;
-    window.open(url, '_blank');
+    try {
+      trackInteraction('social');
+      
+      let url;
+      if (platform === 'instagram' && agent.socialMedia?.instagram) {
+        url = `https://instagram.com/${agent.socialMedia.instagram}`;
+      } else if (platform === 'facebook' && agent.socialMedia?.facebook) {
+        url = agent.socialMedia.facebook.startsWith('http') 
+          ? agent.socialMedia.facebook
+          : `https://www.facebook.com/${agent.socialMedia.facebook}`;
+      }
+
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    } catch (error) {
+      console.error('Error handling social media click:', error);
+    }
   };
 
   const handleFilterChange = (e) => {
@@ -172,27 +159,6 @@ export default function AgentProfile({ agent }) {
     all: agent.properties?.length || 0,
     'For Sale': agent.properties?.filter(p => p.status === 'For Sale').length || 0,
     'For Rent': agent.properties?.filter(p => p.status === 'For Rent').length || 0,
-  };
-
-  const fetchAnalytics = async () => {
-    try {
-      const response = await fetch('/api/users/analytics');
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics');
-      }
-      const data = await response.json();
-      
-      // data.summary - Overall statistics
-      // data.propertyAnalytics - Per-property analytics
-      // data.recentInteractions - Latest interactions
-      // data.dailyAnalytics - Daily interaction counts
-      // data.propertiesByStatus - Property distribution
-      
-      return data;
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      throw error;
-    }
   };
 
   return (
@@ -229,27 +195,24 @@ export default function AgentProfile({ agent }) {
                       <FaUserTie className="mr-2" />
                       <span className="font-medium">סוכן נדל"ן מוסמך</span>
                     </div>
+                    {/* Social Media Links */}
                     {(agent.socialMedia?.facebook || agent.socialMedia?.instagram) && (
                       <div className="flex items-center gap-4 justify-center space-x-4 mb-6">
-                        {agent.socialMedia.facebook && (
-                          <a
-                            href={agent.socialMedia.facebook}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        {agent.socialMedia?.facebook && (
+                          <button
+                            onClick={() => handleSocialMediaClick('facebook')}
                             className="text-gray-600 hover:text-blue-600 transition-colors"
                           >
                             <FaFacebook className="h-6 w-6" />
-                          </a>
+                          </button>
                         )}
-                        {agent.socialMedia.instagram && (
-                          <a
-                            href={`https://instagram.com/${agent.socialMedia.instagram}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        {agent.socialMedia?.instagram && (
+                          <button
+                            onClick={() => handleSocialMediaClick('instagram')}
                             className="text-gray-600 hover:text-pink-600 transition-colors"
                           >
                             <FaInstagram className="h-6 w-6" />
-                          </a>
+                          </button>
                         )}
                       </div>
                     )}
@@ -289,6 +252,18 @@ export default function AgentProfile({ agent }) {
                           <span>וואטסאפ</span>
                         </a>
                       )}
+                       {agent.calendlyLink && (
+                        <a
+                          href={`${agent.calendlyLink}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          // onClick={() => handleContactClick('email')}
+                          className="bg-gray-400 flex items-center justify-center w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                        >
+                          <FaCalendar className="ml-2" />
+                          <span>קבע פגישה</span>
+                        </a>
+                      )}
                       {agent.email && (
                         <a
                           href={`mailto:${agent.email}`}
@@ -296,7 +271,7 @@ export default function AgentProfile({ agent }) {
                           className="flex items-center justify-center w-full px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                         >
                           <FaEnvelope className="ml-2" />
-                          <span>שלח הודעה</span>
+                          <span>שלח אימייל</span>
                         </a>
                       )}
                     </div>
@@ -461,20 +436,20 @@ export default function AgentProfile({ agent }) {
                                   ₪{property.price.toLocaleString()}
                                 </p>
                                 
-                                <div className="flex justify-between text-gray-600">
-                                  <div className="flex items-center">
-                                    <FaBed className="mr-2" />
-                                    <span>{property.bedrooms}</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <FaBath className="mr-2" />
-                                    <span>{property.bathrooms}</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <FaRuler className="mr-2" />
-                                    <span>{property.area} m²</span>
-                                  </div>
+                                 <div className="grid grid-cols-3 gap-2 text-gray-600 border-t pt-4">
+            <div className="flex flex-col gap-2 items-center justify-center border-l border-gray-200">
+              <FaBed className="ml-2 text-blue-600" />
+              <span className="text-sm text-center">{property.bedrooms} חדרים</span>
+            </div>
+            <div className="flex flex-col gap-2 items-center justify-center ">
+              <FaBath className="ml-2 text-blue-600" />
+              <span className="text-sm text-center">{property.bathrooms} חדרי רחצה</span>
+            </div>
+            <div className="flex flex-col gap-2 items-center justify-center border-r border-gray-200">
+                                  <FaRuler className="ml-2 text-blue-600" />
+                                  <span className="text-sm text-center">{property.area} מ"ר</span>
                                 </div>
+                              </div>
                               </div>
                             </div>
                           </Link>
@@ -494,7 +469,7 @@ export default function AgentProfile({ agent }) {
       </div>
 
       {/* Analytics Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -504,10 +479,7 @@ export default function AgentProfile({ agent }) {
               </div>
               <div className="mr-4">
                 <p className="text-sm font-medium text-gray-600">צפיות בפרופיל</p>
-                <div className="flex items-baseline">
-                  <p className="text-2xl font-semibold text-gray-900">{analytics.profileViews.total}</p>
-                  <p className="mr-2 text-sm text-gray-500">({analytics.profileViews.unique} ייחודי)</p>
-                </div>
+                <p className="text-2xl font-semibold text-gray-900">{analytics.profileViews}</p>
               </div>
             </div>
           </div>
@@ -519,10 +491,7 @@ export default function AgentProfile({ agent }) {
               </div>
               <div className="mr-4">
                 <p className="text-sm font-medium text-gray-600">פניות בוואטסאפ</p>
-                <div className="flex items-baseline">
-                  <p className="text-2xl font-semibold text-gray-900">{analytics.interactions.whatsapp.total}</p>
-                  <p className="mr-2 text-sm text-gray-500">({analytics.interactions.whatsapp.unique} ייחודי)</p>
-                </div>
+                <p className="text-2xl font-semibold text-gray-900">{analytics.whatsapp}</p>
               </div>
             </div>
           </div>
@@ -534,10 +503,7 @@ export default function AgentProfile({ agent }) {
               </div>
               <div className="mr-4">
                 <p className="text-sm font-medium text-gray-600">פניות במייל</p>
-                <div className="flex items-baseline">
-                  <p className="text-2xl font-semibold text-gray-900">{analytics.interactions.email.total}</p>
-                  <p className="mr-2 text-sm text-gray-500">({analytics.interactions.email.unique} ייחודי)</p>
-                </div>
+                <p className="text-2xl font-semibold text-gray-900">{analytics.email}</p>
               </div>
             </div>
           </div>
@@ -549,38 +515,11 @@ export default function AgentProfile({ agent }) {
               </div>
               <div className="mr-4">
                 <p className="text-sm font-medium text-gray-600">שיחות טלפון</p>
-                <div className="flex items-baseline">
-                  <p className="text-2xl font-semibold text-gray-900">{analytics.interactions.phone.total}</p>
-                  <p className="mr-2 text-sm text-gray-500">({analytics.interactions.phone.unique} ייחודי)</p>
-                </div>
+                <p className="text-2xl font-semibold text-gray-900">{analytics.phone}</p>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Property Analytics */}
-        {/* <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold mb-4">סטטיסטיקות נכסים</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">סה"כ נכסים</span>
-              <span className="font-semibold">{propertyCounts.all}</span>
-            </div>
-            <div className="border-t pt-4">
-              <h4 className="text-md font-medium mb-2">נכסים לפי סטטוס</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">למכירה</span>
-                  <span className="font-semibold">{propertyCounts['For Sale']}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">להשכרה</span>
-                  <span className="font-semibold">{propertyCounts['For Rent']}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
     </div>
   );

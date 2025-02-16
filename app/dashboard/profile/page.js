@@ -258,7 +258,7 @@ export default function ProfilePage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="text-black mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -272,7 +272,7 @@ export default function ProfilePage() {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="text-black mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -299,7 +299,7 @@ export default function ProfilePage() {
                 value={formData.licenseNumber}
                 onChange={handleChange}
                 required
-                className="text-black  mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="text-black  mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -313,7 +313,7 @@ export default function ProfilePage() {
                 value={formData.activityArea}
                 onChange={handleChange}
                 required
-                className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="text-black mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -327,13 +327,13 @@ export default function ProfilePage() {
                 onChange={handleChange}
                 required
                 rows={4}
-                className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="text-black mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
             {/* Calendly Link */}
             <div>
-              <label htmlFor="calendlyLink" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="calendlyLink" className="block text-lg font-medium text-blue-500">
                 קישור Calendly
               </label>
               <div className="mt-1">
@@ -344,7 +344,7 @@ export default function ProfilePage() {
                   value={formData.calendlyLink}
                   onChange={handleChange}
                   placeholder="https://calendly.com/your-link"
-                  className="text-black  mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="text-black  mt-1 block w-full px-3 py-2 border-b border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
                 <p className="mt-1 text-sm text-gray-500">
                   הוסף את הקישור ל-Calendly שלך לתיאום פגישות
@@ -363,7 +363,7 @@ export default function ProfilePage() {
                   name="socialMedia.instagram"
                   value={formData.socialMedia.instagram}
                   onChange={handleChange}
-                  className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="text-black mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="username"
                 />
               </div>
@@ -376,7 +376,7 @@ export default function ProfilePage() {
                   name="socialMedia.facebook"
                   value={formData.socialMedia.facebook}
                   onChange={handleChange}
-                  className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="text-black mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="https://facebook.com/profile"
                 />
               </div>

@@ -10,7 +10,7 @@ export default async function AgentPage({ params }) {
   try {
     await connectDB();
     
-    // Fetch agent details
+    // Fetch agent details with analytics
     const agent = await User.findById(id)
       .select('-password')
       .lean();
@@ -21,19 +21,20 @@ export default async function AgentPage({ params }) {
 
     // Fetch agent's properties
     const properties = await Property.find({ user: id })
-      .select('title description price location images status bedrooms bathrooms area propertyType user')
+      .populate('user', 'fullName email phone')
+      .select('title description price location images status bedrooms bathrooms area propertyType createdAt updatedAt')
       .lean();
 
     // Initialize analytics if not exists
     if (!agent.analytics) {
       agent.analytics = {
-        profileViews: { total: 0, unique: 0 },
+        profileViews: { total: 0 },
         interactions: {
-          whatsapp: { total: 0, unique: 0 },
-          email: { total: 0, unique: 0 },
-          phone: { total: 0, unique: 0 }
-        },
-        lastInteractions: []
+          whatsapp: 0,
+          email: 0,
+          phone: 0,
+          social: 0
+        }
       };
     }
 
@@ -43,27 +44,16 @@ export default async function AgentPage({ params }) {
       _id: agent._id.toString(),
       createdAt: agent.createdAt?.toISOString(),
       updatedAt: agent.updatedAt?.toISOString(),
-      analytics: {
-        profileViews: agent.analytics.profileViews,
-        interactions: agent.analytics.interactions,
-        lastInteractions: agent.analytics.lastInteractions.map(interaction => ({
-          _id: interaction._id.toString(),
-          type: interaction.type,
-          timestamp: interaction.timestamp.toISOString(),
-          ip: interaction.ip,
-          propertyId: interaction.propertyId?.toString()
-        }))
-      },
       properties: properties.map(property => ({
         ...property,
         _id: property._id.toString(),
-        user: property.user.toString(),
+        user: property.user?._id.toString() || agent._id.toString(),
         createdAt: property.createdAt?.toISOString(),
         updatedAt: property.updatedAt?.toISOString(),
-        images: property.images.map(img => ({
+        images: property.images?.map(img => ({
           secure_url: img.secure_url,
           publicId: img.publicId
-        }))
+        })) || []
       }))
     };
 

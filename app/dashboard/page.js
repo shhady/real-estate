@@ -18,19 +18,17 @@ export default async function DashboardPage() {
 
     await connectDB();
     
-    // Fetch user data with analytics
+    // Fetch user data with interactions
     const userData = await User.findById(user.userId)
-      .select('analytics')
+      .select('interactions')
       .lean();
 
-    // Set default values if analytics is undefined
-    const analytics = userData?.analytics || {
-      profileViews: { total: 0, unique: 0 },
-      interactions: {
-        whatsapp: { total: 0, unique: 0 },
-        email: { total: 0, unique: 0 },
-        phone: { total: 0, unique: 0 }
-      }
+    // Set default values if interactions is undefined
+    const interactions = userData?.interactions || {
+      whatsapp: 0,
+      email: 0,
+      phone: 0,
+      profileViews: 0
     };
 
     // Fetch user's properties
@@ -56,40 +54,36 @@ export default async function DashboardPage() {
 
     // Calculate total interactions
     const totalInteractions = 
-      analytics.interactions.whatsapp.total +
-      analytics.interactions.email.total +
-      analytics.interactions.phone.total;
+      interactions.whatsapp +
+      interactions.email +
+      interactions.phone;
 
     const stats = [
       {
         id: 1,
         name: 'צפיות בפרופיל',
-        total: analytics.profileViews.total,
-        unique: analytics.profileViews.unique,
+        total: interactions.profileViews,
         icon: <FaEye className="h-6 w-6 text-blue-500" />,
         color: 'bg-blue-50'
       },
       {
         id: 2,
         name: 'פניות בוואטסאפ',
-        total: analytics.interactions.whatsapp.total,
-        unique: analytics.interactions.whatsapp.unique,
+        total: interactions.whatsapp,
         icon: <FaWhatsapp className="h-6 w-6 text-green-500" />,
         color: 'bg-green-50'
       },
       {
         id: 3,
         name: 'פניות במייל',
-        total: analytics.interactions.email.total,
-        unique: analytics.interactions.email.unique,
+        total: interactions.email,
         icon: <FaEnvelope className="h-6 w-6 text-purple-500" />,
         color: 'bg-purple-50'
       },
       {
         id: 4,
         name: 'שיחות טלפון',
-        total: analytics.interactions.phone.total,
-        unique: analytics.interactions.phone.unique,
+        total: interactions.phone,
         icon: <FaPhone className="h-6 w-6 text-yellow-500" />,
         color: 'bg-yellow-50'
       }
@@ -121,9 +115,6 @@ export default async function DashboardPage() {
               </dt>
               <dd className="mr-16 pb-6 flex flex-col sm:pb-7">
                 <p className="text-2xl font-semibold text-gray-900">{item.total}</p>
-                <p className="text-sm text-gray-500">
-                  {item.unique} ייחודי
-                </p>
               </dd>
             </div>
           ))}
@@ -148,21 +139,6 @@ export default async function DashboardPage() {
                 <FaHome className="h-5 w-5 ml-2" />
                 ניהול נכסים
               </Link>
-
-              {/* <Link href="/analytics" className="inline-flex items-center justify-center px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
-                <FaChartBar className="h-5 w-5 ml-2" />
-                סטטיסטיקות מפורטות
-              </Link> */}
-
-              {/* <Link href="/messages" className="inline-flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                <FaEnvelope className="h-5 w-5 ml-2" />
-                הודעות וצ'אט
-              </Link> */}
-
-              {/* <Link href="/settings" className="inline-flex items-center justify-center px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                <FaCog className="h-5 w-5 ml-2" />
-                הגדרות מערכת
-              </Link> */}
             </div>
           </div>
         </div>

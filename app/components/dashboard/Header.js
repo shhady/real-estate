@@ -48,7 +48,7 @@ const Header = () => {
                 </svg>
               </button>
             </div>
-            <div className="flex-1 flex items-center px-4">
+            {/* <div className="flex-1 flex items-center px-4">
               <div className="max-w-lg w-full lg:max-w-xs">
                 <label htmlFor="search" className="sr-only">
                   חיפוש
@@ -66,19 +66,19 @@ const Header = () => {
                   />
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="flex items-center">
-            <button
+            {/* <button
               type="button"
               className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <span className="sr-only">צפה בהתראות</span>
               <FaBell className="h-6 w-6" />
-            </button>
+            </button> */}
 
             {/* Profile dropdown */}
-            <div className="ml-3 relative">
+            {/* <div className="ml-3 relative">
               <div className="flex items-center">
                 <button
                   onClick={handleLogout}
@@ -90,7 +90,7 @@ const Header = () => {
                   <FaUser className="h-4 w-4 text-gray-500" />
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

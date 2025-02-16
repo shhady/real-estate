@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/app/lib/mongodb';
 import Property from '@/app/models/Property';
 import { getUser } from '@/app/lib/auth';
+import User from '@/app/models/User';
 
 // GET all properties
 export async function GET(request) {
@@ -91,6 +92,12 @@ export async function POST(request) {
     };
 
     const property = await Property.create(propertyData);
+
+    // Add property to user's properties array
+    await User.findByIdAndUpdate(
+      user.userId,
+      { $push: { properties: property._id } }
+    );
 
     // Populate agent data in response
     const populatedProperty = await Property.findById(property._id)

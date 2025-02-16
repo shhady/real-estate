@@ -52,26 +52,12 @@ const userSchema = new mongoose.Schema({
     instagram: String,
     facebook: String
   },
-  analytics: {
-    profileViews: {
-      total: { type: Number, default: 0 },
-      unique: { type: Number, default: 0 }
-    },
     interactions: {
-      whatsapp: {
-        total: { type: Number, default: 0 },
-        unique: { type: Number, default: 0 }
-      },
-      email: {
-        total: { type: Number, default: 0 },
-        unique: { type: Number, default: 0 }
-      },
-      phone: {
-        total: { type: Number, default: 0 },
-        unique: { type: Number, default: 0 }
-      }
-    }
-  },
+      whatsapp: { type: Number, default: 0 },
+      email: { type: Number, default: 0 },
+      phone: { type: Number, default: 0 },
+      profileViews: { type: Number, default: 0 }
+    },
   properties: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Property'

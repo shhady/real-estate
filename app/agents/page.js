@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import connectDB from '../lib/mongodb';
+import User from '../models/User';
 
 // async function getAgents() {
 //   try {
@@ -65,15 +67,13 @@ function AgentCard({ agent }) {
 
 export default async function AgentsPage() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const res = await fetch(`${apiUrl}/api/agents`, {
-      next: { revalidate: 60 }
-    });
-    
-    if (!res.ok) {
-      throw new Error('Failed to fetch agents');
+    await connectDB();
+    const agents = await User.find();
+    console.log(agents)
+    if (!agents) {
+      throw new Error('אין סוכנים');
     }
-    const agents = await res.json();
+    // const agents = await res.json();
     
     return (
       <div className="min-h-screen bg-gray-50 py-8">

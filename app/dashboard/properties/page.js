@@ -148,7 +148,7 @@ export default function DashboardPropertiesPage() {
                       {property.location}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center gap-4 space-x-3">
                         <Link
                           href={`/dashboard/properties/${property._id}/edit`}
                           className="text-blue-600 hover:text-blue-900"

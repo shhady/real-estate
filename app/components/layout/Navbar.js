@@ -13,7 +13,21 @@ const Navbar = () => {
     // Check if user is authenticated
     const checkAuth = async () => {
       try {
-        const res = await fetch('/api/auth/check');
+        const res = await fetch('/api/auth/check', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          // Add cache control to prevent caching
+          cache: 'no-store'
+        });
+
+        if (!res.ok) {
+          console.error('Auth check failed:', await res.text());
+          setIsAuthenticated(false);
+          return;
+        }
+
         const data = await res.json();
         setIsAuthenticated(data.authenticated);
       } catch (error) {
