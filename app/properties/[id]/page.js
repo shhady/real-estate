@@ -56,7 +56,7 @@ export default async function PropertyPage({ params }) {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           {/* Property Images Carousel */}
           <div className="mb-6 md:mb-8">
-            <ImageCarousel images={property.images} />
+          {property.images && property.images.length > 0 && <ImageCarousel images={property.images} />}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">

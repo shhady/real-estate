@@ -58,7 +58,7 @@ export default function ImageCarousel({ images }) {
       </div>
 
       {/* Navigation Arrows - Hidden on mobile */}
-      {!isMobile && (
+      {/* {!isMobile && ( */}
         <>
           <button
             onClick={goToPrevious}
@@ -75,10 +75,10 @@ export default function ImageCarousel({ images }) {
             <FaChevronRight className="h-4 w-4 md:h-5 md:w-5" />
           </button>
         </>
-      )}
+      {/* )} */}
 
       {/* Indicators */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-1.5 md:space-x-2">
+      <div className="absolute gap-2 bottom-4 left-1/2 -translate-x-1/2 flex space-x-1.5 md:space-x-2">
         {images.map((_, index) => (
           <button
             key={index}
@@ -95,7 +95,7 @@ export default function ImageCarousel({ images }) {
 
       {/* Thumbnails - Hidden on mobile */}
       {!isMobile && (
-        <div className="hidden md:flex justify-center space-x-2 mt-4 px-4 overflow-x-auto">
+        <div className="hidden md:flex md:gap-2 justify-center space-x-2 mt-4 px-4 overflow-x-auto">
           {images.map((image, index) => (
             <button
               key={index}

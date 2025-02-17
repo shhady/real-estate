@@ -363,7 +363,7 @@ export default function NewPropertyPage() {
                   variant="outline"
                   onClick={handleRefactorDescription}
                   disabled={!formData.description || isRefactoring}
-                  className="bg-gray-500 text-white hover:bg-blue-600"
+                  className="bg-gray-500 text-black hover:bg-blue-600"
                 >
                   {isRefactoring ? 'מעבד...' : 'שפר תיאור עם AI'}
                 </Button>

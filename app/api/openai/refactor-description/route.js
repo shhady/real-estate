@@ -55,6 +55,7 @@ Property Details:
 - Area: ${area || ''}
 - Features: ${features ? features.join(', ') : ''}
 
+
 Property Description:: ${description}`
           }
         ]
