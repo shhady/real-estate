@@ -218,15 +218,15 @@ export default function AgentProfile({ agent }) {
                     )}
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-1 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-600">{propertyCounts.all}</div>
                         <div className="text-sm text-gray-600">נכסים</div>
                       </div>
-                      <div className="text-center border-r border-gray-200">
+                      {/* <div className="text-center border-r border-gray-200">
                         <div className="text-2xl font-bold text-blue-600">5+</div>
                         <div className="text-sm text-gray-600">שנות ניסיון</div>
-                      </div>
+                      </div> */}
                     </div>
 
                     {/* Contact Buttons */}
