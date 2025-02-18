@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import connectDB from '@/app/lib/mongodb';
 import Property from '@/app/models/Property';
 import User from '@/app/models/User';
+export const dynamic = 'force-dynamic';
 
 async function getLatestProperties() {
   try {
