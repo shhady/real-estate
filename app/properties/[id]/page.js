@@ -52,7 +52,7 @@ export default async function PropertyPage({ params }) {
     }
 
     return (
-      <div className="min-h-screen bg-gray-50 py-4 md:py-8">
+      <div className="min-h-screen bg-white py-4 md:py-8">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           {/* Property Images Carousel */}
           <div className="mb-6 md:mb-8">
@@ -65,13 +65,13 @@ export default async function PropertyPage({ params }) {
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">{property.title}</h1>
                     <div className="flex items-center text-gray-600">
                       <FaMapMarkerAlt className="ml-2 text-blue-600" />
                       <span>{property.location}</span>
                     </div>
                   </div>
-                  <div className="text-3xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-blue-600">
                     ₪{formatPrice(property.price)}
                   </div>
                 </div>

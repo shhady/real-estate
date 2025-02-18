@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import connectDB from '../lib/mongodb';
 import User from '../models/User';
+export const dynamic = 'force-dynamic';
 
 // async function getAgents() {
 //   try {

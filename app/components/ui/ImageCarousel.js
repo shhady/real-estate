@@ -48,12 +48,12 @@ export default function ImageCarousel({ images }) {
           src={images[currentIndex]?.secure_url}
           alt={`תמונה ${currentIndex + 1}`}
           fill
-          className="object-cover"
+          className="object-contain"
           priority={currentIndex === 0}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
         />
         {/* Gradient overlays for better text/button contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="absolute inset-0 " />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
       </div>
 
