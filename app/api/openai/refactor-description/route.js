@@ -32,11 +32,11 @@ export async function POST(request) {
         'X-Title': 'Real Estate Platform'
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-r1-distill-llama-70b:free",
+        model: "google/gemini-2.0-flash-exp:free",
         messages: [
           {
             role: 'system',
-            content: 'You are a professional real estate copywriter. Your task is to refine and enhance property descriptions while keeping them in the same language as the original content. Use clean HTML formatting, including only `<p>`, `<ul>`, `<ol>`, and `<li>` elements. Include relevant emojis and hashtags naturally within the description. Return **only the improved description** without additional metadata, headings, titles, or extra sections.'
+            content: 'You are a professional real estate copywriter. Your task is to refine and enhance property descriptions while keeping them in the same language as the original content. Use clean HTML formatting, including only `<p>`, `<ul>`, `<ol>`, and `<li>` elements. Include relevant emojis and hashtags naturally within the description. Return **only the improved description** no need to add,תיאור משופר just provide the description in the html format without additional metadata, headings, titles, or extra sections.'
           },
           {
             role: 'user',

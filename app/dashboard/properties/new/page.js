@@ -384,8 +384,8 @@ export default function NewPropertyPage() {
                       type="button"
                       onClick={applyRefactoredDescription}
                     >
-                      החל תיאור חדש
-                    </Button>
+                השתמש בתיאור החדש
+              </Button>
                   </div>
                 </div>
               )}
