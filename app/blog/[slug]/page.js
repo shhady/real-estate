@@ -10,8 +10,7 @@ export async function generateMetadata({ params }) {
   
   try {
     await connectDB();
-    const decodedSlug = decodeURIComponent(slug);
-    const blog = await Blog.findOne({ slug: decodedSlug }).lean();
+    const blog = await Blog.findOne({ slug }).lean();
     
     if (!blog) {
       return {
@@ -38,8 +37,7 @@ export default async function BlogPostPage({ params }) {
 
   try {
     await connectDB();
-    const decodedSlug = decodeURIComponent(slug);
-    const blog = await Blog.findOne({ slug: decodedSlug })
+    const blog = await Blog.findOne({ slug })
       .populate('author', 'fullName email profileImage')
       .lean();
 
@@ -67,35 +65,40 @@ export default async function BlogPostPage({ params }) {
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">{blog.title}</h1>
             <div className="flex items-center text-gray-600 gap-4">
-            {blog.author &&   <div className="flex items-center">
-                {blog.author.profileImage ? (
-                  <Image
-                    src={blog.author.profileImage.secure_url}
-                    alt={blog.author.fullName}
-                    width={40}
-                    height={40}
-                    className="rounded-full w-16 h-16"
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-gray-200 rounded-full" />
-                )}
-                <span className="mr-2">{blog.author.fullName}</span>
-              </div>}
+              {blog.author && (
+                <div className="flex items-center">
+                  {blog.author.profileImage ? (
+                    <Image
+                      src={blog.author.profileImage.secure_url}
+                      alt={blog.author.fullName}
+                      width={40}
+                      height={40}
+                      className="rounded-full w-10 h-10 object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                  )}
+                  <span className="mr-2 font-medium">{blog.author.fullName}</span>
+                </div>
+              )}
               <span>•</span>
-              <time dateTime={blog.createdAt}>
+              <time dateTime={blog.createdAt} className="text-gray-500">
                 {formatDistanceToNow(new Date(blog.createdAt), {
                   addSuffix: true,
                   locale: he,
                 })}
               </time>
               <span>•</span>
-              <span>{blog.views} צפיות</span>
+              <span className="text-gray-500">{blog.views} צפיות</span>
             </div>
           </div>
 
           {/* Content */}
-          <div className="prose prose-lg max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: blog.content }} />
+          <div className="prose prose-lg max-w-none rtl">
+            <div 
+              dangerouslySetInnerHTML={{ __html: blog.content }} 
+              className="text-gray-800 leading-relaxed"
+            />
           </div>
 
           {/* Tags */}

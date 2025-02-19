@@ -59,8 +59,12 @@ export async function POST(request) {
     await connectDB();
     const data = await request.json();
     
-    // Create URL-friendly slug from title by encoding it
-    const slug = encodeURIComponent(data.title.trim());
+    // Create URL-friendly slug from title
+    const slug = data.title.trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^\u0590-\u05FF\w-]/g, '') // Keep Hebrew chars and alphanumeric
+      .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
 
     // Check if slug already exists
     const existingBlog = await Blog.findOne({ slug });
@@ -71,21 +75,21 @@ export async function POST(request) {
       );
     }
 
-      // Prepare the blog data
-      const blogData = {
-        ...data,
-        slug,
-        views: 0,
-      };
-  
-      // If user is authenticated, add author field
-      if (user) {
-        blogData.author = user.userId;
-      }
-  
-      // Create the blog post
-      const blog = await Blog.create(blogData);
-  
+    // Prepare the blog data
+    const blogData = {
+      ...data,
+      slug,
+      views: 0,
+    };
+
+    // If user is authenticated, add author field
+    if (user) {
+      blogData.author = user.userId;
+    }
+
+    // Create the blog post
+    const blog = await Blog.create(blogData);
+
     // Populate author data in response
     const populatedBlog = await Blog.findById(blog._id)
       .lean();

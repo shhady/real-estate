@@ -15,8 +15,16 @@ const BlogCard = ({ blog }) => {
     createdAt
   } = blog;
 
-  // Get first 150 characters of content for preview
-  const contentPreview = content.substring(0, 150) + '...';
+  // Strip HTML tags and get first 150 characters for preview
+  const stripHtml = (html) => {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
+  const contentPreview = typeof content === 'string' 
+    ? stripHtml(content).substring(0, 150) + '...'
+    : '';
 
   // Category styles
   const categoryStyles = {
@@ -61,15 +69,17 @@ const BlogCard = ({ blog }) => {
           <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{title}</h3>
 
           {/* Content Preview */}
-          <p className="text-gray-600 mb-4 line-clamp-3">{contentPreview}</p>
+          <p className="text-gray-600 mb-4 line-clamp-3">
+            {contentPreview}
+          </p>
 
           {/* Meta Information */}
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center">
-              {author.profileImage ? (
+              {author?.profileImage ? (
                 <Image
                   src={author.profileImage.secure_url}
-                  alt={author.fullName}
+                  alt={author.fullName || 'Author'}
                   width={24}
                   height={24}
                   className="rounded-full ml-2"
@@ -77,7 +87,7 @@ const BlogCard = ({ blog }) => {
               ) : (
                 <div className="w-6 h-6 bg-gray-200 rounded-full ml-2" />
               )}
-              <span>{author.fullName}</span>
+              <span>{author?.fullName || 'Anonymous'}</span>
             </div>
             <div className="flex items-center gap-4">
               <span>{views} צפיות</span>
