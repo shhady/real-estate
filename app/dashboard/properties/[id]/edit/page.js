@@ -252,11 +252,14 @@ export default function EditPropertyPage({ params }) {
                 className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               >
                 <option value="">בחר סוג נכס</option>
-                <option value="House">בית פרטי</option>
-                <option value="Apartment">דירה</option>
-                <option value="Condo">דירת גן</option>
-                <option value="Villa">וילה</option>
-                <option value="Land">מגרש</option>
+                <option value="house">בית פרטי</option>
+                <option value="apartment">דירה</option>
+                <option value="condo">דירת גן</option>
+                <option value="villa">וילה</option>
+                <option value="land">מגרש</option>
+                <option value="commercial">מסחרי</option>
+                <option value="cottage">קוטג'/קיר משותף</option>
+                <option value="duplex">דופלקס</option>
               </select>
             </div>
 

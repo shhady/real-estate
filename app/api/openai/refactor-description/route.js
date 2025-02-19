@@ -40,7 +40,7 @@ export async function POST(request) {
           },
           {
             role: 'user',
-            content: `Refine the following real estate property description into a clean HTML format using only '<p>', '<ul>', '<ol>', and '<li>' elements. Retain the original language, include relevant emojis and hashtags naturally, and ensure the content remains engaging and informative."
+            content: `Refine the following real estate property description into a clean HTML format using only '<p>', '<ul>', '<ol>', and '<li>' elements. Retain the original language, include relevant emojis ,emojis should be in the beginning of the line(i use rtl) and hashtags naturally, and ensure the content remains engaging and informative."
 
 
 

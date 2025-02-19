@@ -404,6 +404,9 @@ export default function AgentProfile({ agent }) {
                             <option value="Condo">דירת גן</option>
                             <option value="Villa">וילה</option>
                             <option value="Land">מגרש</option>
+                            <option value="commercial">מסחרי</option>
+                            <option value="cottage">קוטג'/קיר משותף </option>
+                            <option value="duplex">דופלקס</option>
                           </select>
                         </div>
                       </div>

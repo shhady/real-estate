@@ -144,11 +144,15 @@ const PropertyForm = ({ property = null }) => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
             <option value="">Select Type</option>
-            <option value="House">House</option>
-            <option value="Apartment">Apartment</option>
-            <option value="Condo">Condo</option>
-            <option value="Villa">Villa</option>
-            <option value="Land">Land</option>
+            <option value="house">House</option>
+            <option value="apartment">Apartment</option>
+            <option value="condo">Condo</option>
+            <option value="villa">Villa</option>
+            <option value="land">Land</option>
+            <option value="commercial">מסחרי</option>
+            <option value="cottage">קוטג'/קיר משותף</option>
+            <option value="duplex">דופלקס</option>
+
           </select>
         </div>
 

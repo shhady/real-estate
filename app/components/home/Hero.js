@@ -82,6 +82,9 @@ const Hero = () => {
                 <option value="condo">דירת גן</option>
                 <option value="villa">וילה</option>
                 <option value="land">מגרש</option>
+                <option value="commercial">מסחרי</option>
+                <option value="cottage">קוטג'/קיר משותף</option>
+                <option value="duplex">דופלקס</option>
               </select>
             </div>
             <button

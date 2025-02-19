@@ -21,7 +21,10 @@ export default function AnalyticsPage() {
       Apartment: 0,
       Condo: 0,
       Villa: 0,
-      Land: 0
+      Land: 0,
+      commercial: 0,
+      cottage: 0,
+      duplex: 0
     },
     recentInquiries: []
   });
