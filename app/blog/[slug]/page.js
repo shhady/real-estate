@@ -67,7 +67,7 @@ export default async function BlogPostPage({ params }) {
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">{blog.title}</h1>
             <div className="flex items-center text-gray-600 gap-4">
-              <div className="flex items-center">
+            {blog.author &&   <div className="flex items-center">
                 {blog.author.profileImage ? (
                   <Image
                     src={blog.author.profileImage.secure_url}
@@ -80,7 +80,7 @@ export default async function BlogPostPage({ params }) {
                   <div className="w-10 h-10 bg-gray-200 rounded-full" />
                 )}
                 <span className="mr-2">{blog.author.fullName}</span>
-              </div>
+              </div>}
               <span>•</span>
               <time dateTime={blog.createdAt}>
                 {formatDistanceToNow(new Date(blog.createdAt), {

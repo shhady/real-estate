@@ -71,16 +71,21 @@ export async function POST(request) {
       );
     }
 
-    // Create blog with author and slug
-    const blog = await Blog.create({
-      ...data,
-      author: {
-        _id: user.userId,
-      },
-      slug,
-      views: 0
-    });
-
+      // Prepare the blog data
+      const blogData = {
+        ...data,
+        slug,
+        views: 0,
+      };
+  
+      // If user is authenticated, add author field
+      if (user) {
+        blogData.author = user.userId;
+      }
+  
+      // Create the blog post
+      const blog = await Blog.create(blogData);
+  
     // Populate author data in response
     const populatedBlog = await Blog.findById(blog._id)
       .lean();
