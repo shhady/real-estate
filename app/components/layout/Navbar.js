@@ -102,6 +102,12 @@ const Navbar = () => {
                 סוכנים
               </Link>
               <Link
+                href="/blog"
+                className="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600"
+              >
+                בלוג
+              </Link>
+              <Link
                 href="/contact"
                 className="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600"
               >
@@ -182,6 +188,12 @@ const Navbar = () => {
             className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
           >
             סוכנים
+          </Link>
+          <Link
+            href="/blog"
+            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+          >
+            בלוג
           </Link>
           <Link
             href="/contact"

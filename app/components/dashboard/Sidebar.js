@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaHome, FaBuilding, FaUser, FaChartBar, FaCog } from 'react-icons/fa';
+import { FaHome, FaBuilding, FaUser, FaChartBar, FaCog, FaEdit } from 'react-icons/fa';
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -16,6 +16,11 @@ const Sidebar = () => {
       title: 'נכסים',
       icon: <FaBuilding className="w-5 h-5" />,
       href: '/dashboard/properties',
+    },
+    {
+      title: 'בלוג',
+      icon: <FaEdit className="w-5 h-5" />,
+      href: '/dashboard/blog',
     },
     {
       title: 'פרופיל',

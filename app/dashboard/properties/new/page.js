@@ -357,8 +357,9 @@ export default function NewPropertyPage() {
                   onChange={handleChange}
                   required
                   rows={4}
-                  className="mt-1 block w-full rounded-xl p-2 border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
-                />
+                  className="mt-1 block w-full rounded-xl p-2 border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  placeholder="הזן תיאור קצר או כתוב 'צור לי תיאור'"
+                  />
               </div>
               <div className="mt-2 flex justify-end space-x-2">
                 <Button
