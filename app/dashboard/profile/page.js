@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaCloudUploadAlt, FaTimes, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendarAlt, FaAward, FaBed, FaBath, FaRuler } from 'react-icons/fa';
-import Button from '../../../components/ui/Button';
+import Button from '../../components/ui/Button';
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);

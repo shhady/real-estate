@@ -2,7 +2,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCloudUploadAlt, FaTimes } from 'react-icons/fa';
-import Button from '../../../../components/ui/Button';
+import Button from '../../../components/ui/Button';
 
 export default function EditPropertyPage({ params }) {
   const router = useRouter();

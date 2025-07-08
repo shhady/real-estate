@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import BlogList from '../../components/blog/BlogList';
-import BlogFilters from '../../components/blog/BlogFilters';
+import BlogList from '../components/blog/BlogList';
+import BlogFilters from '../components/blog/BlogFilters';
 
 export const metadata = {
   title: 'בלוג נדל"ן | מאמרים ועדכונים',

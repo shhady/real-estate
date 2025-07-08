@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
-import connectDB from '../../lib/mongodb';
-import Property from '../../models/Property';
-import User from '../../models/User';
-import PropertyCard from '../../components/ui/PropertyCard';
-import PropertyFilters from '../../components/properties/PropertyFilters';
-import PropertyList from '../../components/properties/PropertyList';
+import connectDB from '../lib/mongodb';
+import Property from '../models/Property';
+import User from '../models/User';
+import PropertyCard from '../components/ui/PropertyCard';
+import PropertyFilters from '../components/properties/PropertyFilters';
+import PropertyList from '../components/properties/PropertyList';
 
 export const dynamic = 'force-dynamic';
 
