@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCloudUploadAlt, FaTimes, FaMagic } from 'react-icons/fa';
-import Button from '@/app/components/ui/Button';
+import Button from '../../../components/ui/Button';
 
 export default function NewPropertyPage() {
   const router = useRouter();

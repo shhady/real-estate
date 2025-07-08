@@ -2,10 +2,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar } from 'react-icons/fa';
 import { notFound } from 'next/navigation';
-import connectDB from '@/app/lib/mongodb';
-import Property from '@/app/models/Property';
-import User from '@/app/models/User';
-import ImageCarousel from '@/app/components/ui/ImageCarousel';
+import connectDB from '../../../lib/mongodb';
+import Property from '../../../models/Property';
+import User from '../../../models/User';
+import ImageCarousel from '../../../components/ui/ImageCarousel';
 
 // Format price consistently
 const formatPrice = (num) => {

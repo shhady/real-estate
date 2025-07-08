@@ -2,8 +2,8 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
-import connectDB from '@/app/lib/mongodb';
-import Blog from '@/app/models/Blog';
+import connectDB from '../../../lib/mongodb';
+import Blog from '../../../models/Blog';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

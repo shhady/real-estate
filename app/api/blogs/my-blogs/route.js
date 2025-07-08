@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/mongodb';
-import Blog from '@/app/models/Blog';
-import { getUser } from '@/app/lib/auth';
+import connectDB from '../../../lib/mongodb';
+import Blog from '../../../models/Blog';
+import { getUser } from '../../../lib/auth';
 
 export async function GET() {
   try {

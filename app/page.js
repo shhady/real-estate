@@ -2,9 +2,9 @@ import Hero from './components/home/Hero';
 import PropertyCard from './components/ui/PropertyCard';
 import { FaHome, FaSearch, FaUserTie, FaHandshake } from 'react-icons/fa';
 import { Suspense } from 'react';
-import connectDB from '@/app/lib/mongodb';
-import Property from '@/app/models/Property';
-import User from '@/app/models/User';
+import connectDB from './lib/mongodb';
+import Property from './models/Property';
+import User from './models/User';
 export const dynamic = 'force-dynamic';
 
 async function getLatestProperties() {

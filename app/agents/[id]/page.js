@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
-import connectDB from '@/app/lib/mongodb';
-import User from '@/app/models/User';
-import Property from '@/app/models/Property';
-import AgentProfile from '@/app/components/agents/AgentProfile';
+import connectDB from '../../../lib/mongodb';
+import User from '../../../models/User';
+import Property from '../../../models/Property';
+import AgentProfile from '../../../components/agents/AgentProfile';
 import mongoose from 'mongoose';
 
 export default async function AgentPage({ params }) {

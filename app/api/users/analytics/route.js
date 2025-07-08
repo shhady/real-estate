@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/mongodb';
-import User from '@/app/models/User';
-import Property from '@/app/models/Property';
-import { getUser } from '@/app/lib/auth';
+import connectDB from '../../../lib/mongodb';
+import User from '../../../models/User';
+import Property from '../../../models/Property';
+import { getUser } from '../../../lib/auth';
 
 export async function GET() {
   try {

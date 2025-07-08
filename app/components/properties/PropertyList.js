@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import PropertyCard from '@/app/components/ui/PropertyCard';
+import PropertyCard from '../ui/PropertyCard';
 
 export default function PropertyList() {
   const searchParams = useSearchParams();

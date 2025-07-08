@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import { FaEye, FaWhatsapp, FaEnvelope, FaPhone, FaHome, FaPlus, FaUserTie, FaChartBar } from 'react-icons/fa';
-import connectDB from '@/app/lib/mongodb';
-import Property from '@/app/models/Property';
-import User from '@/app/models/User';
-import { getUser } from '@/app/lib/auth';
+import connectDB from '../lib/mongodb';
+import Property from '../models/Property';
+import User from '../models/User';
+import { getUser } from '../lib/auth';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/mongodb';
-import Blog from '@/app/models/Blog';
-import { getUser } from '@/app/lib/auth';
-import { deleteImage } from '@/app/lib/cloudinary';
+import connectDB from '../../../lib/mongodb';
+import Blog from '../../../models/Blog';
+import { getUser } from '../../../lib/auth';
+import { deleteImage } from '../../../lib/cloudinary';
 
 // GET single blog
 export async function GET(request, { params }) {

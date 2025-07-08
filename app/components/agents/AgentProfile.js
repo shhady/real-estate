@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendarAlt, FaAward, FaBed, FaBath, FaRuler, FaInstagram, FaFacebook, FaEye, FaCalendar } from 'react-icons/fa';
-import PropertyCard from '@/app/components/ui/PropertyCard';
+import PropertyCard from '../ui/PropertyCard';
 import Link from 'next/link';
 
 export default function AgentProfile({ agent }) {

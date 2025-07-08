@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
-import Button from '@/app/components/ui/Button';
+import Button from '../../components/ui/Button';
 
 export default function DashboardPropertiesPage() {
   const [properties, setProperties] = useState([]);

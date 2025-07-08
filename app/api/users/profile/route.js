@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/app/lib/mongodb';
-import User from '@/app/models/User';
-import { getUser } from '@/app/lib/auth';
+import connectDB from '../../../lib/mongodb';
+import User from '../../../models/User';
+import { getUser } from '../../../lib/auth';
 
 // GET user profile
 export async function GET() {
