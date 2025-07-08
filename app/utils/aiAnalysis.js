@@ -3,6 +3,7 @@ import logger from './logger';
 import { detectLanguage } from './languageDetection';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { randomUUID } from 'crypto';
 
 // Initialize OpenAI client with API key from environment variable
@@ -24,15 +25,25 @@ export async function transcribeAudio(fileData) {
     // Log file size for debugging
     logger.info(`Audio file size: ${fileData.buffer.length} bytes`);
     
-    // Create a temporary file path 
-    const tmpDir = path.join(process.cwd(), 'tmp');
-    fs.mkdirSync(tmpDir, { recursive: true });
+    // Create a temporary file path - use system temp directory for serverless environments
+    const isServerless = process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME;
+    const tmpDir = isServerless ? os.tmpdir() : path.join(process.cwd(), 'tmp');
+    
+    // Only create directory if it's local development (not serverless)
+    if (!isServerless) {
+      fs.mkdirSync(tmpDir, { recursive: true });
+    }
     
     const tempFilePath = path.join(tmpDir, `${randomUUID()}-${fileData.name}`);
     
     // Write the buffer to a temporary file
-    fs.writeFileSync(tempFilePath, fileData.buffer);
-    logger.info(`Saved audio data to temporary file: ${tempFilePath}`);
+    try {
+      fs.writeFileSync(tempFilePath, fileData.buffer);
+      logger.info(`Saved audio data to temporary file: ${tempFilePath}`);
+    } catch (writeError) {
+      logger.error(`Failed to write temporary file: ${writeError.message}`);
+      throw new Error(`Failed to create temporary file: ${writeError.message}`);
+    }
     
     try {
       // Use OpenAI API with a file path
