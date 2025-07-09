@@ -83,13 +83,13 @@ export default function NewPropertyPage() {
       <div className="px-4 py-6 sm:px-0">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">הוספת נכס חדש</h1>
 
-        {message.text && (
+        {/* {message.text && (
           <div className={`p-4 rounded-md mb-6 ${
             message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
           }`}>
             {message.text}
           </div>
-        )}
+        )} */}
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
