@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '../../../components/ui/Button';
-
+  
 export default function NewPropertyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -85,20 +85,20 @@ export default function NewPropertyPage() {
 
   return (
     <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div className="px-4 py-6 sm:px-0">
+      {/* <div className="px-4 py-6 sm:px-0">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">הוספת נכס חדש</h1>
 
-        {/* {message.text && (
+        {message.text && (
           <div className={`p-4 rounded-md mb-6 ${
             message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
           }`}>
             {message.text}
           </div>
-        )} */}
+        )}
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Images Upload */}
+          
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 תמונות הנכס
@@ -106,7 +106,7 @@ export default function NewPropertyPage() {
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-400 border-dashed rounded-md">
                 <div className="space-y-1 text-center">
                   <div className="flex flex-wrap gap-4 mb-4">
-                    {/* {images?.map((image, index) => (
+                    {images?.map((image, index) => (
                       <div key={index} className="relative w-24 h-24">
                         <img
                           src={image.secure_url}
@@ -121,7 +121,7 @@ export default function NewPropertyPage() {
                           <FaTimes className="w-4 h-4" />
                         </button>
                       </div>
-                    ))} */}
+                    ))}
                   </div>
                   <div className="flex text-sm text-gray-600">
                     <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
@@ -141,7 +141,7 @@ export default function NewPropertyPage() {
               </div>
             </div>
 
-            {/* Basic Information */}
+          
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -353,7 +353,7 @@ export default function NewPropertyPage() {
             </div>
           </form>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 } 
