@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import connectDB from '../../lib/mongodb';
 import Call from '../../models/Call';
+import Client from '../../models/Client';
 import { getUser } from '../../lib/auth';
 
-// GET - Fetch user's calls
+// GET - Fetch all calls for the authenticated user
 export async function GET() {
   try {
     const user = await getUser();
@@ -12,10 +13,11 @@ export async function GET() {
     }
 
     await connectDB();
-    
+
     const calls = await Call.find({ userId: user.userId })
-      .sort({ date: -1 })
-      .lean();
+      .populate('clientId', 'clientName phoneNumber') // Populate client information
+      .sort({ createdAt: -1 })
+      .limit(50);
 
     return NextResponse.json(calls);
   } catch (error) {
@@ -24,7 +26,9 @@ export async function GET() {
   }
 }
 
-// POST - Save new call analysis
+// POST - Save new call analysis with enhanced property data
+// NOTE: This route is now mainly for backward compatibility
+// New calls are saved directly in /api/call-analysis
 export async function POST(request) {
   try {
     const user = await getUser();
@@ -34,30 +38,48 @@ export async function POST(request) {
 
     const body = await request.json();
     const { 
-      clientName, 
-      phoneNumber, 
       transcription, 
       summary, 
       followUps, 
       positives, 
       issues,
-      audioFileName,
-      audioDuration
+      intent,
+      location,
+      propertyType,
+      rooms,
+      area,
+      price,
+      condition,
+      floor,
+      parking,
+      balcony,
+      propertyNotes,
+      audioFileUrl,
+      cloudinaryUrl,
+      clientId
     } = body;
 
     await connectDB();
 
     const newCall = await Call.create({
       userId: user.userId,
-      clientName,
-      phoneNumber,
+      clientId: clientId || null,
+      audioFileUrl: audioFileUrl || cloudinaryUrl || 'N/A', // Make compatible with new schema
       transcription,
       summary,
       followUps: followUps || [],
       positives: positives || [],
       issues: issues || [],
-      audioFileName,
-      audioDuration
+      intent: intent || 'unknown',
+      location: location || '',
+      rooms: rooms || null,
+      area: area || null,
+      price: price || null,
+      condition: condition || '',
+      floor: floor || null,
+      parking: parking,
+      balcony: balcony,
+      propertyNotes: propertyNotes || ''
     });
 
     return NextResponse.json(newCall);

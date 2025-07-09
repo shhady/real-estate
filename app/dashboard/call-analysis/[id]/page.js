@@ -34,13 +34,130 @@ export default function CallDetailPage({ params }) {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString('he-IL', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Render property details section
+  const renderPropertyDetails = () => {
+    if (!call) return null;
+
+    const hasPropertyData = call.intent || call.location || call.propertyType || 
+                           call.rooms || call.area || call.price || call.condition ||
+                           call.floor !== null || call.parking !== null || 
+                           call.balcony !== null || call.propertyNotes;
+
+    if (!hasPropertyData) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          <p>לא נמצא מידע על נכס בשיחה זו.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {call.intent && call.intent !== 'unknown' && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">כוונה</h4>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                call.intent === 'buyer' ? 'bg-green-100 text-green-800' :
+                call.intent === 'seller' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {call.intent === 'buyer' ? 'קונה' :
+                 call.intent === 'seller' ? 'מוכר' :
+                 call.intent === 'both' ? 'קונה ומוכר' : call.intent}
+              </span>
+            </div>
+          )}
+          
+          {call.location && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">מיקום</h4>
+              <p className="text-gray-900">{call.location}</p>
+            </div>
+          )}
+          
+          {call.propertyType && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">סוג נכס</h4>
+              <p className="text-gray-900 capitalize">{call.propertyType}</p>
+            </div>
+          )}
+          
+          {call.rooms && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">חדרים</h4>
+              <p className="text-gray-900">{call.rooms}</p>
+            </div>
+          )}
+          
+          {call.area && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">שטח</h4>
+              <p className="text-gray-900">{call.area} מ"ר</p>
+            </div>
+          )}
+          
+          {call.price && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">מחיר</h4>
+              <p className="text-gray-900">{call.price.toLocaleString()} ₪</p>
+            </div>
+          )}
+          
+          {call.condition && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">מצב</h4>
+              <p className="text-gray-900 capitalize">{call.condition}</p>
+            </div>
+          )}
+          
+          {call.floor !== null && call.floor !== undefined && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">קומה</h4>
+              <p className="text-gray-900">{call.floor}</p>
+            </div>
+          )}
+          
+          {call.parking !== null && call.parking !== undefined && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">חניה</h4>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                call.parking ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {call.parking ? 'כן' : 'לא'}
+              </span>
+            </div>
+          )}
+          
+          {call.balcony !== null && call.balcony !== undefined && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">מרפסת</h4>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                call.balcony ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {call.balcony ? 'כן' : 'לא'}
+              </span>
+            </div>
+          )}
+        </div>
+        
+        {call.propertyNotes && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-700 mb-2">הערות נכס</h4>
+            <p className="text-gray-900 whitespace-pre-wrap">{call.propertyNotes}</p>
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -60,7 +177,7 @@ export default function CallDetailPage({ params }) {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            Error: {error}
+            שגיאה: {error}
           </div>
         </div>
       </div>
@@ -72,7 +189,7 @@ export default function CallDetailPage({ params }) {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md">
-            Call not found
+            שיחה לא נמצאה.
           </div>
         </div>
       </div>
@@ -81,68 +198,78 @@ export default function CallDetailPage({ params }) {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-6">
-          <Link 
-            href="/dashboard/call-analysis"
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-          >
-             חזור לניתוח שיחות
-          </Link>
-        </div>
-
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Call Analysis Details</h1>
-          
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-black">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Client Information</h3>
-                <div className="space-y-2">
-                  <p><span className="font-medium">Name:</span> {call.clientName}</p>
-                  <p><span className="font-medium">Phone:</span> {call.phoneNumber}</p>
-                  <p><span className="font-medium">Date:</span> {formatDate(call.date)}</p>
-                </div>
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-4 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900">{call.clientName}</h1>
+                {call.intent && call.intent !== 'unknown' && (
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                    call.intent === 'buyer' ? 'bg-green-100 text-green-800' :
+                    call.intent === 'seller' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {call.intent === 'buyer' ? 'קונה' :
+                     call.intent === 'seller' ? 'מוכר' :
+                     call.intent === 'both' ? 'קונה ומוכר' : call.intent}
+                  </span>
+                )}
+                {call.location && (
+                  <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
+                    📍 {call.location}
+                  </span>
+                )}
               </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Recording Information</h3>
-                <div className="space-y-2">
-                  <p><span className="font-medium">File:</span> {call.audioFileName || 'N/A'}</p>
-                  <p><span className="font-medium">Duration:</span> {call.audioDuration || 'N/A'}</p>
-                </div>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <span>📞 {call.phoneNumber}</span>
+                <span>📅 {formatDate(call.createdAt)}</span>
+                {call.audioDuration && <span>⏱️ {call.audioDuration}</span>}
+                {call.audioFileName && <span>🎵 {call.audioFileName}</span>}
               </div>
             </div>
+            <Link
+              href="/dashboard/clients"
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+            >
+              ← חזור לדף לקוחות
+            </Link>
           </div>
-        </header>
+        </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          {/* Tabs */}
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              {['Transcription', 'Summary', 'Follow-ups', 'Positives', 'Issues'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </nav>
+        {/* Content */}
+        <div className="bg-white rounded-lg shadow-md">
+          {/* Tab navigation */}
+          <div className="flex border-b border-gray-200 overflow-x-auto">
+            {[
+              { key: 'Transcription', label: 'תמליל' },
+              { key: 'Summary', label: 'סיכום' },
+              { key: 'Property Details', label: 'פרטי נכס' },
+              { key: 'Follow-ups', label: 'מעקבים' },
+              { key: 'Issues', label: 'בעיות' }
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-shrink-0 py-3 px-6 text-sm font-medium text-center border-b-2 transition-colors ${
+                  activeTab === tab.key
+                    ? 'border-blue-500 text-blue-600 bg-blue-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          {/* Content */}
+          {/* Tab content */}
           <div className="p-6">
             {activeTab === 'Transcription' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Full Transcription</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-gray-700 font-mono text-sm">
+                <h3 className="text-lg font-semibold text-gray-900">תמליל שיחה</h3>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed">
                     {call.transcription}
                   </pre>
                 </div>
@@ -150,71 +277,71 @@ export default function CallDetailPage({ params }) {
             )}
 
             {activeTab === 'Summary' && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Call Summary</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-gray-700 leading-relaxed">{call.summary}</p>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">סיכום שיחה</h3>
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{call.summary}</p>
+                  </div>
                 </div>
+                
+                {call.positives && call.positives.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold text-green-700 mb-3">היבטים חיוביים</h4>
+                    <div className="space-y-2">
+                      {call.positives.map((positive, index) => (
+                        <div key={index} className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+                          <p className="text-green-800">{positive}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'Property Details' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">מידע נכס</h3>
+                {renderPropertyDetails()}
               </div>
             )}
 
             {activeTab === 'Follow-ups' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Follow-up Actions</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  {call.followUps && call.followUps.length > 0 ? (
-                    <ul className="space-y-2">
-                      {call.followUps.map((item, idx) => (
-                        <li key={idx} className="flex items-start">
-                          <span className="text-blue-600 mr-2">•</span>
-                          <span className="text-gray-700">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500 italic">No follow-up actions identified</p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'Positives' && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Positive Aspects</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  {call.positives && call.positives.length > 0 ? (
-                    <ul className="space-y-2">
-                      {call.positives.map((item, idx) => (
-                        <li key={idx} className="flex items-start">
-                          <span className="text-green-600 mr-2">✓</span>
-                          <span className="text-gray-700">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500 italic">No positive aspects identified</p>
-                  )}
-                </div>
+                <h3 className="text-lg font-semibold text-gray-900">מעקבים מומלצים</h3>
+                {call.followUps && call.followUps.length > 0 ? (
+                  <div className="space-y-3">
+                    {call.followUps.map((followUp, index) => (
+                      <div key={index} className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                        <p className="text-blue-800">{followUp}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>לא זוהו מעקבים ספציפיים לשיחה זו.</p>
+                  </div>
+                )}
               </div>
             )}
 
             {activeTab === 'Issues' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Issues & Concerns</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  {call.issues && call.issues.length > 0 ? (
-                    <ul className="space-y-2">
-                      {call.issues.map((item, idx) => (
-                        <li key={idx} className="flex items-start">
-                          <span className="text-red-600 mr-2">⚠</span>
-                          <span className="text-gray-700">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-gray-500 italic">No issues identified</p>
-                  )}
-                </div>
+                <h3 className="text-lg font-semibold text-gray-900">תחומים לשיפור</h3>
+                {call.issues && call.issues.length > 0 ? (
+                  <div className="space-y-3">
+                    {call.issues.map((issue, index) => (
+                      <div key={index} className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                        <p className="text-red-800">{issue}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>לא זוהו בעיות בשיחה זו.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

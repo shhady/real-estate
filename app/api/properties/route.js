@@ -70,26 +70,131 @@ export async function POST(request) {
     await connectDB();
     const data = await request.json();
     
-    // Validate image data
-    if (!data.images || !Array.isArray(data.images)) {
-      return NextResponse.json({ error: 'Invalid image data' }, { status: 400 });
+    console.log('Creating property with data:', data);
+
+    // Fetch user details to get agency name if not provided
+    const userDetails = await User.findById(user.userId).select('agencyName fullName').lean();
+    if (!userDetails) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Ensure each image has both secure_url and publicId
-    const validImages = data.images.every(img => img.secure_url && img.publicId);
-    if (!validImages) {
-      return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
+    // Handle data from upload wizard format
+    const listing = data.listing || data;
+    const mediaUrls = Array.isArray(data.mediaUrls) ? data.mediaUrls : [data.mediaUrls].filter(Boolean);
+    
+    // Determine content type based on media
+    let contentType = 'single-image';
+    let images = [];
+    let video = null;
+    
+    if (data.selectedContentType) {
+      contentType = data.selectedContentType;
+    } else if (mediaUrls.length > 1) {
+      contentType = 'carousel';
+    } else if (mediaUrls.length === 1) {
+      // Check if it's a video URL (simple heuristic)
+      const url = mediaUrls[0];
+      if (url.includes('.mp4') || url.includes('video') || url.includes('json2video')) {
+        contentType = 'video';
+      }
     }
 
-    // Create property with cleaned image data
+    // Process media based on content type
+    if (contentType === 'video' || contentType === 'video-from-images') {
+      if (data.videoUrl) {
+        video = {
+          secure_url: data.videoUrl,
+          publicId: data.videoPublicId || '',
+          type: contentType === 'video-from-images' ? 'generated' : 'uploaded'
+        };
+      } else if (mediaUrls.length > 0) {
+        video = {
+          secure_url: mediaUrls[0],
+          publicId: '',
+          type: 'uploaded'
+        };
+      }
+      
+      // For video-from-images, also save the source images
+      if (contentType === 'video-from-images' && data.uploadedMedia) {
+        images = data.uploadedMedia
+          .filter(item => item.mediaType === 'image')
+          .map(item => ({
+            secure_url: item.url,
+            publicId: item.publicId || ''
+          }));
+      }
+    } else {
+      // Handle images (single or carousel)
+      if (data.images && Array.isArray(data.images)) {
+        // Standard property creation format
+        const validImages = data.images.every(img => img.secure_url && img.publicId);
+        if (!validImages) {
+          return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
+        }
+        images = data.images.map(img => ({
+          secure_url: img.secure_url,
+          publicId: img.publicId
+        }));
+      } else if (mediaUrls.length > 0) {
+        // Upload wizard format
+        images = mediaUrls.map((url, index) => ({
+          secure_url: url,
+          publicId: data.uploadedMedia?.[index]?.publicId || ''
+        }));
+      }
+    }
+
+    // Handle descriptions
+    let descriptions = { hebrew: '', arabic: '' };
+    if (data.description && typeof data.description === 'object') {
+      descriptions = {
+        hebrew: data.description.hebrew || '',
+        arabic: data.description.arabic || ''
+      };
+    } else if (data.descriptionHE || data.descriptionAR) {
+      descriptions = {
+        hebrew: data.descriptionHE || '',
+        arabic: data.descriptionAR || ''
+      };
+    } else if (data.descriptions) {
+      descriptions = data.descriptions;
+    }
+
+    // Map form fields to property fields
     const propertyData = {
-      ...data,
+      title: listing.title || data.title || '',
+      description: data.description || '', // Keep for backward compatibility
+      descriptions: descriptions,
+      price: parseFloat(listing.price || data.price || 0),
+      location: listing.location || data.location || '',
+      propertyType: listing.type || data.propertyType || 'apartment',
+      status: data.status || 'For Sale',
+      bedrooms: parseInt(listing.rooms || data.bedrooms || 0),
+      bathrooms: listing.bathrooms || data.bathrooms ? parseInt(listing.bathrooms || data.bathrooms) : undefined,
+      area: parseFloat(listing.area || data.area || 0),
+      floor: listing.floor || data.floor || '',
+      notes: listing.notes || data.notes || '',
+      agencyName: listing.agencyName || data.agencyName || userDetails.agencyName || '',
+      contentType: contentType,
+      images: images,
+      video: video,
+      mediaUrls: mediaUrls,
+      features: data.features || [],
       user: user.userId,
-      images: data.images.map(img => ({
-        secure_url: img.secure_url,
-        publicId: img.publicId
-      }))
+      languageChoice: data.languageChoice || 'both',
+      externalListingId: data.listingId || null,
+      listingUrl: data.listingUrl || null
     };
+
+    // Remove undefined values
+    Object.keys(propertyData).forEach(key => {
+      if (propertyData[key] === undefined) {
+        delete propertyData[key];
+      }
+    });
+
+    console.log('Creating property with processed data:', propertyData);
 
     const property = await Property.create(propertyData);
 
@@ -104,9 +209,16 @@ export async function POST(request) {
       .populate('user', 'fullName email phone whatsapp bio profileImage')
       .lean();
 
-    return NextResponse.json(populatedProperty, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      property: populatedProperty,
+      message: 'Property created successfully'
+    }, { status: 201 });
   } catch (error) {
     console.error('Error creating property:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message 
+    }, { status: 500 });
   }
 } 

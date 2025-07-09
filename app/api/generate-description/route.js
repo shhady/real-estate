@@ -5,8 +5,7 @@ import OpenAI from 'openai';
 let openai;
 try {
   openai = new OpenAI({
-    apiKey: process.env.AZURE_OPENAI_API_KEY,
-    baseURL: "https://models.inference.ai.azure.com"
+    apiKey: process.env.OPENAI_API_KEY
   });
 } catch (error) {
   console.error('Error initializing OpenAI client:', error);
@@ -43,7 +42,7 @@ export async function POST(request) {
     console.log('Generating descriptions for property:', propertyDetails);
 
     // Check if OpenAI client is properly initialized
-    if (!openai || !process.env.AZURE_OPENAI_API_KEY) {
+    if (!openai || !process.env.OPENAI_API_KEY) {
       console.warn('OpenAI client not available, using fallback descriptions');
       const fallbackDescriptions = generateBasicDescriptions(propertyData);
       return NextResponse.json({
@@ -57,25 +56,33 @@ export async function POST(request) {
     const prompt = `
 You are a professional real estate content assistant specializing in persuasive property listings.
 
-Your job is to generate two short social-media-ready descriptions for the following listing — one in Hebrew, one in Arabic.
 
-They must be:
-- Clear, attractive and PERSUASIVE with strong sales language
+Your job is to generate TWO short real estate post descriptions for the following listing for social media:
+- One in **Hebrew**
+- One in **Arabic**
+
+🔒 RULES YOU MUST FOLLOW:
+- If a field (like notes or title) is in another language, **translate it to match** the description language
 - Use plain text only (no HTML or Markdown)
-- Short and readable on mobile (limit: 2200 characters)
-- Use emojis like 🏡 📞 ✨ 🌟 💎 minimally and smartly
-- Include compelling benefits and features that make the property attractive
-- ALWAYS include the agent name AND phone number at the end - this is extremely important
+- Write in persuasive, emotionally appealing language suitable for Instagram or Facebook
+- Limit each description to under **2200 characters**
+- Use a few smart emojis like 🏡 📞 ✨ 🌟 💎 to boost appeal
+- Include specific features and benefits: location, area, rooms, floor, parking, balcony, investment potential, etc.
+- Always end with the agent name AND phone number (localized text!)
+- Translate location names into the language of the description (e.g.,  الناصره ➜ الناصرة ➜ נצרת || נוף הגליל ➜ نوف هجليل || חיפה ➜ حيفا)
+Use the exact format below and generate both blocks:
 
-Use this exact format (do not change the order of information):
+- Each description must be written 100% in the specified language — NO MIXED LANGUAGES (even phone number labels like "פרטים נוספים" or "لمزيد من التفاصيل" must be in the correct language)
+
+Use ONE of these exact formats (do not change the order of information):
 
 🏡 {{title}} ב{{location}}!
 
-שטח: {{area}} מ"ר
+שטח: ${propertyData.area} מ"ר
 ${propertyData.rooms ? `- חדרים: ${propertyData.rooms}` : ''}
 ${propertyData.floor ? `- קומה: ${propertyData.floor}` : ''}
 
-מחיר: ₪{{price}}
+מחיר: ₪${propertyData.price}
 
 [ADD COMPELLING SALES CONTENT HERE - highlight location benefits, property features, investment opportunity, unique selling points, etc. - be persuasive!]
 
@@ -91,7 +98,7 @@ ${propertyData.notes || ''}
 ${propertyData.rooms ? `- عدد الغرف: ${propertyData.rooms}` : ''}
 ${propertyData.floor ? `- الطابق: ${propertyData.floor}` : ''}
 
-السعر: ₪{{price}}
+السعر: ₪${propertyData.price}
 
 [ADD COMPELLING SALES CONTENT HERE IN ARABIC - highlight location benefits, property features, investment opportunity, unique selling points, etc. - be persuasive!]
 
@@ -102,11 +109,41 @@ ${propertyData.notes ? '[TRANSLATE NOTES TO ARABIC]' : ''}
 Property details:
 ${propertyDetails}
 
+OR : 
+
+🏡 {{title in Hebrew}} ב{{location in Hebrew}}!
+שטח: ${propertyData.area} מ"ר${propertyData.rooms ? ` - חדרים: ${propertyData.rooms}` : ''}${propertyData.floor ? ` - קומה: ${propertyData.floor}` : ''}
+מחיר: ₪${propertyData.price}
+
+[✍️ Write a powerful, emotional Hebrew description that sells — include highlights of the location, unique features, potential returns, and why it's a great deal.]
+
+${propertyData.notes ? 'הערות: ${propertyData.notes}' : ''}
+
+📞 לפרטים נוספים: ${propertyData.agentName}, ${propertyData.agentPhone}
+
+—
+
+🏡 {{title in Arabic}} في {{location in Arabic}}!
+المساحة: ${propertyData.area} م²${propertyData.rooms ? ` - عدد الغرف: ${propertyData.rooms}` : ''}${propertyData.floor ? ` - الطابق: ${propertyData.floor}` : ''}
+السعر: ₪${propertyData.price}
+
+[✍️ Write a powerful, emotional Arabic description that sells — include location benefits, property highlights, investment value, and why it’s ideal.]
+
+${propertyData.notes ? 'ملاحظات: [TRANSLATE TO ARABIC]' : ''}
+
+📞 لمزيد من التفاصيل: ${propertyData.agentName}, ${propertyData.agentPhone}
+
+—
+
 IMPORTANT: Both descriptions MUST include the agent's phone number at the end. The phone number is: ${propertyData.agentPhone || 'Not provided, but you must include a placeholder asking for it'}
 
-Respond with EXACTLY two descriptions only - first in Hebrew, then in Arabic. No other text. 
-Both must be under 2200 characters each.
-Make sure to add compelling sales content about why someone should buy this property!
+🏁 NOTES:
+-Respond with EXACTLY two descriptions only - first in Hebrew, then in Arabic. No other text. 
+-Make sure to add compelling sales content about why someone should buy this property!
+- You must translate mixed-language fields into the correct language block
+- Only return the two description blocks — no extra explanation
+- Both blocks must be under 2200 characters
+
 `;
 
     try {

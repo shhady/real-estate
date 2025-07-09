@@ -20,7 +20,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   console.log('Selected content type:', selectedContentType);
   // Property data
   const [propertyData, setPropertyData] = useState({
-    title: 'חדש ב GoldenKey - ',
+    title: '',
     type: 'apartment',
     location: '',
     area: '',
@@ -30,7 +30,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     notes: '',
     agentName: '',
     phone: '',
-    agencyName: 'GoldenKey'
+    agencyName: ''
   });
 
   // Character counter for description
@@ -55,6 +55,30 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   // Video generation status
   const [videoGenerationStatus, setVideoGenerationStatus] = useState("preparing");
 
+  // Fetch user data for agent name, phone, and agency name
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch('/api/users/profile');
+        if (res.ok) {
+          const userData = await res.json();
+          setPropertyData(prev => ({
+            ...prev,
+            agentName: userData.fullName || '',
+            phone: userData.phone || '',
+            agencyName: userData.agencyName || ''
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    if (isOpen) {
+      fetchUserData();
+    }
+  }, [isOpen]);
+
   // Reset wizard when it opens
   useEffect(() => {
     if (isOpen) {
@@ -62,8 +86,9 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       setError(null);
       setVideoUrl('');
       setIsVideoMode(false);
-      setPropertyData({
-        title: 'חדש ב GoldenKey - ',
+      // Reset property data but preserve agent name, phone, and agency name if they exist
+      setPropertyData(prev => ({
+        title: '',
         type: 'apartment',
         location: '',
         area: '',
@@ -71,10 +96,10 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         rooms: '',
         floor: '',
         notes: '',
-        agentName: '',
-        phone: '',
-        agencyName: 'GoldenKey'
-      });
+        agentName: prev.agentName || '',
+        phone: prev.phone || '',
+        agencyName: prev.agencyName || ''
+      }));
       setLanguageChoice('both');
       setCharCount({
         hebrew: 0,
@@ -175,7 +200,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         listing: propertyData,
         agentName: propertyData.agentName,
         phone: propertyData.phone,
-        agencyName: propertyData.agencyName || 'GoldenKey',
+        agencyName: propertyData.agencyName || '',
         descriptionHE: descriptions.hebrew,
         // We're not using Arabic descriptions anymore
         languageChoice: effectiveLanguageChoice,
@@ -219,7 +244,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     }
   };
 
-  // Submit the form - this will process the upload notification with the additional data
+  // Submit the form - this will save the property to MongoDB
   const handleSubmit = async () => {
     setIsLoading(true);
     setError(null);
@@ -229,99 +254,64 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       const mediaUrls = uploadedMedia.map(item => item.url).filter(Boolean);
       const mediaTypes = uploadedMedia.map(item => item.mediaType).filter(Boolean);
       
-      // Determine if it's a carousel or single upload
-      const isCarousel = mediaUrls.length > 1;
+      // Determine content type
+      let selectedContentTypeNormalized = 'single-image';
+      if (isVideoMode && selectedContentType === 'video-from-images') {
+        selectedContentTypeNormalized = 'video-from-images';
+      } else if (mediaUrls.length > 1) {
+        selectedContentTypeNormalized = 'carousel';
+      } else if (mediaTypes[0] === 'video') {
+        selectedContentTypeNormalized = 'video';
+      }
       
-      // Check if we're in video-from-photos mode (now just a collection of images)
-      const isVideoFromPhotos = isVideoMode;
-      
-      console.log("Submitting form with mode:", {
+      console.log("Submitting property with:", {
         isVideoMode,
-        isVideoFromPhotos,
+        selectedContentType,
+        selectedContentTypeNormalized,
         mediaUrls: mediaUrls.length,
+        videoUrl: !!videoUrl,
         descriptions: !!descriptions
       });
       
-      // Build the payload with the collected data
-      const payload = {
-        clientId: propertyData.clientId || 'clientIdFromSession',
-        mediaUrls: mediaUrls,
-        mediaTypes: mediaTypes,
-        contentType: isVideoFromPhotos ? 'photosVideo' : (isCarousel ? 'Carousel' : mediaTypes[0]),
-        overlay: true,
+      // Build the property payload for MongoDB
+      const propertyPayload = {
         listing: propertyData,
-        languageChoice
+        mediaUrls: mediaUrls,
+        uploadedMedia: uploadedMedia,
+        selectedContentType: selectedContentTypeNormalized,
+        descriptions: descriptions,
+        descriptionHE: descriptions.hebrew,
+        descriptionAR: descriptions.arabic,
+        languageChoice: languageChoice,
+        videoUrl: videoUrl || null
       };
       
-      // If a video URL is available, include it in the payload
-      if (videoUrl) {
-        payload.videoUrl = videoUrl;
-        payload.contentType = 'photosVideo'; // Ensure content type is correct when video is available
-      }
+      console.log('Saving property to MongoDB...', propertyPayload);
       
-      console.log('Setting content type:', {
-        contentType: payload.contentType,
-        isVideoMode,
-        isVideoFromPhotos,
-        isCarousel,
-        mediaCount: mediaUrls.length,
-        hasVideoUrl: !!videoUrl
-      });
+      // Save property to MongoDB
+      const response = await axios.post('/api/properties', propertyPayload);
       
-      // For image collection mode, only send the specific language descriptions
-      if (isVideoFromPhotos) {
-        // Include specific Hebrew and Arabic descriptions directly
-        if (descriptions.hebrew) payload.descriptionHE = descriptions.hebrew;
-        if (descriptions.arabic) payload.descriptionAR = descriptions.arabic;
-        
-        // Log the payload for debugging
-        console.log('Video from images payload:', {
-          contentType: payload.contentType,
-          descriptionHE: !!payload.descriptionHE,
-          descriptionAR: !!payload.descriptionAR
-        });
-      } else {
-        // For regular uploads, use the description object
-        payload.description = descriptions;
-      }
-      
-      // Send notification to the appropriate endpoint
-      const endpoint = isCarousel || isVideoFromPhotos ? '/api/notify-carousel' : '/api/notify-upload';
-      console.log(`Sending notification to ${endpoint}`, { isCarousel, isVideoFromPhotos });
-      
-      const response = await axios.post(endpoint, payload);
-      
-      // Handle response
       if (response.data && response.data.success) {
-        // Save listing data to Google Sheets and MongoDB
-        try {
-          console.log('Saving listing data to Google Sheets and MongoDB...');
-          const saveResponse = await axios.post('/api/save-listing', payload);
-          console.log('Save listing response:', saveResponse.data);
-        } catch (saveError) {
-          console.error('Error saving listing data:', saveError);
-          // Continue with the process even if saving fails - don't block the user
-        }
+        console.log('Property saved successfully:', response.data);
         
         // Close wizard and notify parent component
         onClose();
         if (onUploadComplete) {
           onUploadComplete({
             success: true,
-            isCarousel,
-            isVideoFromPhotos,
+            property: response.data.property,
+            contentType: selectedContentTypeNormalized,
             mediaUrls,
-            webhook: response.data.webhookSent,
-            message: response.data.message
+            message: 'הנכס נשמר בהצלחה במערכת!'
           });
         }
       } else {
-        setError('אירעה שגיאה בעת עיבוד ההעלאה. אנא נסה שנית.');
+        setError('אירעה שגיאה בעת שמירת הנכס. אנא נסה שנית.');
       }
     } catch (err) {
-      console.error('Error submitting form:', err, err.response?.data);
+      console.error('Error saving property:', err, err.response?.data);
       
-      setError(`שגיאה בעיבוד ההעלאה: ${err.response?.data?.error || err.message}. אנא נסה שנית או פנה לתמיכה.`);
+      setError(`שגיאה בשמירת הנכס: ${err.response?.data?.error || err.message}. אנא נסה שנית או פנה לתמיכה.`);
     } finally {
       setIsLoading(false);
     }
@@ -485,7 +475,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   placeholder="כותרת הנכס"
                   required
                 />
-                <p className="text-xs text-gray-500">כולל שם הסוכנות GoldenKey</p>
+                {/* <p className="text-xs text-gray-500">כולל שם הסוכנות GoldenKey</p> */}
               </div>
               
               <div className="space-y-2">
@@ -1017,10 +1007,10 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   מעבד...
                 </span>
               ) : (
-                <span className="flex items-center">
-                  <span className="ml-2">✅</span>
-                  העלה למדיה חברתית
-                </span>
+                              <span className="flex items-center">
+                <span className="ml-2">✅</span>
+                שמור נכס במערכת
+              </span>
               )}
             </button>
             
@@ -1064,7 +1054,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
             ) : (
               <span className="flex items-center">
                 <span className="ml-2">✅</span>
-                פרסם תמונות למדיה חברתית
+                שמור נכס במערכת
               </span>
             )}
           </button>

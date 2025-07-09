@@ -12,12 +12,18 @@ export async function POST(request) {
       email, 
       password, 
       phone, 
+      agencyName,
+      agencyLogo,
       bio, 
       profileImage,
       licenseNumber,
       activityArea,
       socialMedia 
     } = await request.json();
+
+    console.log('=== REGISTRATION API - AGENCY LOGO DATA ===');
+    console.log('agencyLogo received:', agencyLogo);
+    console.log('==========================================');
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -37,6 +43,7 @@ export async function POST(request) {
       password,
       phone,
       whatsapp:phone,
+      agencyName,
       bio,
       licenseNumber,
       activityArea,
@@ -44,6 +51,11 @@ export async function POST(request) {
       profileImage: profileImage ? {
         secure_url: profileImage.secure_url,
         publicId: profileImage.publicId
+      } : undefined,
+      logo: agencyLogo ? {
+        secure_url: agencyLogo.secure_url,
+        publicId: agencyLogo.publicId,
+        overlayPublicId: agencyLogo.overlayPublicId
       } : undefined,
       socialMedia: {
         instagram: socialMedia?.instagram || '',

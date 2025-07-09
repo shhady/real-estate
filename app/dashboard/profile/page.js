@@ -11,11 +11,14 @@ export default function ProfilePage() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [logo, setLogo] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
     whatsapp: '',
+    agencyName: '',
     bio: '',
     licenseNumber: '',
     activityArea: '',
@@ -48,6 +51,7 @@ export default function ProfilePage() {
         email: data.email,
         phone: data.phone,
         whatsapp: data.phone || '',
+        agencyName: data.agencyName || '',
         bio: data.bio,
         licenseNumber: data.licenseNumber,
         activityArea: data.activityArea,
@@ -60,6 +64,10 @@ export default function ProfilePage() {
 
       if (data.profileImage?.secure_url) {
         setImagePreview(data.profileImage.secure_url);
+      }
+
+      if (data.logo?.secure_url) {
+        setLogoPreview(data.logo.secure_url);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -98,6 +106,19 @@ export default function ProfilePage() {
     setImagePreview(null);
   };
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setLogo(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeLogo = () => {
+    setLogo(null);
+    setLogoPreview(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -105,6 +126,8 @@ export default function ProfilePage() {
 
     try {
       let imageData = null;
+      let logoData = null;
+
       if (profileImage) {
         const imageFormData = new FormData();
         imageFormData.append('file', profileImage);
@@ -120,6 +143,50 @@ export default function ProfilePage() {
 
         if (!uploadRes.ok) throw new Error('Error uploading image');
         imageData = await uploadRes.json();
+        
+        console.log('=== CLOUDINARY PROFILE IMAGE UPLOAD RESPONSE ===');
+        console.log('Full response:', imageData);
+        console.log('public_id:', imageData.public_id);
+        console.log('secure_url:', imageData.secure_url);
+        console.log('format:', imageData.format);
+        console.log('resource_type:', imageData.resource_type);
+        console.log('width:', imageData.width);
+        console.log('height:', imageData.height);
+        console.log('bytes:', imageData.bytes);
+        console.log('created_at:', imageData.created_at);
+        console.log('version:', imageData.version);
+        console.log('folder:', imageData.folder);
+        console.log('All response keys:', Object.keys(imageData));
+        console.log('===============================================');
+      }
+
+      if (logo) {
+        const logoFormData = new FormData();
+        logoFormData.append('file', logo);
+        logoFormData.append('upload_preset', 'real-estate');
+
+        const uploadRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: 'POST',
+            body: logoFormData,
+          }
+        );
+
+        if (!uploadRes.ok) throw new Error('Error uploading logo');
+        logoData = await uploadRes.json();
+        
+        console.log('=== CLOUDINARY LOGO UPLOAD RESPONSE (Profile) ===');
+        console.log('Full response:', logoData);
+        console.log('public_id:', logoData.public_id);
+        console.log('secure_url:', logoData.secure_url);
+        console.log('================================================');
+        
+        // Create overlay public_id format by replacing special characters
+        const overlayPublicId = logoData.public_id ? 
+          `l_${logoData.public_id.replace(/[\/\-\.]/g, '_')}` : null;
+        
+        console.log('Generated overlay public_id:', overlayPublicId);
       }
 
       const res = await fetch('/api/users/profile', {
@@ -132,6 +199,12 @@ export default function ProfilePage() {
           profileImage: imageData ? {
             secure_url: imageData.secure_url,
             publicId: imageData.public_id
+          } : undefined,
+          logo: logoData ? {
+            secure_url: logoData.secure_url,
+            publicId: logoData.public_id,
+            overlayPublicId: logoData.public_id ? 
+              `l_${logoData.public_id.replace(/[\/\-\.]/g, '_')}` : null
           } : undefined
         }),
       });
@@ -234,6 +307,51 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Logo Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                לוגו הסוכנות
+              </label>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
+                  {logoPreview ? (
+                    <div className="relative w-32 h-32 mx-auto">
+                      <Image
+                        src={logoPreview}
+                        alt="Logo preview"
+                        fill
+                        className="object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeLogo}
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <FaTimes className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <FaCloudUploadAlt className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="flex text-sm text-gray-600">
+                        <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                          <span>העלה לוגו</span>
+                          <input
+                            type="file"
+                            className="sr-only"
+                            accept="image/*"
+                            onChange={handleLogoChange}
+                          />
+                        </label>
+                        <p className="pr-1">או גרור לכאן</p>
+                      </div>
+                      <p className="text-xs text-gray-500">PNG, JPG עד 10MB</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 שם מלא
@@ -270,6 +388,20 @@ export default function ProfilePage() {
                 type="tel"
                 name="phone"
                 value={formData.phone}
+                onChange={handleChange}
+                required
+                className="text-black mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                שם הסוכנות
+              </label>
+              <input
+                type="text"
+                name="agencyName"
+                value={formData.agencyName}
                 onChange={handleChange}
                 required
                 className="text-black mt-1 block w-full rounded-md border-b border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"

@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
   whatsapp: {
     type: String,
   },
+  agencyName: {
+    type: String,
+    required: true,
+  },
   bio: {
     type: String,
     required: true,
@@ -51,6 +55,11 @@ const userSchema = new mongoose.Schema({
   profileImage: {
     secure_url: String,
     publicId: String,
+  },
+  logo: {
+    secure_url: String,
+    publicId: String,
+    overlayPublicId: String, // For use in Cloudinary overlays (e.g., "l_publicid_here")
   },
   socialMedia: {
     instagram: String,

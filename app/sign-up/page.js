@@ -14,17 +14,21 @@ export default function SignUpPage() {
     password: '',
     confirmPassword: '',
     phone: '',
+    agencyName: '',
+    agencyLogo: '',
     bio: '',
     licenseNumber: '',
     activityArea: '',
     calendlyLink: '',
     profileImage: null,
+    logo: null,
     socialMedia: {
       instagram: '',
       facebook: ''
     }
   });
   const [imagePreview, setImagePreview] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -40,10 +44,23 @@ export default function SignUpPage() {
       setImagePreview(URL.createObjectURL(file));
     }
   };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, logo: file }));
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  };
   console.log(formData);
   const removeImage = () => {
     setFormData(prev => ({ ...prev, profileImage: null }));
     setImagePreview(null);
+  };
+
+  const removeLogo = () => {
+    setFormData(prev => ({ ...prev, logo: null }));
+    setLogoPreview(null);
   };
 
   const handleSubmit = async (e) => {
@@ -60,6 +77,7 @@ export default function SignUpPage() {
 
     try {
       let profileImageData = null;
+      let logoData = null;
 
       // Upload image to Cloudinary if selected
       if (formData.profileImage) {
@@ -86,6 +104,44 @@ export default function SignUpPage() {
         };
       }
 
+      // Upload logo to Cloudinary if selected
+      if (formData.logo) {
+        const logoFormData = new FormData();
+        logoFormData.append('file', formData.logo);
+        logoFormData.append('upload_preset', 'real-estate');
+
+        const cloudinaryRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: 'POST',
+            body: logoFormData,
+          }
+        );
+
+        if (!cloudinaryRes.ok) {
+          throw new Error('Failed to upload logo');
+        }
+
+        const logoResponse = await cloudinaryRes.json();
+        console.log('=== CLOUDINARY LOGO UPLOAD RESPONSE ===');
+        console.log('Full response:', logoResponse);
+        console.log('public_id:', logoResponse.public_id);
+        console.log('secure_url:', logoResponse.secure_url);
+        console.log('========================================');
+        
+        // Create overlay public_id format by replacing special characters
+        const overlayPublicId = logoResponse.public_id ? 
+          `l_${logoResponse.public_id.replace(/[\/\-\.]/g, '_')}` : null;
+        
+        console.log('Generated overlay public_id:', overlayPublicId);
+        
+        logoData = {
+          secure_url: logoResponse.secure_url,
+          publicId: logoResponse.public_id,
+          overlayPublicId: overlayPublicId
+        };
+      }
+
       // Register user with Cloudinary image data
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -94,7 +150,8 @@ export default function SignUpPage() {
         },
         body: JSON.stringify({
           ...formData,
-          profileImage: profileImageData
+          profileImage: profileImageData,
+          agencyLogo: logoData
         }),
       });
 
@@ -254,6 +311,72 @@ export default function SignUpPage() {
                   onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="agencyName" className="block text-sm font-medium text-gray-700">
+                שם הסוכנות
+              </label>
+              <div className="mt-1">
+                <input
+                  id="agencyName"
+                  name="agencyName"
+                  type="text"
+                  required
+                  value={formData.agencyName}
+                  onChange={handleChange}
+                  placeholder="לדוגמה: GoldenKey"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="agencyLogo" className="block text-sm font-medium text-gray-700">
+                הלוגו של הסוכנות
+              </label>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
+                  {logoPreview ? (
+                    <div className="relative w-32 h-32 mx-auto">
+                      <Image
+                        src={logoPreview}
+                        alt="Logo preview"
+                        fill
+                        className="object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeLogo}
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <FaTimes className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <FaCloudUploadAlt className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="flex text-sm text-gray-600">
+                        <label htmlFor="agency-logo" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                          <span>העלה הלוגו</span>
+                          <input
+                            id="agency-logo"
+                            name="agency-logo"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoChange}
+                            className="sr-only"
+                          />
+                        </label>
+                        <p className="pr-1">או גרור לכאן</p>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG עד 10MB
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 

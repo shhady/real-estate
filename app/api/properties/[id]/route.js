@@ -49,10 +49,20 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    console.log('Updating property with data:', data); // Debug log
+    
+    // Clean undefined values from data
+    const cleanData = {};
+    Object.keys(data).forEach(key => {
+      if (data[key] !== undefined) {
+        cleanData[key] = data[key];
+      }
+    });
+
     const updatedProperty = await Property.findByIdAndUpdate(
       id,
-      { ...data },
-      { new: true }
+      cleanData,
+      { new: true, runValidators: true }
     ).populate({
       path: 'user',
       model: 'User',

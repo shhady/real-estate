@@ -48,6 +48,11 @@ export async function PUT(request) {
     }
 
     const data = await request.json();
+    
+    console.log('=== PROFILE UPDATE API - LOGO DATA ===');
+    console.log('logo data received:', data.logo);
+    console.log('======================================');
+    
     await connectDB();
 
     // Ensure socialMedia object is properly structured

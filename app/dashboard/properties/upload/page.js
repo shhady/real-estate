@@ -36,37 +36,35 @@ export default function UploadPage() {
       <div className="max-w-4xl mx-auto px-4">
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900">
-            Social Media Upload
+          העלאת תמונות וסרטונים לנכס חדש
           </h1>
           <p className="mt-2 text-gray-600">
-            Upload images and videos for your social media content
+            העלאת תמונות וסרטונים לנכס חדש
           </p>
-          <button
+          {/* <button
             onClick={() => setShowDebug(!showDebug)}
             className="mt-2 text-xs text-blue-600 hover:underline"
           >
-            {showDebug ? 'Hide' : 'Show'} Connection Info
-          </button>
+            {showDebug ? 'הסתר' : 'הצג'} מידע חיבור
+          </button> */}
         </header>
 
-        {showDebug && cloudinaryStatus && (
+        {/* {showDebug && cloudinaryStatus && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-xs font-mono overflow-auto">
             <h3 className="text-black text-sm font-medium mb-2">Cloudinary Connection Status</h3>
             <pre className="text-black">{JSON.stringify(cloudinaryStatus, null, 2)}</pre>
           </div>
-        )}
+        )} */}
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="text-md font-medium text-blue-800 mb-2">About Logo Overlay</h3>
+            <h3 className="text-md font-medium text-blue-800 mb-2">על הוספת הלוגו</h3>
             <p className="text-sm text-blue-700 mb-2">
-              The logo overlay feature is configured to use your golden logo with the public ID "no-bg-golden-removebg-preview_l3tbtr" 
-              from your Cloudinary account. When you check the logo overlay option, this logo will be applied to the bottom-right corner 
-              of your uploads with enhanced size for better visibility.
+            כאשר תסמן את אפשרות הוספת הלוגו, הלוגו יתווסף לפינה הימנית התחתונה של התמונות שתעלה בגודל מוגדל לנראות טובה יותר
             </p>
             <p className="text-xs text-blue-600">
-              <strong>Note:</strong> The logo transformation must be included in the signature. If you're experiencing 401 errors, 
-              please check the connection information to verify that your Cloudinary credentials are correct and the logo exists.
+              <strong>הערה:</strong> ההמרה של הלוגו חייבת להיכלל בתמונת הפרופיל שלך. אם אתה מתמודד עם שגיאות 401, 
+              אנא בדוק את מידע החיבור כדי לוודא שהכלים שלך נכונים ושהלוגו קיים.
             </p>
           </div>
           

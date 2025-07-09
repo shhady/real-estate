@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar } from 'react-icons/fa';
+import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar, FaBuilding, FaHome, FaVideo, FaImages, FaLanguage, FaFacebook, FaInstagram, FaStickyNote, FaClock } from 'react-icons/fa';
 import { notFound } from 'next/navigation';
 import connectDB from '../../lib/mongodb';
 import Property from '../../models/Property';
@@ -11,6 +11,37 @@ import ImageCarousel from '../../components/ui/ImageCarousel';
 const formatPrice = (num) => {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
+
+// Format date in Hebrew
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('he-IL', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+// Generate metadata for the page
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  
+  try {
+    await connectDB();
+    const property = await Property.findById(id).select('title location price').lean();
+    
+    if (!property) {
+      return { title: 'נכס לא נמצא' };
+    }
+
+    return {
+      title: `${property.title} - ${property.location} | ₪${formatPrice(property.price)}`,
+      description: `נכס למכירה ב${property.location} במחיר ₪${formatPrice(property.price)}`
+    };
+  } catch (error) {
+    return { title: 'נכס' };
+  }
+}
 
 export default async function PropertyPage({ params }) {
   const { id } = await params;
@@ -23,7 +54,7 @@ export default async function PropertyPage({ params }) {
       .populate({
         path: 'user',
         model: User,
-        select: 'fullName email phone whatsapp bio profileImage calendlyLink'
+        select: 'fullName email phone whatsapp bio profileImage calendlyLink agencyName socialMedia'
       })
       .lean();
 
@@ -42,6 +73,15 @@ export default async function PropertyPage({ params }) {
       _id: img._id ? img._id.toString() : undefined
     }));
 
+    // Serialize video if it exists
+    if (property.video) {
+      property.video = {
+        secure_url: property.video.secure_url,
+        publicId: property.video.publicId,
+        type: property.video.type
+      };
+    }
+
     // Serialize user's profileImage if it exists
     if (property.user.profileImage) {
       property.user.profileImage = {
@@ -51,12 +91,70 @@ export default async function PropertyPage({ params }) {
       };
     }
 
+    // Convert dates to strings
+    if (property.createdAt) property.createdAt = property.createdAt.toString();
+    if (property.updatedAt) property.updatedAt = property.updatedAt.toString();
+
     return (
       <div className="min-h-screen bg-white py-4 md:py-8">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-          {/* Property Images Carousel */}
+          {/* Property Media */}
           <div className="mb-6 md:mb-8">
-          {property.images && property.images.length > 0 && <ImageCarousel images={property.images} />}
+            {/* Content Type Badge */}
+            <div className="flex items-center justify-between mb-4">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                property.contentType === 'video' || property.contentType === 'video-from-images'
+                  ? 'bg-purple-100 text-purple-800'
+                  : property.contentType === 'carousel'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-blue-100 text-blue-800'
+              }`}>
+                {property.contentType === 'video' || property.contentType === 'video-from-images' ? (
+                  <><FaVideo className="ml-1" /> סרטון</>
+                ) : property.contentType === 'carousel' ? (
+                  <><FaImages className="ml-1" /> גלריה ({property.images?.length || 0} תמונות)</>
+                ) : (
+                  <><FaHome className="ml-1" /> תמונה יחידה</>
+                )}
+              </span>
+              
+              {property.languageChoice && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  <FaLanguage className="ml-1" />
+                  {property.languageChoice === 'both' ? 'עברית + ערבית' : 
+                   property.languageChoice === 'hebrew' ? 'עברית' : 'ערבית'}
+                </span>
+              )}
+            </div>
+
+            {/* Video Display */}
+            {property.video && (property.contentType === 'video' || property.contentType === 'video-from-images') && (
+              <div className="mb-4">
+                <video 
+                  controls 
+                  className="w-full rounded-lg shadow-lg"
+                  style={{ maxHeight: '500px' }}
+                >
+                  <source src={property.video.secure_url} type="video/mp4" />
+                  הדפדפן שלך לא תומך בתגית וידאו.
+                </video>
+                <p className="text-xs text-gray-500 mt-2">
+                  סוג וידאו: {property.video.type === 'generated' ? 'נוצר מתמונות' : 'הועלה ישירות'}
+                </p>
+              </div>
+            )}
+
+            {/* Images Carousel */}
+            {property.images && property.images.length > 0 && (
+              <div>
+                <ImageCarousel images={property.images} />
+                {property.contentType === 'video-from-images' && (
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    תמונות המקור ששימשו ליצירת הסרטון
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
@@ -76,39 +174,105 @@ export default async function PropertyPage({ params }) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6 py-6 border-y border-gray-200 mb-6">
+                {/* Property Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-gray-200 mb-6">
                   <div className="flex flex-col items-center">
                     <FaBed className="h-6 w-6 text-blue-600 mb-2" />
                     <span className="text-lg text-black font-semibold">{property.bedrooms}</span>
                     <span className="text-sm text-gray-600">חדרים</span>
                   </div>
-                  <div className="flex flex-col items-center">
-                    <FaBath className="h-6 w-6 text-blue-600 mb-2" />
-                    <span className="text-lg text-black font-semibold">{property.bathrooms}</span>
-                    <span className="text-sm text-gray-600">חדרי רחצה</span>
-                  </div>
+                  {property.bathrooms && (
+                    <div className="flex flex-col items-center">
+                      <FaBath className="h-6 w-6 text-blue-600 mb-2" />
+                      <span className="text-lg text-black font-semibold">{property.bathrooms}</span>
+                      <span className="text-sm text-gray-600">חדרי רחצה</span>
+                    </div>
+                  )}
                   <div className="flex flex-col items-center">
                     <FaRuler className="h-6 w-6 text-blue-600 mb-2" />
                     <span className="text-lg text-black font-semibold">{property.area}</span>
                     <span className="text-sm text-gray-600">מ"ר</span>
                   </div>
+                  {property.floor && (
+                    <div className="flex flex-col items-center">
+                      <FaBuilding className="h-6 w-6 text-blue-600 mb-2" />
+                      <span className="text-lg text-black font-semibold">{property.floor}</span>
+                      <span className="text-sm text-gray-600">קומה</span>
+                    </div>
+                  )}
                 </div>
 
+                {/* Property Type and Status */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    {property.propertyType === 'apartment' ? 'דירה' :
+                     property.propertyType === 'house' ? 'בית פרטי' :
+                     property.propertyType === 'villa' ? 'וילה' :
+                     property.propertyType === 'condo' ? 'דירת גן' :
+                     property.propertyType === 'land' ? 'מגרש' :
+                     property.propertyType === 'commercial' ? 'מסחרי' :
+                     property.propertyType === 'cottage' ? 'קוטג\'' :
+                     property.propertyType === 'duplex' ? 'דופלקס' :
+                     property.propertyType}
+                  </span>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    property.status === 'For Sale' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
+                  }`}>
+                    {property.status === 'For Sale' ? 'למכירה' : 'להשכרה'}
+                  </span>
+                  {property.agencyName && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                      <FaBuilding className="ml-1" />
+                      {property.agencyName}
+                    </span>
+                  )}
+                </div>
+
+                {/* Descriptions */}
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-3">תיאור הנכס</h2>
-                  <div 
-                    className="text-gray-600"
-                    dangerouslySetInnerHTML={{ 
-                      __html: property.description.startsWith('<') ? 
-                        property.description : 
-                        `<p>${property.description}</p>` 
-                    }}
-                  />
-                  {/* <p className="text-gray-600 whitespace-pre-line">{property.description}</p> */}
+                  <h2 className="text-xl font-semibold mb-3 text-black">תיאור הנכס</h2>
+                  
+                  {/* General Description */}
+                  {property.description && (
+                    <div className="mb-4">
+                      <h3 className="text-lg font-medium mb-2">תיאור כללי</h3>
+                      <div 
+                        className="text-gray-600"
+                        dangerouslySetInnerHTML={{ 
+                          __html: property.description.startsWith('<') ? 
+                            property.description : 
+                            `<p>${property.description}</p>` 
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Hebrew and Arabic Descriptions */}
+                  {(property.descriptions?.hebrew || property.descriptions?.arabic) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-black">
+                      {property.descriptions.hebrew && (
+                        <div>
+                          <h3 className="text-lg font-medium mb-2 text-right">תיאור בעברית</h3>
+                          <div className="text-gray-600 text-right whitespace-pre-line bg-gray-50 p-4 rounded-lg">
+                            {property.descriptions.hebrew}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {property.descriptions.arabic && (
+                        <div>
+                          <h3 className="text-lg font-medium mb-2 text-right">وصف باللغة العربية</h3>
+                          <div className="text-gray-600 text-right whitespace-pre-line bg-gray-50 p-4 rounded-lg">
+                            {property.descriptions.arabic}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {property.features && property.features.length > 0 && (
-                  <div>
+                  <div className="mb-6">
                     <h2 className="text-xl font-semibold mb-3">מאפיינים</h2>
                     <ul className="grid grid-cols-2 gap-x-4 gap-y-2">
                       {property.features.map((feature, index) => (
@@ -120,6 +284,70 @@ export default async function PropertyPage({ params }) {
                     </ul>
                   </div>
                 )}
+
+                {/* Additional Notes */}
+                {property.notes && (
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold mb-3 flex items-center">
+                      <FaStickyNote className="ml-2 text-blue-600" />
+                      הערות נוספות
+                    </h2>
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <p className="text-gray-700 whitespace-pre-line">{property.notes}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Property Metadata */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h2 className="text-lg font-semibold mb-3 text-gray-800">פרטי הנכס</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">מספר נכס:</span>
+                      <span className="font-mono text-gray-800">{property._id.slice(-8)}</span>
+                    </div>
+                    
+                    {property.createdAt && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600 flex items-center">
+                          <FaClock className="ml-1" />
+                          פורסם:
+                        </span>
+                        <span className="text-gray-800">
+                          {formatDate(property.createdAt)}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {property.contentType && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">סוג תוכן:</span>
+                        <span className="text-gray-800">
+                          {property.contentType === 'video' ? 'סרטון' :
+                           property.contentType === 'video-from-images' ? 'סרטון מתמונות' :
+                           property.contentType === 'carousel' ? 'גלריה' : 'תמונה יחידה'}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {property.inquiries && (
+                      <div className="md:col-span-2 pt-2 border-t border-gray-200">
+                        <span className="text-gray-600 block mb-2">פעילות הנכס:</span>
+                        <div className="flex gap-4">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            WhatsApp: {property.inquiries.whatsapp || 0}
+                          </span>
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            אימייל: {property.inquiries.email || 0}
+                          </span>
+                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                            שיחות: {property.inquiries.calls || 0}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -163,6 +391,12 @@ export default async function PropertyPage({ params }) {
                   <FaUserTie className="ml-2" />
                   <span className="text-sm">סוכן נדל"ן מוסמך</span>
                 </div>
+                {(property.user.agencyName || property.agencyName) && (
+                  <div className="flex items-center justify-center text-gray-600 mt-1">
+                    <FaBuilding className="ml-2" />
+                    <span className="text-sm">{property.user.agencyName || property.agencyName}</span>
+                  </div>
+                )}
                
               </div>
 
@@ -211,7 +445,7 @@ export default async function PropertyPage({ params }) {
               </div>
 
               <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-2">אודות הסוכן</h3>
+                <h3 className="text-lg font-semibold mb-2 text-black">אודות הסוכן</h3>
                 <p className="text-gray-600 text-sm">{property.user.bio}</p>
                 <Link
                   href={`/agents/${property.user._id}`}

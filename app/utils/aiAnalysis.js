@@ -12,7 +12,7 @@ const openai = new OpenAI({
 });
 
 /**
- * Transcribes an audio file using OpenAI's Whisper API
+ * Transcribes an audio file using OpenAI's Whisper API with automatic language detection
  * @param {Object} fileData - Object containing file data
  * @param {Buffer} fileData.buffer - The audio file buffer
  * @param {string} fileData.name - The filename for the audio
@@ -46,19 +46,27 @@ export async function transcribeAudio(fileData) {
     }
     
     try {
-      // Use OpenAI API with a file path
+      // Use OpenAI API with automatic language detection
+      logger.info('Starting automatic language detection with Whisper...');
       const transcription = await openai.audio.transcriptions.create({
         file: fs.createReadStream(tempFilePath),
         model: "whisper-1",
+        // No language parameter - let Whisper auto-detect
+        response_format: 'text'
       });
       
       logger.info('Transcription completed successfully');
+      logger.info(`Raw transcription preview: ${transcription.substring(0, 100)}...`);
+      
+      // Detect language from the transcribed text for validation and logging
+      const detectedLanguage = detectLanguage(transcription);
+      logger.info(`Language detected from transcribed text: ${detectedLanguage}`);
       
       // Clean up the temporary file
       fs.unlinkSync(tempFilePath);
       logger.info(`Removed temporary file: ${tempFilePath}`);
       
-      return transcription.text;
+      return transcription;
     } catch (error) {
       // Make sure we clean up the temporary file even if transcription fails
       try {
@@ -77,52 +85,131 @@ export async function transcribeAudio(fileData) {
 }
 
 /**
- * Analyzes a transcription using OpenAI's GPT-4o model
- * @param {string} transcription - The text to analyze
- * @returns {Promise<Object>} - The analysis results
+ * Analyzes and enhances a transcription using OpenAI's GPT-4 model
+ * Formats with speaker labels, cleans language mix, and extracts structured data
+ * @param {string} transcription - The raw transcription text to analyze
+ * @returns {Promise<Object>} - Enhanced analysis results with structured data
  */
 export async function analyzeTranscription(transcription) {
   try {
-    logger.info('Starting analysis of transcription');
+    logger.info('Starting enhanced analysis of transcription');
     
-    // Detect the language of the transcription
-    const language = detectLanguage(transcription);
-    logger.info(`Detected language: ${language}`);
+    // Detect the language of the transcription for context
+    const detectedLanguage = detectLanguage(transcription);
+    logger.info(`Detected language for analysis: ${detectedLanguage}`);
     
-    const systemMessage = `
-      You are an expert call analyzer for real estate agents. Your job is to analyze a call transcription and provide:
-      1. A concise summary of the call (max 150 words)
-      2. Key follow-up actions the agent should take
-      3. Positive aspects of the call
-      4. Issues or areas for improvement
-      
-      Match your response language to the transcription language.
-      
-      Respond ONLY in this JSON format:
-      {
-        "summary": "brief summary of the call",
-        "followUps": ["action 1", "action 2", ...],
-        "positives": ["positive aspect 1", "positive aspect 2", ...],
-        "issues": ["issue 1", "issue 2", ...]
+    // Create language-aware system message
+    const getLanguageInstructions = (lang) => {
+      switch (lang) {
+        case 'ar':
+          return 'The conversation is primarily in Arabic. Clean up any Hebrew/Arabic language mixing common in Middle Eastern real estate.';
+        case 'he':
+          return 'The conversation is primarily in Hebrew. Clean up any Hebrew/Arabic language mixing common in Israeli real estate.';
+        case 'en':
+          return 'The conversation is in English. Maintain professional real estate terminology.';
+        default:
+          return 'Detect the conversation language and clean up any language mixing. Common in Middle Eastern real estate are Hebrew/Arabic mixes.';
       }
-    `;
+    };
+    
+    const systemMessage = `You are an AI call analysis assistant. Your goal is to process real estate calls and output:
+
+1. A clean, structured transcription labeled with Speaker 1: and Speaker 2:
+2. Extracted metadata for intent, location, and property details
+3. Analysis including summary, follow-ups, positives, and issues
+
+LANGUAGE INSTRUCTIONS:
+${getLanguageInstructions(detectedLanguage)}
+
+IMPORTANT INSTRUCTIONS:
+- Format the transcription with clear "Speaker 1:" and "Speaker 2:" labels
+- For example:
+  - If "قرض" is mentioned but it's clear from context the speaker is referring to land, rewrite it as "أرض"
+  - If "سيارة" or unrelated words are mentioned in a context describing land size, area, or location, assume it's a mistake and correct it.
+  - If "أزور" is misheard but refers to a neighborhood or road in Israel, correct it accordingly
+  - Fix dialectal errors and broken sentence structures
+- Maintain conversational tone, but correct clear misrecognitions
+- Add proper punctuation and sentence structure
+- Extract structured property information accurately
+- Provide analysis in the same language as the conversation
+- If multiple languages are detected, use the primary language for analysis
+- Format the transcription with clear "Speaker 1:" and "Speaker 2:" labels
+- Fix recognition errors based on real estate context
+
+SUMMARY REQUIREMENTS:
+Create a comprehensive, detailed summary (150-200 words) that includes:
+- Specific property details discussed (exact location, size, features)
+- Price negotiations and financial terms mentioned
+- Client's specific needs, requirements, and preferences
+- Timeline discussions (when they want to buy/sell, move-in dates)
+- Key concerns, questions, or objections raised
+- Decision-making status and next steps
+- Market context or comparative information mentioned
+- Any unique selling points or property advantages discussed
+- Financing or payment method discussions
+- Contact preferences and follow-up arrangements
+
+Make the summary actionable and specific, not generic. Include actual numbers, locations, and concrete details mentioned in the conversation.
+
+Respond ONLY in this JSON format:
+{
+  "transcription": "Speaker 1: ... Speaker 2: ... (formatted with speaker labels)",
+  "summary": "comprehensive detailed summary with specific information and actionable insights (200-300 words)",
+  "followUps": ["specific actionable follow-up with timeline", "detailed next step with context", ...],
+  "positives": ["specific positive aspect with context", "detailed strength of the interaction", ...],
+  "issues": ["specific concern with suggested resolution", "detailed problem with context", ...],
+  "intent": "buyer|seller|unknown",
+  "location": "specific city, neighborhood, or area name",
+  "propertyType": "apartment|house|commercial|land|other",
+  "rooms": 0,
+  "area": 0,
+  "price": 0,
+  "condition": "new|good|needs renovation|poor",
+  "floor": 0,
+  "parking": true|false|null,
+  "balcony": true|false|null,
+  "propertyNotes": "detailed notes about property features, restrictions, or special conditions"
+}`;
     
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemMessage },
-        { role: "user", content: transcription }
+        { role: "user", content: `Here's the transcription to process:\n\n${transcription}` }
       ],
-      temperature: 0.7,
+      temperature: 0.3,
       response_format: { type: "json_object" }
     });
     
-    logger.info('Analysis completed successfully');
+    logger.info('Enhanced analysis completed successfully');
     
     // Parse the response and return
-    return JSON.parse(completion.choices[0].message.content);
+    const result = JSON.parse(completion.choices[0].message.content);
+    
+    // Log the analysis results for debugging
+    logger.info(`Analysis results - Intent: ${result.intent}, Language context: ${detectedLanguage}`);
+    
+    // Ensure all required fields are present with defaults
+    return {
+      transcription: result.transcription || transcription,
+      summary: result.summary || 'No summary available',
+      followUps: result.followUps || [],
+      positives: result.positives || [],
+      issues: result.issues || [],
+      intent: result.intent || 'unknown',
+      location: result.location || '',
+      propertyType: result.propertyType || '',
+      rooms: result.rooms || null,
+      area: result.area || null,
+      price: result.price || null,
+      condition: result.condition || '',
+      floor: result.floor || null,
+      parking: result.parking,
+      balcony: result.balcony,
+      propertyNotes: result.propertyNotes || ''
+    };
   } catch (error) {
-    logger.error('Error analyzing transcription:', error);
-    throw new Error(`Analysis failed: ${error.message}`);
+    logger.error('Error in enhanced analysis:', error);
+    throw new Error(`Enhanced analysis failed: ${error.message}`);
   }
 }

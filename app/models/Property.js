@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import User from './User';
+
 const propertySchema = new mongoose.Schema({
   title: {
     type: String,
@@ -7,7 +8,18 @@ const propertySchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    required: false, // Made optional since we have separate descriptions
+  },
+  // Generated descriptions in both languages
+  descriptions: {
+    hebrew: {
+      type: String,
+      default: ''
+    },
+    arabic: {
+      type: String,
+      default: ''
+    }
   },
   price: {
     type: Number,
@@ -33,16 +45,44 @@ const propertySchema = new mongoose.Schema({
   },
   bathrooms: {
     type: Number,
-    required: true,
+    required: false, // Made optional as requested
   },
   area: {
     type: Number,
     required: true,
   },
+  // New fields from upload wizard
+  floor: {
+    type: String,
+    required: false,
+  },
+  notes: {
+    type: String,
+    required: false,
+  },
+  agencyName: {
+    type: String,
+    required: false,
+  },
+  // Content type to distinguish between single image, carousel, video
+  contentType: {
+    type: String,
+    enum: ['single-image', 'carousel', 'video', 'video-from-images'],
+    default: 'single-image'
+  },
+  // Enhanced media handling
   images: [{
     secure_url: String,
     publicId: String,
   }],
+  // Video content
+  video: {
+    secure_url: String,
+    publicId: String,
+    type: String // 'uploaded' or 'generated'
+  },
+  // Media URLs from upload (for backward compatibility and external integrations)
+  mediaUrls: [String],
   features: [String],
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -57,7 +97,16 @@ const propertySchema = new mongoose.Schema({
     whatsapp: { type: Number, default: 0 },
     email: { type: Number, default: 0 },
     calls: { type: Number, default: 0 },
-  }
+  },
+  // Additional metadata
+  languageChoice: {
+    type: String,
+    enum: ['hebrew', 'arabic', 'both'],
+    default: 'both'
+  },
+  // External listing ID for integrations
+  externalListingId: String,
+  listingUrl: String
 }, {
   timestamps: true,
 });
@@ -66,7 +115,9 @@ const propertySchema = new mongoose.Schema({
 propertySchema.index({ 
   title: 'text', 
   description: 'text', 
-  location: 'text' 
+  location: 'text',
+  'descriptions.hebrew': 'text',
+  'descriptions.arabic': 'text'
 });
 
 const Property = mongoose.models.Property || mongoose.model('Property', propertySchema);

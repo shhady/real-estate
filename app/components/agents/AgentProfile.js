@@ -303,6 +303,32 @@ export default function AgentProfile({ agent }) {
                     </div>
                   </div>
 
+                  {/* Agency Information */}
+                  {(agent.agencyName || agent.logo?.secure_url) && (
+                    <div className="bg-gray-50 rounded-xl p-6 mb-8">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                        <FaUserTie className="ml-2 text-blue-600" />
+                        פרטי הסוכנות
+                      </h2>
+                      <div className="flex items-center gap-4">
+                        {agent.logo?.secure_url && (
+                          <div className="relative h-16 w-16">
+                            <Image
+                              src={agent.logo.secure_url}
+                              alt={`${agent.agencyName} לוגו`}
+                              fill
+                              sizes="64px"
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="text-xl font-semibold text-gray-900">{agent.agencyName}</h3>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Properties Section */}
                   <div>
                     {/* Tabs */}

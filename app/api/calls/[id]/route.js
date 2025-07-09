@@ -13,8 +13,11 @@ export async function GET(request, { params }) {
 
     await connectDB();
     
+    // Await params before accessing properties (Next.js 15 requirement)
+    const { id } = await params;
+    
     const call = await Call.findOne({ 
-      _id: params.id,
+      _id: id,
       userId: user.userId 
     }).lean();
 

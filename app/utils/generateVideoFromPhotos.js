@@ -331,7 +331,7 @@ function createVideoConfigFromListing(listingData, imageUrls) {
       },
       {
         type: 'text',
-        text: `GoldenKey`,
+        text: `${agencyName}`,
         position: { x: textRightPosition, y: 270 }, // Add agency name
         color: 'gold',
         fontSize: 20,

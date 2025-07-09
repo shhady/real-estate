@@ -4,7 +4,8 @@ import clientPromise from '../../../lib/mongodb';
 
 export async function GET(request, { params }) {
   try {
-    const id = await params.id;
+    // Await params before accessing properties (Next.js 15 requirement)
+    const { id } = await params;
     
     // Validate the ID format
     if (!id || !ObjectId.isValid(id)) {

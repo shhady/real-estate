@@ -4,6 +4,7 @@ import axios from 'axios';
 import Modal from './Modal';
 import { downloadMedia } from '../utils/downloadMedia';
 import UploaderWizard from './UploaderWizard';
+import { getUserLogoOverlayId } from '../utils/userLogo';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB in bytes
 
@@ -23,6 +24,8 @@ export default function MediaUploader({ onUploadComplete }) {
   const [showPropertyWizard, setShowPropertyWizard] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadItem, setDownloadItem] = useState(null);
+  const [userLogoOverlayId, setUserLogoOverlayId] = useState(null);
+  const [loadingUserLogo, setLoadingUserLogo] = useState(true);
 
   const onDrop = useCallback((acceptedFiles) => {
     // Clear previous errors
@@ -77,6 +80,27 @@ export default function MediaUploader({ onUploadComplete }) {
       : { 'image/*': [], 'video/*': [] }
   });
 
+  // Fetch user's logo overlay ID when component mounts
+  useEffect(() => {
+    const fetchUserLogo = async () => {
+      setLoadingUserLogo(true);
+      console.log('🎨 Fetching user logo for overlay...');
+      
+      const overlayId = await getUserLogoOverlayId();
+      setUserLogoOverlayId(overlayId);
+      setLoadingUserLogo(false);
+      
+      console.log('🎨 User logo overlay ID:', overlayId);
+      if (overlayId) {
+        console.log('✅ Will use user logo instead of hardcoded logo');
+      } else {
+        console.log('⚠️ No user logo found, will use fallback or no overlay');
+      }
+    };
+    
+    fetchUserLogo();
+  }, []);
+
   // Clean up object URLs when component unmounts
   useEffect(() => {
     return () => {
@@ -89,9 +113,19 @@ export default function MediaUploader({ onUploadComplete }) {
   const uploadFile = async (file) => {
     try {
       // Define transformation before signature request if overlay is enabled
-      const transformation = applyOverlay ? 
-        'l_no-bg-golden-removebg-preview_l3tbtr,g_south_west,x_20,y_20,w_400' : 
-        null;
+      let transformation = null;
+      
+      if (applyOverlay) {
+        if (userLogoOverlayId) {
+          // Use the user's actual logo
+          transformation = `${userLogoOverlayId},g_south_west,x_20,y_20,w_400`;
+          console.log('🎨 Using user logo overlay:', transformation);
+        } else {
+          // Fallback to hardcoded logo if user has no logo
+          transformation = 'l_no-bg-golden-removebg-preview_l3tbtr,g_south_west,x_20,y_20,w_400';
+          console.log('⚠️ Using fallback hardcoded logo:', transformation);
+        }
+      }
       
       // Step 1: Get the signature from our backend, including transformation if needed
       const signatureResponse = await axios.post('/api/cloudinary/signature', {
@@ -115,7 +149,11 @@ export default function MediaUploader({ onUploadComplete }) {
       // Add transformation only if it was included in the signature
       if (transformation) {
         formData.append('transformation', transformation);
-        console.log('Applied logo overlay with public_id: no-bg-golden-removebg-preview_l3tbtr');
+        if (userLogoOverlayId) {
+          console.log('✅ Applied USER LOGO overlay:', userLogoOverlayId);
+        } else {
+          console.log('⚠️ Applied fallback hardcoded logo overlay');
+        }
       }
 
       // Log the form data for debugging
@@ -451,8 +489,8 @@ export default function MediaUploader({ onUploadComplete }) {
               <svg className="mx-auto h-10 w-10 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
               </svg>
-              <span className="mt-2 block text-base font-medium text-gray-900">Single Post</span>
-              <span className="mt-1 block text-sm text-gray-500">Upload a single photo or video</span>
+              <span className="mt-2 block text-base font-medium text-gray-900">תמונה אחת</span>
+              <span className="mt-1 block text-sm text-gray-500">העלאת תמונה אחת</span>
             </div>
           </button>
           <button
@@ -463,8 +501,8 @@ export default function MediaUploader({ onUploadComplete }) {
               <svg className="mx-auto h-10 w-10 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
               </svg>
-              <span className="mt-2 block text-base font-medium text-gray-900">Carousel</span>
-              <span className="mt-1 block text-sm text-gray-500">Upload multiple photos/videos</span>
+              <span className="mt-2 block text-base font-medium text-gray-900">קרוסלה</span>
+              <span className="mt-1 block text-sm text-gray-500">העלאת מספר תמונות</span>
             </div>
           </button>
           <button
@@ -475,8 +513,8 @@ export default function MediaUploader({ onUploadComplete }) {
               <svg className="mx-auto h-10 w-10 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
-              <span className="mt-2 block text-base font-medium text-gray-900">Video</span>
-              <span className="mt-1 block text-sm text-gray-500">Upload a video for a video post</span>
+              <span className="mt-2 block text-base font-medium text-gray-900">סרטון</span>
+              <span className="mt-1 block text-sm text-gray-500">העלאת סרטון</span>
             </div>
           </button>
           <button
@@ -488,8 +526,8 @@ export default function MediaUploader({ onUploadComplete }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14" />
               </svg>
-              <span className="mt-2 block text-base font-medium text-gray-900">Video from Photos</span>
-              <span className="mt-1 block text-sm text-gray-500">Create a video slideshow from multiple photos</span>
+              <span className="mt-2 block text-base font-medium text-gray-900">סרטון מתמונות</span>
+              <span className="mt-1 block text-sm text-gray-500">יצירת סרטון ממספר תמונות</span>
             </div>
           </button>
         </div>
@@ -501,21 +539,24 @@ export default function MediaUploader({ onUploadComplete }) {
     <div className="w-full max-w-3xl mx-auto">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900">
-          Upload for {selectedContentType === 'video-from-images' ? 'Video from Photos' : selectedContentType}
+          העלאת {selectedContentType === 'video-from-images' ? 'סרטון מתמונות' : 
+            selectedContentType === 'Video' ? 'סרטון' :
+            selectedContentType === 'Carousel' ? 'קרוסלה' :
+            selectedContentType === 'Single Post' ? 'תמונה' : selectedContentType}
         </h3>
         <button
           onClick={handleStartAgain}
           className="text-sm text-blue-600 hover:underline"
         >
-          Change content type
+          שינוי סוג תוכן
         </button>
       </div>
 
       {selectedContentType === 'video-from-images' && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm text-blue-700">
-            <strong>Creating a Video from Photos</strong>: Upload multiple images that will be processed as a video slideshow.
-            The sequence of photos will follow the order you upload them.
+            <strong>יצירת סרטון מתמונות</strong>: העלאת מספר תמונות שייבנו בסדר שלך.
+            הסדר של התמונות יעקב בסדר שבו תעלו אותן.
           </p>
         </div>
       )}
@@ -556,22 +597,38 @@ export default function MediaUploader({ onUploadComplete }) {
 
       {/* Overlay checkbox */}
       <div className="mt-4">
-        <label className="flex items-center space-x-2 cursor-pointer">
+        <label className="flex items-center gap-3 cursor-pointer">
           <input 
             type="checkbox" 
             checked={applyOverlay} 
             onChange={(e) => setApplyOverlay(e.target.checked)} 
             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            disabled={loadingUserLogo}
           />
-          <span className="text-sm text-gray-700">Add logo overlay</span>
+          <span className="text-sm text-gray-700">
+            הוספת הלוגו 
+            {loadingUserLogo && <span className="text-gray-500"> (טוען...)</span>}
+            {!loadingUserLogo && userLogoOverlayId && <span className="text-green-600"> ✓</span>}
+            {!loadingUserLogo && !userLogoOverlayId && <span className="text-orange-500"> (ללא לוגו)</span>}
+          </span>
         </label>
+        {!loadingUserLogo && userLogoOverlayId && (
+          <p className="text-xs text-green-600 mt-1 mr-6">
+            ישתמש בלוגו שלך מהפרופיל
+          </p>
+        )}
+        {!loadingUserLogo && !userLogoOverlayId && (
+          <p className="text-xs text-orange-500 mt-1 mr-6">
+            העלה לוגו בפרופיל כדי להשתמש באפשרות זו
+          </p>
+        )}
       </div>
 
       {/* File previews */}
       {files.length > 0 && (
         <div className="mt-6">
           <h3 className="text-lg font-medium text-gray-900">
-            {selectedContentType === 'video-from-images' ? 'Photo Sequence' : 'File Previews'}
+            {selectedContentType === 'video-from-images' ? 'סדרת תמונות' : 'תצוגת קובצים'}
           </h3>
           
           {selectedContentType === 'video-from-images' && (
@@ -703,7 +760,7 @@ export default function MediaUploader({ onUploadComplete }) {
         {selectedContentType === 'video-from-images' && (
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-700">
-              <strong>Creating a Video from Photos</strong>: The photos below will be processed into a video slideshow.
+              <strong>יצירת סרטון מתמונות</strong>: The photos below will be processed into a video slideshow.
               You can download each photo now, or click the "Create Video from Photos" button at the top.
             </p>
           </div>
@@ -811,25 +868,17 @@ export default function MediaUploader({ onUploadComplete }) {
         )}
       </Modal>
 
-      {/* Upload Results Modal */}
+      {/* Property Creation Results Modal */}
       <Modal
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
         onStartAgain={handleStartAgain}
-        title={`${uploadSuccess?.isVideoFromImages ? "Video from Photos" : uploadSuccess?.isCarousel ? "Carousel" : "Upload"} Successfully Processed`}
+        title="נכס נשמר בהצלחה!"
       >
-        <div className={`${
-          webhookStatus === 'error' 
-            ? 'bg-yellow-50 border-yellow-200 text-yellow-700' 
-            : webhookStatus === 'warning'
-              ? 'bg-blue-50 border-blue-200 text-blue-700'
-              : 'bg-green-50 border-green-200 text-green-700'
-        } rounded-lg border p-4 mb-4`}>
-          {webhookStatus === 'error' 
-            ? `Your ${uploadSuccess?.isVideoFromImages ? 'video from photos' : uploadSuccess?.isCarousel ? 'carousel' : 'upload'} completed, but there was an issue notifying the webhook service.` 
-            : webhookStatus === 'warning'
-              ? `Your ${uploadSuccess?.isVideoFromImages ? 'video from photos' : uploadSuccess?.isCarousel ? 'carousel' : 'upload'} completed, but the webhook service reported a warning.`
-              : `Your ${uploadSuccess?.isVideoFromImages ? 'video from photos' : uploadSuccess?.isCarousel ? 'carousel' : 'upload'} has been completed and the webhook notification has been sent.`}
+        <div className="bg-green-50 border-green-200 text-green-700 rounded-lg border p-4 mb-4">
+          {uploadSuccess?.property 
+            ? `הנכס "${uploadSuccess.property.title}" נשמר בהצלחה במערכת. כעת ניתן לצפות בו ברשימת הנכסים שלך.`
+            : uploadSuccess?.message || 'הנכס נשמר בהצלחה במערכת!'}
         </div>
         
         {uploadSuccess?.isVideoFromImages && (

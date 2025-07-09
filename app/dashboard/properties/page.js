@@ -58,7 +58,7 @@ export default function DashboardPropertiesPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">ניהול נכסים</h1>
-        <Link href="/dashboard/properties/new">
+        <Link href="/dashboard/properties/upload">
           <Button variant="primary">
             <FaPlus className="ml-2" />
             הוסף נכס חדש
@@ -80,7 +80,7 @@ export default function DashboardPropertiesPage() {
       ) : properties.length === 0 ? (
         <div className="text-center py-8 bg-white rounded-lg shadow">
           <p className="text-gray-600">לא נמצאו נכסים</p>
-          <Link href="/dashboard/properties/new">
+          <Link href="/dashboard/properties/upload">
             <Button variant="primary" className="mt-4">
               הוסף נכס חדש
             </Button>

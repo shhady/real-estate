@@ -1,29 +1,48 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaCloudUploadAlt, FaTimes, FaMagic } from 'react-icons/fa';
 import Button from '../../../components/ui/Button';
 
 export default function NewPropertyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState([]);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
-    description: '',
-    price: '',
-    location: '',
+    agentName: '',
+    phoneNumber: '',
     propertyType: '',
-    status: '',
-    bedrooms: '',
-    bathrooms: '',
+    location: '',
     area: '',
-    features: []
+    price: '',
+    rooms: '',
+    floor: '',
+    notes: ''
   });
-  const [isRefactoring, setIsRefactoring] = useState(false);
-  const [refactoredDescription, setRefactoredDescription] = useState('');
-  const [originalDescription, setOriginalDescription] = useState('');
+
+  // Fetch user data when component mounts
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('/api/auth/check');
+        if (response.ok) {
+          const userData = await response.json();
+          if (userData.authenticated && userData.user) {
+            setUser(userData.user);
+            setFormData(prev => ({
+              ...prev,
+              agentName: userData.user.name || '',
+              phoneNumber: userData.user.phone || ''
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,132 +52,30 @@ export default function NewPropertyPage() {
     }));
   };
 
-  const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'real-estate');
-
-      try {
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
-
-        if (!res.ok) throw new Error('Error uploading image');
-        const data = await res.json();
-
-        setImages(prev => [...prev, {
-          secure_url: data.secure_url,
-          publicId: data.public_id
-        }]);
-      } catch (error) {
-        console.error('Error uploading image:', error);
-        setMessage({ type: 'error', text: 'שגיאה בהעלאת התמונה' });
-      }
-    }
+  const handleNext = () => {
+    // TODO: Navigate to next step (step 3)
+    console.log('Form data:', formData);
   };
 
-  const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+  const handleBack = () => {
+    // TODO: Navigate to previous step (step 1)
+    router.back();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage({ type: '', text: '' });
-
-    try {
-      const propertyData = {
-        ...formData,
-        images,
-        features: formData.features.filter(Boolean)
-      };
-
-      const res = await fetch('/api/properties', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(propertyData),
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to create property');
-      }
-
-      setMessage({ type: 'success', text: 'הנכס נוצר בהצלחה' });
-      router.push('/dashboard/properties');
-    } catch (error) {
-      console.error('Error creating property:', error);
-      setMessage({ type: 'error', text: 'שגיאה ביצירת הנכס' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRefactorDescription = async () => {
-    if (!formData.description.trim()) {
-      setMessage({ type: 'error', text: 'יש להזין תיאור לפני שימוש בשכתוב אוטומטי' });
-      return;
-    }
-
-    setIsRefactoring(true);
-    setOriginalDescription(formData.description);
-    setMessage({ type: '', text: '' });
-
-    try {
-      const response = await fetch('/api/openai/refactor-description', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          description: formData.description,
-          propertyType: formData.propertyType,
-          location: formData.location,
-          features: formData.features,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to refactor description');
-      }
-
-      const data = await response.json();
-      setRefactoredDescription(data.description);
-      setMessage({ type: 'success', text: 'נוצר תיאור חדש! אנא בדוק את התצוגה המקדימה למטה' });
-    } catch (error) {
-      console.error('Error refactoring description:', error);
-      setMessage({ 
-        type: 'error', 
-        text: 'אירעה שגיאה בשכתוב התיאור. אנא נסה שוב מאוחר יותר.' 
-      });
-    } finally {
-      setIsRefactoring(false);
-    }
-  };
-
-  const applyRefactoredDescription = () => {
-    setFormData(prev => ({
-      ...prev,
-      description: refactoredDescription
-    }));
-    setRefactoredDescription('');
-  };
-
-  const cancelRefactoredDescription = () => {
-    setFormData(prev => ({
-      ...prev,
-      description: originalDescription
-    }));
-    setRefactoredDescription('');
-    setOriginalDescription('');
+  const handleRestart = () => {
+    // TODO: Restart the entire process
+    setFormData({
+      title: '',
+      agentName: user?.name || '',
+      phoneNumber: user?.phone || '',
+      propertyType: '',
+      location: '',
+      area: '',
+      price: '',
+      rooms: '',
+      floor: '',
+      notes: ''
+    });
   };
 
   return (

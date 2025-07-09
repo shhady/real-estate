@@ -5,9 +5,12 @@ import Property from '../../../models/Property';
 
 export async function GET(request, { params }) {
   try {
-    console.log('📢 Fetching agent with ID:', params?.id);
+    // Await params before accessing properties (Next.js 15 requirement)
+    const { id } = await params;
+    
+    console.log('📢 Fetching agent with ID:', id);
 
-    if (!params?.id) {
+    if (!id) {
       return NextResponse.json({ error: "Agent ID is required" }, { status: 400 });
     }
 
@@ -15,7 +18,7 @@ export async function GET(request, { params }) {
     console.log("✅ MongoDB connected");
 
     // Fetch agent and populate properties
-    const agent = await User.findById(params.id)
+    const agent = await User.findById(id)
       .select('-password')
       .populate('properties');
 

@@ -6,6 +6,10 @@ import axios from 'axios'; // Import axios for downloading
 import { v2 as cloudinary } from 'cloudinary'; // Import Cloudinary SDK
 import { transcribeAudio, analyzeTranscription } from '../../utils/aiAnalysis';
 import logger from '../../utils/logger';
+import connectDB from '../../lib/mongodb';
+import Call from '../../models/Call';
+import Client from '../../models/Client';
+import { getUser } from '../../lib/auth';
 
 // Configure Cloudinary SDK (ensure environment variables are set)
 cloudinary.config({
@@ -184,35 +188,142 @@ export async function POST(request) {
       }
       // --- End Transcription Step ---
 
-      // --- Analysis Step ---
-      let analysis = null;
-      try {
-        analysis = await analyzeTranscription(transcription);
-        logger.info('✅ Analysis completed.');
-      } catch (error) {
-        logger.error('❌ Analysis failed:', error);
-        // Don't cleanup Cloudinary file on analysis failure, maybe user wants it
-        return NextResponse.json({ error: 'Failed to analyze transcription: ' + error.message }, { status: 500 });
-      }
-      // --- End Analysis Step ---
+             // --- Analysis Step ---
+       let analysis = null;
+       try {
+         analysis = await analyzeTranscription(transcription);
+         logger.info('✅ Analysis completed.');
+       } catch (error) {
+         logger.error('❌ Analysis failed:', error);
+         // Don't cleanup Cloudinary file on analysis failure, maybe user wants it
+         return NextResponse.json({ error: 'Failed to analyze transcription: ' + error.message }, { status: 500 });
+       }
+       // --- End Analysis Step ---
 
-      // --- MongoDB saving is handled by the frontend via API calls ---
-      logger.info('✅ Call analysis completed successfully. MongoDB saving handled by frontend.');
+       // --- NEW: Client Management Integration ---
+       let clientId = null;
+       try {
+         const user = await getUser();
+         if (user && phoneNumber) {
+           await connectDB();
+           
+           // Try to find existing client by phone number
+           let existingClient = await Client.findOne({
+             userId: user.userId,
+             phoneNumber: phoneNumber
+           });
+
+           if (existingClient) {
+             // Link to existing client
+             clientId = existingClient._id;
+             
+             // Update client's last call info
+             existingClient.lastCallSummary = analysis.summary;
+             existingClient.lastCallDate = new Date();
+             
+             // Update client preferences if we have new information from the call
+             if (analysis.intent && analysis.intent !== 'unknown' && existingClient.intent === 'unknown') {
+               existingClient.intent = analysis.intent;
+             }
+             if (analysis.location && !existingClient.preferredLocation) {
+               existingClient.preferredLocation = analysis.location;
+             }
+             
+             await existingClient.save();
+             logger.info(`✅ Updated existing client: ${existingClient.clientName}`);
+           } else if (clientName) {
+             // Create new client automatically
+             const newClient = await Client.create({
+               userId: user.userId,
+               clientName: clientName,
+               phoneNumber: phoneNumber,
+               intent: analysis.intent || 'unknown',
+               preferredLocation: analysis.location || undefined,
+               preferredPropertyType: analysis.propertyType || undefined,
+               minRooms: analysis.rooms || undefined,
+               minArea: analysis.area || undefined,
+               minPrice: analysis.price || undefined,
+               preferredCondition: analysis.condition || undefined,
+               needsParking: analysis.parking,
+               needsBalcony: analysis.balcony,
+               transcription: analysis.transcription || transcription,
+               lastCallSummary: analysis.summary,
+               lastCallDate: new Date(),
+               source: 'call',
+               status: 'prospect'
+             });
+             
+             clientId = newClient._id;
+             logger.info(`✅ Created new client: ${newClient.clientName}`);
+           }
+
+           // Create the call record
+           if (clientId) {
+             const newCall = await Call.create({
+               userId: user.userId,
+               clientId: clientId,
+               audioFileUrl: cloudinaryUrlToDownload,
+               transcription: analysis.transcription || transcription,
+               summary: analysis.summary,
+               followUps: analysis.followUps || [],
+               positives: analysis.positives || [],
+               issues: analysis.issues || [],
+               intent: analysis.intent || 'unknown',
+               location: analysis.location || '',
+               rooms: analysis.rooms || null,
+               area: analysis.area || null,
+               price: analysis.price || null,
+               condition: analysis.condition || '',
+               floor: analysis.floor || null,
+               parking: analysis.parking || null,
+               balcony: analysis.balcony || null,
+               propertyNotes: analysis.propertyNotes || ''
+             });
+
+             // Link call to client
+             await Client.findByIdAndUpdate(
+               clientId,
+               { $push: { calls: newCall._id } }
+             );
+             
+             logger.info(`✅ Call saved and linked to client: ${newCall._id}`);
+           }
+         }
+       } catch (clientError) {
+         logger.warn('Client management failed, continuing with call analysis:', clientError.message);
+         // Don't fail the entire request if client management fails
+       }
+       // --- End Client Management Integration ---
+
+       logger.info('✅ Call analysis completed successfully.');
 
       // --- Success Response ---
       // Note: We are not deleting the Cloudinary file automatically here.
       // You might want to add logic later to delete files from Cloudinary if needed.
       logger.info('Call analysis processing completed successfully');
-      return NextResponse.json({
-        success: true,
-        transcription,
-        summary: analysis.summary,
-        followUps: analysis.followUps,
-        positives: analysis.positives,
-        issues: analysis.issues,
-        cloudinaryUrl: cloudinaryUrlToDownload, // Optionally return the URL
-        cloudinaryPublicId: cloudinaryPublicId // Optionally return the ID
-      });
+             return NextResponse.json({
+         success: true,
+         transcription: analysis.transcription,
+         summary: analysis.summary,
+         followUps: analysis.followUps,
+         positives: analysis.positives,
+         issues: analysis.issues,
+         intent: analysis.intent,
+         location: analysis.location,
+         propertyType: analysis.propertyType,
+         rooms: analysis.rooms,
+         area: analysis.area,
+         price: analysis.price,
+         condition: analysis.condition,
+         floor: analysis.floor,
+         parking: analysis.parking,
+         balcony: analysis.balcony,
+         propertyNotes: analysis.propertyNotes,
+         cloudinaryUrl: cloudinaryUrlToDownload, // Optionally return the URL
+         cloudinaryPublicId: cloudinaryPublicId, // Optionally return the ID
+         clientId: clientId, // NEW: Return client ID if created/linked
+         clientName: clientName // NEW: Return client name for confirmation
+       });
 
     } catch (error) { // Catch errors from upload, download, or other steps
         logger.error('Processing error:', error);
