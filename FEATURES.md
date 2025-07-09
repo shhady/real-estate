@@ -28,7 +28,7 @@ This is a comprehensive real estate platform built with Next.js that allows user
 - **My Properties**: Accessible via dashboard
 
 ### Property Management (Dashboard)
-- **Add Property**: `/dashboard/properties/new` - Create new property listing
+- **Add Property**: `/dashboard/properties/upload` - Create new property listing
 - **Edit Property**: `/dashboard/properties/[id]/edit` - Modify existing properties
 - **View Properties**: `/dashboard/properties` - Manage your property listings
 

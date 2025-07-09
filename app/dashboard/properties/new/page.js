@@ -106,7 +106,7 @@ export default function NewPropertyPage() {
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-400 border-dashed rounded-md">
                 <div className="space-y-1 text-center">
                   <div className="flex flex-wrap gap-4 mb-4">
-                    {images.map((image, index) => (
+                    {/* {images?.map((image, index) => (
                       <div key={index} className="relative w-24 h-24">
                         <img
                           src={image.secure_url}
@@ -121,7 +121,7 @@ export default function NewPropertyPage() {
                           <FaTimes className="w-4 h-4" />
                         </button>
                       </div>
-                    ))}
+                    ))} */}
                   </div>
                   <div className="flex text-sm text-gray-600">
                     <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
