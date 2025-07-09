@@ -135,7 +135,7 @@ export default function EditPropertyPage({ params }) {
         }
       }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -381,8 +381,8 @@ export default function EditPropertyPage({ params }) {
 
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">
-                תמונות הנכס
-              </label>
+              תמונות הנכס
+            </label>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 images.length <= 1
                   ? 'bg-blue-100 text-blue-800' 

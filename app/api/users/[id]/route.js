@@ -7,7 +7,7 @@ export async function GET(request, { params }) {
   try {
     // Await params before accessing properties (Next.js 15 requirement)
     const { id } = await params;
-    
+
     console.log('📢 Fetching agent with ID:', id);
 
     if (!id) {

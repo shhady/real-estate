@@ -202,7 +202,7 @@ export default function CallDetailPage({ params }) {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
+              <div>
               <div className="flex items-center gap-4 mb-2">
                 <h1 className="text-3xl font-bold text-gray-900">{call.clientName}</h1>
                 {call.intent && call.intent !== 'unknown' && (
@@ -249,18 +249,18 @@ export default function CallDetailPage({ params }) {
               { key: 'Follow-ups', label: 'מעקבים' },
               { key: 'Issues', label: 'בעיות' }
             ].map((tab) => (
-              <button
+                <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex-shrink-0 py-3 px-6 text-sm font-medium text-center border-b-2 transition-colors ${
                   activeTab === tab.key
                     ? 'border-blue-500 text-blue-600 bg-blue-50'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
+                  }`}
+                >
                 {tab.label}
-              </button>
-            ))}
+                </button>
+              ))}
           </div>
 
           {/* Tab content */}
@@ -316,12 +316,12 @@ export default function CallDetailPage({ params }) {
                       <div key={index} className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
                         <p className="text-blue-800">{followUp}</p>
                       </div>
-                    ))}
+                      ))}
                   </div>
-                ) : (
+                  ) : (
                   <div className="text-center py-8 text-gray-500">
                     <p>לא זוהו מעקבים ספציפיים לשיחה זו.</p>
-                  </div>
+                </div>
                 )}
               </div>
             )}
@@ -329,18 +329,18 @@ export default function CallDetailPage({ params }) {
             {activeTab === 'Issues' && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900">תחומים לשיפור</h3>
-                {call.issues && call.issues.length > 0 ? (
+                  {call.issues && call.issues.length > 0 ? (
                   <div className="space-y-3">
                     {call.issues.map((issue, index) => (
                       <div key={index} className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
                         <p className="text-red-800">{issue}</p>
                       </div>
-                    ))}
+                      ))}
                   </div>
-                ) : (
+                  ) : (
                   <div className="text-center py-8 text-gray-500">
                     <p>לא זוהו בעיות בשיחה זו.</p>
-                  </div>
+                </div>
                 )}
               </div>
             )}

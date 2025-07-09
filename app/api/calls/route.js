@@ -13,7 +13,7 @@ export async function GET() {
     }
 
     await connectDB();
-
+    
     const calls = await Call.find({ userId: user.userId })
       .populate('clientId', 'clientName phoneNumber') // Populate client information
       .sort({ createdAt: -1 })

@@ -360,20 +360,20 @@ export default function CallAnalysisPage() {
                 )}
 
                 {/* Submit button */}
-                <button
-                  type="submit"
+                  <button
+                    type="submit"
                   disabled={isLoading || !clientName.trim() || !phoneNumber.trim() || !audioFile}
                   className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isLoading ? (
+                  >
+                    {isLoading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
                       Processing Audio...
                     </div>
-                  ) : (
-                    'Analyze Call'
-                  )}
-                </button>
+                    ) : (
+                      'Analyze Call'
+                    )}
+                  </button>
               </form>
             ) : (
               /* Results section */
@@ -381,7 +381,7 @@ export default function CallAnalysisPage() {
                 <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
                   ✅ Call analysis completed successfully!
                 </div>
-                
+
                 <div className="space-y-2 text-gray-900">
                   <p><strong>לקוח:</strong> {clientName}</p>
                   <p><strong>טלפון:</strong> {phoneNumber}</p>
@@ -417,19 +417,19 @@ export default function CallAnalysisPage() {
               {/* Tab navigation */}
               <div className="flex border-b border-gray-200">
                 {['Transcription', 'Summary', 'Property Details', 'Follow-ups', 'Issues'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
                     className={`flex-1 py-3 px-4 text-sm font-medium text-center border-b-2 transition-colors ${
                       activeTab === tab
                         ? 'border-blue-500 text-blue-600 bg-blue-50'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
 
               {/* Tab content */}
               <div className="p-6">
@@ -454,11 +454,11 @@ export default function CallAnalysisPage() {
                     {result.positives && result.positives.length > 0 && (
                       <div>
                         <h4 className="text-md font-semibold text-green-700 mb-2">Positive Aspects</h4>
-                        <ul className="list-disc list-inside space-y-1 text-gray-700">
+                      <ul className="list-disc list-inside space-y-1 text-gray-700">
                           {result.positives.map((positive, index) => (
                             <li key={index}>{positive}</li>
                           ))}
-                        </ul>
+                      </ul>
                       </div>
                     )}
                   </div>
@@ -486,7 +486,7 @@ export default function CallAnalysisPage() {
                   </div>
                 )}
 
-                {activeTab === 'Issues' && (
+                    {activeTab === 'Issues' && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900">Areas for Improvement</h3>
                     {result.issues && result.issues.length > 0 ? (
@@ -500,30 +500,30 @@ export default function CallAnalysisPage() {
                     )}
                   </div>
                 )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Call History Section */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Call Analysis</h3>
-              
-              {loadingCalls ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-                </div>
-              ) : calls.length === 0 ? (
+            
+            {loadingCalls ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+              </div>
+            ) : calls.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">No calls analyzed yet. Upload your first recording above!</p>
-              ) : (
+            ) : (
                 <div className="space-y-4">
-                  {calls.map((call) => (
+                {calls.map((call) => (
                     <div 
                       key={call._id} 
                       className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <div className="flex items-center gap-2">
                               <h4 className="font-semibold text-gray-900">
@@ -574,7 +574,7 @@ export default function CallAnalysisPage() {
                               )}
                             </div>
                           )}
-                        </div>
+                    </div>
                         <div className="text-right text-sm text-gray-500 flex flex-col gap-2">
                           <div>{formatDate(call.createdAt)}</div>
                           {call.audioDuration && (
@@ -587,13 +587,13 @@ export default function CallAnalysisPage() {
                             📞 View Call
                           </button>
                         </div>
-                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        </div>
         </div>
       </div>
     </div>

@@ -4,6 +4,64 @@ import Property from '../../models/Property';
 import { getUser } from '../../lib/auth';
 import User from '../../models/User';
 
+// Webhook URLs
+const PRIMARY_WEBHOOK = 'https://primary-production-2eb6.up.railway.app/webhook-test/a4827f61-edf7-41ce-9e2d-32c76fc96233';
+const FALLBACK_WEBHOOK = 'https://primary-production-2eb6.up.railway.app/webhook/a4827f61-edf7-41ce-9e2d-32c76fc96233';
+
+// Function to send property data to webhooks with fallback
+async function sendToWebhooks(propertyData) {
+  const webhookPayload = {
+    event: 'property.created',
+    timestamp: new Date().toISOString(),
+    data: propertyData
+  };
+
+  try {
+    // Try primary webhook first
+    console.log('Sending to primary webhook:', PRIMARY_WEBHOOK);
+    const primaryResponse = await fetch(PRIMARY_WEBHOOK, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(webhookPayload),
+    });
+
+    if (primaryResponse.ok) {
+      console.log('Primary webhook sent successfully');
+      return;
+    } else {
+      console.error('Primary webhook failed with status:', primaryResponse.status);
+      throw new Error(`Primary webhook failed: ${primaryResponse.status}`);
+    }
+  } catch (primaryError) {
+    console.error('Primary webhook error:', primaryError);
+    
+    // Try fallback webhook
+    try {
+      console.log('Sending to fallback webhook:', FALLBACK_WEBHOOK);
+      const fallbackResponse = await fetch(FALLBACK_WEBHOOK, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookPayload),
+      });
+
+      if (fallbackResponse.ok) {
+        console.log('Fallback webhook sent successfully');
+        return;
+      } else {
+        console.error('Fallback webhook failed with status:', fallbackResponse.status);
+        throw new Error(`Both webhooks failed. Fallback status: ${fallbackResponse.status}`);
+      }
+    } catch (fallbackError) {
+      console.error('Fallback webhook error:', fallbackError);
+      throw new Error(`Both webhooks failed. Primary: ${primaryError.message}, Fallback: ${fallbackError.message}`);
+    }
+  }
+}
+
 // GET all properties
 export async function GET(request) {
   try {
@@ -113,8 +171,8 @@ export async function POST(request) {
           publicId: '',
           type: 'uploaded'
         };
-      }
-      
+    }
+
       // For video-from-images, also save the source images
       if (contentType === 'video-from-images' && data.uploadedMedia) {
         images = data.uploadedMedia
@@ -128,10 +186,10 @@ export async function POST(request) {
       // Handle images (single or carousel)
       if (data.images && Array.isArray(data.images)) {
         // Standard property creation format
-        const validImages = data.images.every(img => img.secure_url && img.publicId);
-        if (!validImages) {
-          return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
-        }
+    const validImages = data.images.every(img => img.secure_url && img.publicId);
+    if (!validImages) {
+      return NextResponse.json({ error: 'Invalid image format' }, { status: 400 });
+    }
         images = data.images.map(img => ({
           secure_url: img.secure_url,
           publicId: img.publicId
@@ -208,6 +266,14 @@ export async function POST(request) {
     const populatedProperty = await Property.findById(property._id)
       .populate('user', 'fullName email phone whatsapp bio profileImage')
       .lean();
+
+    // Send property data to webhooks (primary with fallback)
+    try {
+      await sendToWebhooks(populatedProperty);
+    } catch (error) {
+      console.error('Webhook notification failed:', error);
+      // Continue with property creation even if webhook fails
+    }
 
     return NextResponse.json({
       success: true,

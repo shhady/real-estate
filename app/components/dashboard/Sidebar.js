@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FaHome, FaBuilding, FaUser, FaChartBar, FaCog, FaEdit, FaPhone, FaUsers, FaSignOutAlt, FaEnvelope, FaGlobe } from 'react-icons/fa';
+import { FaHome, FaBuilding, FaUser, FaChartBar, FaCog, FaEdit, FaPhone, FaUsers, FaSignOutAlt, FaEnvelope, FaGlobe, FaExchangeAlt } from 'react-icons/fa';
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -22,6 +22,11 @@ const Sidebar = () => {
       title: 'לקוחות שלי',
       icon: <FaUsers className="w-5 h-5" />,
       href: '/dashboard/clients',
+    },
+    {
+      title: 'התאמות',
+      icon: <FaExchangeAlt className="w-5 h-5" />,
+      href: '/dashboard/matching',
     },
     {
       title: 'נכסים שלי',
