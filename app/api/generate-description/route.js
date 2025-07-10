@@ -147,13 +147,28 @@ IMPORTANT: Both descriptions MUST include the agent's phone number at the end. T
 `;
 
     try {
-      // Call OpenAI API to generate descriptions
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 1500,
-        temperature: 0.7,
-      });
+      // Call OpenAI API to generate descriptions with timeout
+      console.log('Starting OpenAI API call...');
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+      
+      const response = await Promise.race([
+        openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 1500,
+          temperature: 0.7,
+        }, {
+          signal: controller.signal
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('OpenAI API timeout')), 25000)
+        )
+      ]);
+
+      clearTimeout(timeoutId);
+      console.log('OpenAI API call completed successfully');
 
       const generatedText = response.choices[0].message.content.trim();
       
@@ -171,6 +186,16 @@ IMPORTANT: Both descriptions MUST include the agent's phone number at the end. T
       
     } catch (aiError) {
       console.error('Error calling AI service:', aiError);
+      console.error('AI Error details:', {
+        name: aiError.name,
+        message: aiError.message,
+        code: aiError.code
+      });
+      
+      // Check if it's a timeout error
+      if (aiError.name === 'AbortError' || aiError.message?.includes('timeout')) {
+        console.warn('OpenAI API timeout, using fallback descriptions');
+      }
       
       // Fall back to basic template if AI service fails
       const basicDescriptions = generateBasicDescriptions(propertyData);

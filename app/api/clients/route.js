@@ -34,15 +34,49 @@ export async function GET(request) {
     if (intent) query.intent = intent;
     if (priority) query.priority = priority;
 
-    const clients = await Client.find(query)
-      .populate('calls', 'date summary')
-      .sort({ updatedAt: -1 })
-      .limit(100);
+    console.log('Fetching clients with query:', query);
 
-    return NextResponse.json(clients);
+    try {
+      // Try with populate first
+      const clients = await Client.find(query)
+        .populate({
+          path: 'calls',
+          select: 'date summary',
+          options: { 
+            sort: { date: -1 },
+            limit: 50  // Limit populated calls to avoid memory issues
+          }
+        })
+        .sort({ updatedAt: -1 })
+        .limit(100)
+        .lean(); // Use lean for better performance
+
+      console.log(`Successfully fetched ${clients.length} clients`);
+      return NextResponse.json(clients);
+    } catch (populateError) {
+      console.warn('Populate failed, falling back to basic query:', populateError.message);
+      
+      // Fallback: fetch without populate if there's an issue
+      const clients = await Client.find(query)
+        .sort({ updatedAt: -1 })
+        .limit(100)
+        .lean();
+
+      console.log(`Fallback: Successfully fetched ${clients.length} clients without populate`);
+      return NextResponse.json(clients);
+    }
   } catch (error) {
     console.error('Error fetching clients:', error);
-    return NextResponse.json({ error: 'Failed to fetch clients' }, { status: 500 });
+    console.error('Error stack:', error.stack);
+    
+    // Return more specific error information in development
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const errorMessage = isDevelopment ? error.message : 'Failed to fetch clients';
+    
+    return NextResponse.json({ 
+      error: errorMessage,
+      ...(isDevelopment && { stack: error.stack })
+    }, { status: 500 });
   }
 }
 

@@ -481,28 +481,54 @@ export default function MatchingPage() {
       try {
         setLoadingClients(true);
         
-        // Fetch clients
-        const clientsResponse = await fetch('/api/clients');
-        const clientsData = await clientsResponse.json();
+        let clientsData = [];
+        let callsData = [];
         
-        // Fetch calls
-        const callsResponse = await fetch('/api/calls');
-        const callsData = await callsResponse.json();
+        // Fetch clients with error handling
+        try {
+          const clientsResponse = await fetch('/api/clients');
+          if (clientsResponse.ok) {
+            const responseData = await clientsResponse.json();
+            clientsData = Array.isArray(responseData) ? responseData : [];
+            console.log('Raw clients data:', clientsData);
+          } else {
+            console.error('Failed to fetch clients:', clientsResponse.status, clientsResponse.statusText);
+            const errorData = await clientsResponse.json().catch(() => ({}));
+            console.error('Clients API error:', errorData);
+          }
+        } catch (clientsError) {
+          console.error('Error fetching clients:', clientsError);
+        }
         
-        console.log('Raw clients data:', clientsData);
-        console.log('Raw calls data:', callsData);
+        // Fetch calls with error handling
+        try {
+          const callsResponse = await fetch('/api/calls');
+          if (callsResponse.ok) {
+            const responseData = await callsResponse.json();
+            callsData = Array.isArray(responseData) ? responseData : [];
+            console.log('Raw calls data:', callsData);
+          } else {
+            console.error('Failed to fetch calls:', callsResponse.status, callsResponse.statusText);
+            const errorData = await callsResponse.json().catch(() => ({}));
+            console.error('Calls API error:', errorData);
+          }
+        } catch (callsError) {
+          console.error('Error fetching calls:', callsError);
+        }
         
         // Filter clients to include only buyers (exclude sellers-only)
-        const buyerClients = Array.isArray(clientsData) ? clientsData.filter(client => {
+        const buyerClients = clientsData.filter(client => {
+          if (!client || !client.clientName) return false;
           console.log('Client intent:', client.clientName, client.intent);
           return client.intent === 'buyer' || client.intent === 'both';
-        }) : [];
+        });
         
         // Filter calls to include only those from buyers/sellers (exclude sellers-only)
-        const buyerCalls = Array.isArray(callsData) ? callsData.filter(call => {
+        const buyerCalls = callsData.filter(call => {
+          if (!call || !call.summary) return false;
           console.log('Call intent:', call.summary?.substring(0, 30), call.intent);
           return call.intent === 'buyer' || call.intent === 'both';
-        }) : [];
+        });
         
         console.log('Filtered buyer clients:', buyerClients);
         console.log('Filtered buyer calls:', buyerCalls);
@@ -511,6 +537,9 @@ export default function MatchingPage() {
         setCalls(buyerCalls);
       } catch (err) {
         console.error('Error fetching clients and calls:', err);
+        // Set empty arrays as fallback
+        setClients([]);
+        setCalls([]);
       } finally {
         setLoadingClients(false);
       }
