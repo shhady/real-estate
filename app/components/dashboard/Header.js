@@ -2,7 +2,7 @@
 import { FaBell, FaSearch, FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
-const Header = () => {
+const Header = ({ setSidebarOpen }) => {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -30,6 +30,7 @@ const Header = () => {
               <button
                 type="button"
                 className="md:hidden px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                onClick={() => setSidebarOpen(true)}
               >
                 <span className="sr-only">פתח תפריט</span>
                 <svg

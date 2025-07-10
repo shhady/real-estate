@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaBars, FaTimes, FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
@@ -8,6 +8,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
+  const navRef = useRef(null);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -45,6 +46,27 @@ const Navbar = () => {
     checkAuth();
   }, [router.pathname]);
 
+  // Click outside to close mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (navRef.current && !navRef.current.contains(event.target) && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    // Only add listener when mobile menu is open
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isOpen]);
+
   const handleLogout = async () => {
     try {
       const res = await fetch('/api/auth/logout', {
@@ -57,6 +79,8 @@ const Navbar = () => {
       if (res.ok) {
         // Clear authentication state
         setIsAuthenticated(false);
+        // Close mobile menu
+        setIsOpen(false);
         // Navigate to home page
         router.push('/');
         // Force a complete page refresh
@@ -71,8 +95,12 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
+
   return (
-    <nav className="bg-white shadow-lg">
+    <nav ref={navRef} className="bg-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -173,30 +201,35 @@ const Navbar = () => {
         <div className="pt-2 pb-3 space-y-1">
           <Link
             href="/"
+            onClick={closeMenu}
             className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
           >
             דף הבית
           </Link>
           <Link
             href="/properties"
+            onClick={closeMenu}
             className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
           >
             נכסים
           </Link>
           <Link
             href="/agents"
+            onClick={closeMenu}
             className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
           >
             סוכנים
           </Link>
           <Link
             href="/blog"
+            onClick={closeMenu}
             className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
           >
             בלוג
           </Link>
           <Link
             href="/contact"
+            onClick={closeMenu}
             className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
           >
             צור קשר
@@ -205,6 +238,7 @@ const Navbar = () => {
             <>
               <Link
                 href="/dashboard"
+                onClick={closeMenu}
                 className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
               >
                 לוח בקרה
@@ -220,12 +254,14 @@ const Navbar = () => {
             <>
               <Link
                 href="/sign-in"
+                onClick={closeMenu}
                 className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
               >
                 התחברות
               </Link>
               <Link
                 href="/sign-up"
+                onClick={closeMenu}
                 className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
               >
                 הרשמה
