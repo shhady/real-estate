@@ -85,6 +85,20 @@ export async function PUT(request, { params }) {
       options: { sort: { createdAt: -1 } } // Sort calls by newest first
     });
 
+    // If preApproval is being updated, update all associated calls too
+    if (body.preApproval !== undefined && updatedClient.calls && updatedClient.calls.length > 0) {
+      try {
+        await Call.updateMany(
+          { clientId: id, userId: user.userId },
+          { preApproval: body.preApproval }
+        );
+        console.log(`Updated ${updatedClient.calls.length} calls for client ${id} with preApproval status: ${body.preApproval}`);
+      } catch (callUpdateError) {
+        console.warn('Failed to update calls preApproval:', callUpdateError.message);
+        // Don't fail the client update if call updates fail
+      }
+    }
+
     return NextResponse.json(updatedClient);
   } catch (error) {
     console.error('Error updating client:', error);

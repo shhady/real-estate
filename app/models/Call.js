@@ -8,6 +8,8 @@ const CallSchema = new mongoose.Schema({
   summary: { type: String, required: true },
   followUps: [String],
   positives: [String],
+  negatives: [String], // NEW: What wasn't good in the call
+  improvementPoints: [String], // NEW: Points to improve the call
   issues: [String],
   
   // Structured property data
@@ -21,6 +23,7 @@ const CallSchema = new mongoose.Schema({
   parking: { type: Boolean },
   balcony: { type: Boolean },
   propertyNotes: { type: String },
+  preApproval: { type: Boolean }, // NEW: If client has אישור עקרוני/אישור משכנתה
   
   date: { type: Date, default: Date.now }
 }, { timestamps: true });

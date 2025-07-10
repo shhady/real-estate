@@ -91,7 +91,10 @@ export default function CallMatchingPage({ params }) {
     return (
       <div className="mt-3">
         <button
-          onClick={onToggle}
+          onClick={(e) => {
+            e.preventDefault();
+            onToggle();
+          }}
           className="text-xs text-blue-600 hover:text-blue-800 font-medium"
         >
           {isExpanded ? 'הסתר פרטים' : 'הצג פרטי התאמה'}

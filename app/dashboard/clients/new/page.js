@@ -26,6 +26,7 @@ export default function NewClientPage() {
     preferredCondition: '',
     needsParking: null,
     needsBalcony: null,
+    preApproval: null,
     notes: '',
     status: 'prospect',
     priority: 'medium',
@@ -229,6 +230,16 @@ export default function NewClientPage() {
                 </select>
               </div>
             </div>
+            <label className="flex items-center mt-4">
+                    <input
+                      type="checkbox"
+                      name="preApproval"
+                      checked={formData.preApproval === true}
+                      onChange={(e) => setFormData(prev => ({ ...prev, preApproval: e.target.checked }))}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="mr-2 text-sm text-gray-900">אישור עקרוני</span>
+                  </label>
           </div>
 
           {/* Property Preferences */}
@@ -378,7 +389,7 @@ export default function NewClientPage() {
                 <label className="block text-sm font-medium text-gray-700">
                   דרישות נוספות
                 </label>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center gap-4">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -399,6 +410,7 @@ export default function NewClientPage() {
                     />
                     <span className="mr-2 text-sm text-gray-900">מרפסת</span>
                   </label>
+                  
                 </div>
               </div>
             </div>

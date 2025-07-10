@@ -171,7 +171,7 @@ export async function POST(request) {
           publicId: '',
           type: 'uploaded'
         };
-    }
+      }
 
       // For video-from-images, also save the source images
       if (contentType === 'video-from-images' && data.uploadedMedia) {
@@ -236,7 +236,6 @@ export async function POST(request) {
       agencyName: listing.agencyName || data.agencyName || userDetails.agencyName || '',
       contentType: contentType,
       images: images,
-      video: video,
       mediaUrls: mediaUrls,
       features: data.features || [],
       user: user.userId,
@@ -244,6 +243,11 @@ export async function POST(request) {
       externalListingId: data.listingId || null,
       listingUrl: data.listingUrl || null
     };
+
+    // Only add video field if it's properly formed
+    if (video && video.secure_url && typeof video.secure_url === 'string') {
+      propertyData.video = video;
+    }
 
     // Remove undefined values
     Object.keys(propertyData).forEach(key => {

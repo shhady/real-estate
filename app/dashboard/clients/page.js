@@ -273,6 +273,13 @@ export default function ClientsPage() {
                                client.intent === 'both' ? 'קונה ומוכר' : 'לא ידוע'}
                             </span>
                           </div>
+                          <div>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              client.preApproval ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {client.preApproval ? 'יש אישור עקרוני' : 'אין אישור עקרוני'}
+                            </span>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

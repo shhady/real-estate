@@ -228,6 +228,9 @@ export async function POST(request) {
              if (analysis.location && !existingClient.preferredLocation) {
                existingClient.preferredLocation = analysis.location;
              }
+             if (analysis.preApproval !== null && existingClient.preApproval === null) {
+               existingClient.preApproval = analysis.preApproval;
+             }
              
              await existingClient.save();
              logger.info(`✅ Updated existing client: ${existingClient.clientName}`);
@@ -246,6 +249,7 @@ export async function POST(request) {
                preferredCondition: analysis.condition || undefined,
                needsParking: analysis.parking,
                needsBalcony: analysis.balcony,
+               preApproval: analysis.preApproval,
                transcription: analysis.transcription || transcription,
                lastCallSummary: analysis.summary,
                lastCallDate: new Date(),
@@ -267,6 +271,8 @@ export async function POST(request) {
                summary: analysis.summary,
                followUps: analysis.followUps || [],
                positives: analysis.positives || [],
+               negatives: analysis.negatives || [],
+               improvementPoints: analysis.improvementPoints || [],
                issues: analysis.issues || [],
                intent: analysis.intent || 'unknown',
                location: analysis.location || '',
@@ -277,7 +283,8 @@ export async function POST(request) {
                floor: analysis.floor || null,
                parking: analysis.parking || null,
                balcony: analysis.balcony || null,
-               propertyNotes: analysis.propertyNotes || ''
+               propertyNotes: analysis.propertyNotes || '',
+               preApproval: analysis.preApproval || null
              });
 
              // Link call to client
@@ -307,6 +314,8 @@ export async function POST(request) {
          summary: analysis.summary,
          followUps: analysis.followUps,
          positives: analysis.positives,
+         negatives: analysis.negatives,
+         improvementPoints: analysis.improvementPoints,
          issues: analysis.issues,
          intent: analysis.intent,
          location: analysis.location,
@@ -319,6 +328,7 @@ export async function POST(request) {
          parking: analysis.parking,
          balcony: analysis.balcony,
          propertyNotes: analysis.propertyNotes,
+         preApproval: analysis.preApproval,
          cloudinaryUrl: cloudinaryUrlToDownload, // Optionally return the URL
          cloudinaryPublicId: cloudinaryPublicId, // Optionally return the ID
          clientId: clientId, // NEW: Return client ID if created/linked

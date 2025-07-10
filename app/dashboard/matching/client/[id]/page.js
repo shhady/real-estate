@@ -17,6 +17,86 @@ export default function ClientMatchingPage({ params }) {
   // Unwrap params Promise for Next.js 15 compatibility
   const resolvedParams = use(params);
 
+  // Translate property type to Hebrew
+  const translatePropertyType = (type) => {
+    const translations = {
+      apartment: 'דירה',
+      house: 'בית',
+      villa: 'וילה',
+      penthouse: 'פנטהאוז',
+      duplex: 'דופלקס',
+      triplex: 'טריפלקס',
+      studio: 'סטודיו',
+      loft: 'לופט',
+      cottage: 'צימר',
+      townhouse: 'בית עירוני',
+      land: 'קרקע',
+      commercial: 'מסחרי',
+      office: 'משרד',
+      warehouse: 'מחסן',
+      garage: 'חניה/מוסך',
+      basement: 'מרתף',
+      roof: 'גג',
+      garden: 'גינה',
+      balcony: 'מרפסת',
+      terrace: 'טרסה',
+      condo: 'דירה'
+    };
+    return translations[type] || type;
+  };
+
+  // Translate property condition to Hebrew
+  const translatePropertyCondition = (condition) => {
+    const translations = {
+      'new': 'חדש',
+      'excellent': 'מצוין',
+      'good': 'טוב',
+      'fair': 'בסדר',
+      'needs renovation': 'זקוק לשיפוץ',
+      'under construction': 'בבנייה',
+      'old': 'ישן',
+      'renovated': 'משופץ',
+      'partially renovated': 'משופץ חלקית'
+    };
+    return translations[condition] || condition;
+  };
+
+  // Format price range
+  const formatPriceRange = (minPrice, maxPrice) => {
+    if (minPrice && maxPrice) {
+      return `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`;
+    } else if (minPrice) {
+      return `מינימום ${formatPrice(minPrice)}`;
+    } else if (maxPrice) {
+      return `מקסימום ${formatPrice(maxPrice)}`;
+    }
+    return 'לא צוין';
+  };
+
+  // Format area range
+  const formatAreaRange = (minArea, maxArea) => {
+    if (minArea && maxArea) {
+      return `${minArea} - ${maxArea} מ"ר`;
+    } else if (minArea) {
+      return `מינימום ${minArea} מ"ר`;
+    } else if (maxArea) {
+      return `מקסימום ${maxArea} מ"ר`;
+    }
+    return 'לא צוין';
+  };
+
+  // Format rooms range
+  const formatRoomsRange = (minRooms, maxRooms) => {
+    if (minRooms && maxRooms) {
+      return `${minRooms} - ${maxRooms} חדרים`;
+    } else if (minRooms) {
+      return `מינימום ${minRooms} חדרים`;
+    } else if (maxRooms) {
+      return `מקסימום ${maxRooms} חדרים`;
+    }
+    return 'לא צוין';
+  };
+
   useEffect(() => {
     if (resolvedParams.id) {
       fetchClientAndMatches();
@@ -91,7 +171,10 @@ export default function ClientMatchingPage({ params }) {
     return (
       <div className="mt-3">
         <button
-          onClick={onToggle}
+          onClick={(e) => {
+            e.preventDefault();
+            onToggle();
+          }}
           className="text-xs text-blue-600 hover:text-blue-800 font-medium"
         >
           {isExpanded ? 'הסתר פרטים' : 'הצג פרטי התאמה'}
@@ -103,8 +186,8 @@ export default function ClientMatchingPage({ params }) {
             <div className="space-y-1">
               {matchDetails.map((detail, index) => (
                 <div key={index} className="flex items-center justify-between text-xs">
-                  <span className="font-medium">{detail.label}:</span>
-                  <div className="flex items-center space-x-2">
+                  <span className="font-medium text-gray-600">{detail.label}:</span>
+                  <div className="flex items-center gap-2">
                     <span className="text-gray-600">{detail.propertyValue}</span>
                     <span className="text-gray-400">vs</span>
                     <span className="text-gray-600">{detail.clientValue}</span>
@@ -146,7 +229,7 @@ export default function ClientMatchingPage({ params }) {
 
     return (
       <div className={`border-2 rounded-lg p-4 ${getPriorityColor(match)}`}>
-        <div className="flex items-start space-x-4">
+        <div className="flex items-start gap-4">
           {property.images && property.images.length > 0 && (
             <div className="flex-shrink-0">
               <Image
@@ -161,7 +244,7 @@ export default function ClientMatchingPage({ params }) {
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start mb-2">
               <h4 className="text-lg font-semibold text-gray-900">{property.title}</h4>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   getMatchScoreColor(match.score, match.totalCriteria)
                 }`}>
@@ -178,19 +261,19 @@ export default function ClientMatchingPage({ params }) {
             
             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
               <div className="flex items-center">
-                <FaMapMarkerAlt className="w-4 h-4 mr-1" />
+                <FaMapMarkerAlt className="w-4 h-4 mx-1" />
                 {property.location || 'לא צוין'}
               </div>
               <div className="flex items-center">
-                <FaDollarSign className="w-4 h-4 mr-1" />
+                <FaDollarSign className="w-4 h-4 mx-1" />
                 {formatPrice(property.price)}
               </div>
               <div className="flex items-center">
-                <FaBed className="w-4 h-4 mr-1" />
+                <FaBed className="w-4 h-4 mx-1" />
                 {property.bedrooms || 0} חדרים
               </div>
               <div className="flex items-center">
-                <FaExpand className="w-4 h-4 mr-1" />
+                <FaExpand className="w-4 h-4 mx-1" />
                 {property.area || 0} מ"ר
               </div>
             </div>
@@ -283,25 +366,45 @@ export default function ClientMatchingPage({ params }) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="flex items-center text-sm text-gray-600">
-              <FaPhone className="w-4 h-4 mr-2" />
+              <FaPhone className="w-4 h-4 mx-2" />
               {client.phoneNumber || 'לא צוין'}
             </div>
             <div className="flex items-center text-sm text-gray-600">
-              <FaEnvelope className="w-4 h-4 mr-2" />
+              <FaEnvelope className="w-4 h-4 mx-2" />
               {client.email || 'לא צוין'}
             </div>
             <div className="flex items-center text-sm text-gray-600">
-              <FaMapMarkerAlt className="w-4 h-4 mr-2" />
+              <FaMapMarkerAlt className="w-4 h-4 mx-2" />
               {client.preferredLocation || 'לא צוין'}
             </div>
             <div className="flex items-center text-sm text-gray-600">
-              <FaHome className="w-4 h-4 mr-2" />
-              {client.preferredPropertyType || 'לא צוין'}
+              <FaHome className="w-4 h-4 mx-2" />
+              {client.preferredPropertyType ? translatePropertyType(client.preferredPropertyType) : 'לא צוין'}
             </div>
             <div className="flex items-center text-sm text-gray-600">
-              <FaDollarSign className="w-4 h-4 mr-2" />
-              {client.maxPrice ? formatPrice(client.maxPrice) : 'לא צוין'}
+              <FaDollarSign className="w-4 h-4 mx-2" />
+              {formatPriceRange(client.minPrice, client.maxPrice)}
             </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <FaExpand className="w-4 h-4 mx-2" />
+              {formatAreaRange(client.minArea, client.maxArea)}
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <FaBed className="w-4 h-4 mx-2" />
+              {formatRoomsRange(client.minRooms, client.maxRooms)}
+            </div>
+            {client.preferredCondition && (
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-4 h-4 mx-2">🏠</span>
+                מצב: {translatePropertyCondition(client.preferredCondition)}
+              </div>
+            )}
+            {client.preApproval && (
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="w-4 h-4 mx-2">✅</span>
+                יש אישור עקרוני
+              </div>
+            )}
           </div>
         </div>
 

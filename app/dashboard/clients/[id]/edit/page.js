@@ -28,6 +28,7 @@ export default function EditClientPage() {
     preferredCondition: '',
     needsParking: null,
     needsBalcony: null,
+    preApproval: null,
     notes: '',
     status: 'prospect',
     priority: 'medium',
@@ -60,6 +61,7 @@ export default function EditClientPage() {
             preferredCondition: client.preferredCondition || '',
             needsParking: client.needsParking,
             needsBalcony: client.needsBalcony,
+            preApproval: client.preApproval,
             notes: client.notes || '',
             status: client.status || 'prospect',
             priority: client.priority || 'medium',
@@ -289,6 +291,16 @@ export default function EditClientPage() {
                 </select>
               </div>
             </div>
+            <label className="flex items-center mt-4">
+                    <input
+                      type="checkbox"
+                      name="preApproval"
+                      checked={formData.preApproval === true}
+                      onChange={(e) => setFormData(prev => ({ ...prev, preApproval: e.target.checked }))}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="mr-2 text-sm text-gray-900">אישור עקרוני</span>
+                  </label>
           </div>
 
           {/* Property Preferences */}
@@ -438,7 +450,7 @@ export default function EditClientPage() {
                 <label className="block text-sm font-medium text-gray-700">
                   דרישות נוספות
                 </label>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center gap-4">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
@@ -459,6 +471,7 @@ export default function EditClientPage() {
                     />
                     <span className="mr-2 text-sm text-gray-900">מרפסת</span>
                   </label>
+                  
                 </div>
               </div>
             </div>

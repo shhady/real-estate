@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 import User from './User';
 
+// Clear any existing models to prevent schema conflicts
+if (mongoose.models.Property) {
+  delete mongoose.models.Property;
+}
+
 const propertySchema = new mongoose.Schema({
   title: {
     type: String,
@@ -77,9 +82,9 @@ const propertySchema = new mongoose.Schema({
   }],
   // Video content
   video: {
-    secure_url: String,
-    publicId: String,
-    type: String // 'uploaded' or 'generated'
+    secure_url: { type: String, required: false },
+    publicId: { type: String, required: false, default: '' },
+    type: { type: String, required: false } // 'uploaded' or 'generated'
   },
   // Media URLs from upload (for backward compatibility and external integrations)
   mediaUrls: [String],

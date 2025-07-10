@@ -102,13 +102,13 @@ export async function analyzeTranscription(transcription) {
     const getLanguageInstructions = (lang) => {
       switch (lang) {
         case 'ar':
-          return 'The conversation is primarily in Arabic. Clean up any Hebrew/Arabic language mixing common in Middle Eastern real estate.';
+          return 'The conversation is primarily in Arabic. Clean up any Hebrew/Arabic language mixing common in Middle Eastern real estate. WRITE ALL ANALYSIS (summary, followUps, positives, negatives, improvementPoints, issues) IN ARABIC.';
         case 'he':
-          return 'The conversation is primarily in Hebrew. Clean up any Hebrew/Arabic language mixing common in Israeli real estate.';
+          return 'The conversation is primarily in Hebrew. Clean up any Hebrew/Arabic language mixing common in Israeli real estate. WRITE ALL ANALYSIS (summary, followUps, positives, negatives, improvementPoints, issues) IN HEBREW.';
         case 'en':
-          return 'The conversation is in English. Maintain professional real estate terminology.';
+          return 'The conversation is in English. Maintain professional real estate terminology. WRITE ALL ANALYSIS (summary, followUps, positives, negatives, improvementPoints, issues) IN ENGLISH.';
         default:
-          return 'Detect the conversation language and clean up any language mixing. Common in Middle Eastern real estate are Hebrew/Arabic mixes.';
+          return 'Detect the conversation language and clean up any language mixing. Common in Middle Eastern real estate are Hebrew/Arabic mixes. WRITE ALL ANALYSIS IN THE SAME LANGUAGE AS THE CONVERSATION - DO NOT TRANSLATE TO ENGLISH.';
       }
     };
     
@@ -118,8 +118,14 @@ export async function analyzeTranscription(transcription) {
 2. Extracted metadata for intent, location, and property details
 3. Analysis including summary, follow-ups, positives, and issues
 
-LANGUAGE INSTRUCTIONS:
+CRITICAL LANGUAGE REQUIREMENT:
 ${getLanguageInstructions(detectedLanguage)}
+- ALL ANALYSIS FIELDS (summary, followUps, positives, negatives, improvementPoints, issues) MUST be written in the SAME LANGUAGE as the conversation
+- If the conversation is in Arabic, write ALL analysis in Arabic
+- If the conversation is in Hebrew, write ALL analysis in Hebrew  
+- If the conversation is in English, write ALL analysis in English
+- DO NOT translate the analysis to English - keep it in the original conversation language
+- The transcription should also maintain the original language with proper formatting
 
 IMPORTANT INSTRUCTIONS:
 - Format the transcription with clear "Speaker 1:" and "Speaker 2:" labels
@@ -131,13 +137,12 @@ IMPORTANT INSTRUCTIONS:
 - Maintain conversational tone, but correct clear misrecognitions
 - Add proper punctuation and sentence structure
 - Extract structured property information accurately
-- Provide analysis in the same language as the conversation
-- If multiple languages are detected, use the primary language for analysis
+- If multiple languages are detected, use the primary language for ALL analysis fields
 - Format the transcription with clear "Speaker 1:" and "Speaker 2:" labels
 - Fix recognition errors based on real estate context
 
 SUMMARY REQUIREMENTS:
-Create a comprehensive, detailed summary (150-200 words) that includes:
+Create a comprehensive, detailed summary (150-200 words) IN THE SAME LANGUAGE AS THE CONVERSATION that includes:
 - Specific property details discussed (exact location, size, features)
 - Price negotiations and financial terms mentioned
 - Client's specific needs, requirements, and preferences
@@ -151,12 +156,21 @@ Create a comprehensive, detailed summary (150-200 words) that includes:
 
 Make the summary actionable and specific, not generic. Include actual numbers, locations, and concrete details mentioned in the conversation.
 
+ANALYSIS REQUIREMENTS (ALL IN ORIGINAL CONVERSATION LANGUAGE):
+- POSITIVES: Identify what went well in the call (good rapport, clear communication, client engagement)
+- NEGATIVES: Identify what didn't go well (missed opportunities, poor communication, client confusion)
+- IMPROVEMENT POINTS: Suggest specific ways to improve future calls (better questions, clearer explanations)
+- FOLLOW-UPS: Specific actionable next steps with timelines
+- PRE-APPROVAL STATUS: Check if client mentions having "אישור עקרוני" or "אישור משכנתה" (mortgage pre-approval) - set to true if mentioned, false if explicitly stated they don't have it, null if not discussed
+
 Respond ONLY in this JSON format:
 {
   "transcription": "Speaker 1: ... Speaker 2: ... (formatted with speaker labels)",
   "summary": "comprehensive detailed summary with specific information and actionable insights (200-300 words)",
   "followUps": ["specific actionable follow-up with timeline", "detailed next step with context", ...],
   "positives": ["specific positive aspect with context", "detailed strength of the interaction", ...],
+  "negatives": ["specific negative aspect that didn't go well", "communication issues or missed opportunities", ...],
+  "improvementPoints": ["specific way to improve future calls", "better approach or technique to use", ...],
   "issues": ["specific concern with suggested resolution", "detailed problem with context", ...],
   "intent": "buyer|seller|unknown",
   "location": "specific city, neighborhood, or area name",
@@ -168,8 +182,10 @@ Respond ONLY in this JSON format:
   "floor": 0,
   "parking": true|false|null,
   "balcony": true|false|null,
-  "propertyNotes": "detailed notes about property features, restrictions, or special conditions"
-}`;
+  "propertyNotes": "detailed notes about property features, restrictions, or special conditions",
+  "preApproval": true|false|null
+}
+`;
     
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -195,6 +211,8 @@ Respond ONLY in this JSON format:
       summary: result.summary || 'No summary available',
       followUps: result.followUps || [],
       positives: result.positives || [],
+      negatives: result.negatives || [],
+      improvementPoints: result.improvementPoints || [],
       issues: result.issues || [],
       intent: result.intent || 'unknown',
       location: result.location || '',
@@ -206,7 +224,8 @@ Respond ONLY in this JSON format:
       floor: result.floor || null,
       parking: result.parking,
       balcony: result.balcony,
-      propertyNotes: result.propertyNotes || ''
+      propertyNotes: result.propertyNotes || '',
+      preApproval: result.preApproval || null
     };
   } catch (error) {
     logger.error('Error in enhanced analysis:', error);

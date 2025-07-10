@@ -50,7 +50,7 @@ export default function CallDetailPage({ params }) {
     const hasPropertyData = call.intent || call.location || call.propertyType || 
                            call.rooms || call.area || call.price || call.condition ||
                            call.floor !== null || call.parking !== null || 
-                           call.balcony !== null || call.propertyNotes;
+                           call.balcony !== null || call.propertyNotes || call.preApproval !== null;
 
     if (!hasPropertyData) {
       return (
@@ -145,6 +145,17 @@ export default function CallDetailPage({ params }) {
                 call.balcony ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
                 {call.balcony ? 'כן' : 'לא'}
+              </span>
+            </div>
+          )}
+
+          {call.preApproval !== null && call.preApproval !== undefined && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">אישור עקרוני</h4>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                call.preApproval ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {call.preApproval ? 'יש אישור עקרוני' : 'אין אישור עקרוני'}
               </span>
             </div>
           )}
@@ -247,6 +258,9 @@ export default function CallDetailPage({ params }) {
               { key: 'Summary', label: 'סיכום' },
               { key: 'Property Details', label: 'פרטי נכס' },
               { key: 'Follow-ups', label: 'מעקבים' },
+              { key: 'Positives', label: 'נקודות חיוביות' },
+              { key: 'Negatives', label: 'נקודות שליליות' },
+              { key: 'Improvement Points', label: 'נקודות לשיפור' },
               { key: 'Issues', label: 'בעיות' }
             ].map((tab) => (
                 <button
@@ -284,19 +298,6 @@ export default function CallDetailPage({ params }) {
                     <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{call.summary}</p>
                   </div>
                 </div>
-                
-                {call.positives && call.positives.length > 0 && (
-                  <div>
-                    <h4 className="text-md font-semibold text-green-700 mb-3">היבטים חיוביים</h4>
-                    <div className="space-y-2">
-                      {call.positives.map((positive, index) => (
-                        <div key={index} className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
-                          <p className="text-green-800">{positive}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -321,6 +322,63 @@ export default function CallDetailPage({ params }) {
                   ) : (
                   <div className="text-center py-8 text-gray-500">
                     <p>לא זוהו מעקבים ספציפיים לשיחה זו.</p>
+                </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'Positives' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">נקודות חיוביות</h3>
+                {call.positives && call.positives.length > 0 ? (
+                  <div className="space-y-3">
+                    {call.positives.map((positive, index) => (
+                      <div key={index} className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+                        <p className="text-green-800">{positive}</p>
+                      </div>
+                      ))}
+                  </div>
+                  ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>לא זוהו נקודות חיוביות לשיחה זו.</p>
+                </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'Negatives' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">נקודות שליליות</h3>
+                {call.negatives && call.negatives.length > 0 ? (
+                  <div className="space-y-3">
+                    {call.negatives.map((negative, index) => (
+                      <div key={index} className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                        <p className="text-red-800">{negative}</p>
+                      </div>
+                      ))}
+                  </div>
+                  ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>לא זוהו נקודות שליליות לשיחה זו.</p>
+                </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'Improvement Points' && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">נקודות לשיפור</h3>
+                {call.improvementPoints && call.improvementPoints.length > 0 ? (
+                  <div className="space-y-3">
+                    {call.improvementPoints.map((point, index) => (
+                      <div key={index} className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                        <p className="text-yellow-800">{point}</p>
+                      </div>
+                      ))}
+                  </div>
+                  ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>לא זוהו נקודות לשיפור לשיחה זו.</p>
                 </div>
                 )}
               </div>

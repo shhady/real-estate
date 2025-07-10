@@ -121,6 +121,85 @@ export default function ClientDetailsPage() {
     return { color: colors[intent] || colors.unknown, label: labels[intent] || intent };
   };
 
+  // Translate property type to Hebrew
+  const translatePropertyType = (type) => {
+    const translations = {
+      apartment: 'דירה',
+      house: 'בית',
+      villa: 'וילה',
+      penthouse: 'פנטהאוז',
+      duplex: 'דופלקס',
+      triplex: 'טריפלקס',
+      studio: 'סטודיו',
+      loft: 'לופט',
+      cottage: 'צימר',
+      townhouse: 'בית עירוני',
+      land: 'קרקע',
+      commercial: 'מסחרי',
+      office: 'משרד',
+      warehouse: 'מחסן',
+      garage: 'חניה/מוסך',
+      basement: 'מרתף',
+      roof: 'גג',
+      garden: 'גינה',
+      balcony: 'מרפסת',
+      terrace: 'טרסה'
+    };
+    return translations[type] || type;
+  };
+
+  // Translate property condition to Hebrew
+  const translatePropertyCondition = (condition) => {
+    const translations = {
+      'new': 'חדש',
+      'excellent': 'מצוין',
+      'good': 'טוב',
+      'fair': 'בסדר',
+      'needs renovation': 'זקוק לשיפוץ',
+      'under construction': 'בבנייה',
+      'old': 'ישן',
+      'renovated': 'משופץ',
+      'partially renovated': 'משופץ חלקית'
+    };
+    return translations[condition] || condition;
+  };
+
+  // Format price range
+  const formatPriceRange = (minPrice, maxPrice) => {
+    if (minPrice && maxPrice) {
+      return `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
+    } else if (minPrice) {
+      return `מינימום ${formatCurrency(minPrice)}`;
+    } else if (maxPrice) {
+      return `מקסימום ${formatCurrency(maxPrice)}`;
+    }
+    return 'לא צוין';
+  };
+
+  // Format area range
+  const formatAreaRange = (minArea, maxArea) => {
+    if (minArea && maxArea) {
+      return `${minArea} - ${maxArea} מ"ר`;
+    } else if (minArea) {
+      return `מינימום ${minArea} מ"ר`;
+    } else if (maxArea) {
+      return `מקסימום ${maxArea} מ"ר`;
+    }
+    return 'לא צוין';
+  };
+
+  // Format rooms range
+  const formatRoomsRange = (minRooms, maxRooms) => {
+    if (minRooms && maxRooms) {
+      return `${minRooms} - ${maxRooms} חדרים`;
+    } else if (minRooms) {
+      return `מינימום ${minRooms} חדרים`;
+    } else if (maxRooms) {
+      return `מקסימום ${maxRooms} חדרים`;
+    }
+    return 'לא צוין';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -162,7 +241,13 @@ export default function ClientDetailsPage() {
               >
                  חזור לרשימת הלקוחות
               </Link>
+              <div className="flex items-center gap-2">
               <h1 className="text-3xl font-bold text-gray-900">{client.clientName}</h1>
+              {client.preApproval && (
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">יש אישור עקרוני </span>
+                        )}
+                        </div>
+
               <div className="flex items-center gap-2 mt-2">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}>
                   {statusBadge.label}
@@ -199,6 +284,7 @@ export default function ClientDetailsPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Contact Information */}
             <div className="bg-white rounded-lg shadow-md p-6">
+              
               <h2 className="text-xl font-semibold text-gray-900 mb-4">פרטי קשר</h2>
               <div className="space-y-3">
                 <div className="flex items-center">
@@ -234,52 +320,34 @@ export default function ClientDetailsPage() {
                 {client.preferredPropertyType && (
                   <div>
                     <span className="text-sm font-medium text-gray-500">סוג נכס:</span>
-                    <p className="text-gray-900">{client.preferredPropertyType}</p>
+                    <p className="text-gray-900">{translatePropertyType(client.preferredPropertyType)}</p>
                   </div>
                 )}
                 {(client.minRooms || client.maxRooms) && (
                   <div>
                     <span className="text-sm font-medium text-gray-500">מספר חדרים:</span>
-                    <p className="text-gray-900">
-                      {client.minRooms && client.maxRooms 
-                        ? `${client.minRooms} - ${client.maxRooms}`
-                        : client.minRooms 
-                        ? `מינימום ${client.minRooms}`
-                        : `מקסימום ${client.maxRooms}`}
-                    </p>
+                    <p className="text-gray-900">{formatRoomsRange(client.minRooms, client.maxRooms)}</p>
                   </div>
                 )}
                 {(client.minArea || client.maxArea) && (
                   <div>
-                    <span className="text-sm font-medium text-gray-500">שטח (מ"ר):</span>
-                    <p className="text-gray-900">
-                      {client.minArea && client.maxArea 
-                        ? `${client.minArea} - ${client.maxArea}`
-                        : client.minArea 
-                        ? `מינימום ${client.minArea}`
-                        : `מקסימום ${client.maxArea}`}
-                    </p>
+                    <span className="text-sm font-medium text-gray-500">שטח:</span>
+                    <p className="text-gray-900">{formatAreaRange(client.minArea, client.maxArea)}</p>
                   </div>
                 )}
                 {(client.minPrice || client.maxPrice) && (
                   <div>
                     <span className="text-sm font-medium text-gray-500">תקציב:</span>
-                    <p className="text-gray-900">
-                      {client.minPrice && client.maxPrice 
-                        ? `${formatCurrency(client.minPrice)} - ${formatCurrency(client.maxPrice)}`
-                        : client.minPrice 
-                        ? `מינימום ${formatCurrency(client.minPrice)}`
-                        : `מקסימום ${formatCurrency(client.maxPrice)}`}
-                    </p>
+                    <p className="text-gray-900">{formatPriceRange(client.minPrice, client.maxPrice)}</p>
                   </div>
                 )}
                 {client.preferredCondition && (
                   <div>
                     <span className="text-sm font-medium text-gray-500">מצב נכס:</span>
-                    <p className="text-gray-900">{client.preferredCondition}</p>
+                    <p className="text-gray-900">{translatePropertyCondition(client.preferredCondition)}</p>
                   </div>
                 )}
-                {(client.needsParking !== null || client.needsBalcony !== null) && (
+                {(client.needsParking || client.needsBalcony || !client.preApproval) && (
                   <div className="md:col-span-2">
                     <span className="text-sm font-medium text-gray-500">דרישות נוספות:</span>
                     <div className="flex gap-4 mt-1">
@@ -288,6 +356,9 @@ export default function ClientDetailsPage() {
                       )}
                       {client.needsBalcony && (
                         <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">מרפסת</span>
+                      )}
+                      {!client.preApproval && (
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">צריך אישור עקרוני</span>
                       )}
                     </div>
                   </div>

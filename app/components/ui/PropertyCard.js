@@ -12,6 +12,8 @@ const PropertyCard = ({ property }) => {
     bathrooms,
     area,
     images,
+    video,
+    contentType,
     status
   } = property;
 
@@ -20,17 +22,33 @@ const PropertyCard = ({ property }) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
+  // Determine if this property should show video
+  const isVideoProperty = (contentType === 'video' || contentType === 'video-from-images') && video?.secure_url;
+
   return (
     <Link href={`/properties/${_id}`}>
       <div className="group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
         <div className="relative h-56 w-full">
-          <Image
-            src={images[0]?.secure_url || '/placeholder-property.jpg'}
-            alt={title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-110"
-          />
+          {isVideoProperty ? (
+            // Show autoplay muted video for video-only properties
+            <video
+              src={video.secure_url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            />
+          ) : (
+            // Show image for image properties (keep current behavior)
+            <Image
+              src={images[0]?.secure_url || '/placeholder-property.jpg'}
+              alt={title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
+            />
+          )}
           <div className="absolute inset-0 bg-black bg-opacity-20 transition-opacity duration-300 group-hover:bg-opacity-30" />
           <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
             {status === 'For Sale' ? 'למכירה' : 'להשכרה'}

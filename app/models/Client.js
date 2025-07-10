@@ -19,6 +19,7 @@ const ClientSchema = new mongoose.Schema({
   preferredCondition: { type: String },
   needsParking: { type: Boolean },
   needsBalcony: { type: Boolean },
+  preApproval: { type: Boolean }, // NEW: אישור עקרוני/אישור משכנתא
   
   // Client information
   notes: { type: String }, // General notes about the client

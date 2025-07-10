@@ -14,6 +14,34 @@ export default function MatchingPage() {
   const [expandedDetails, setExpandedDetails] = useState({});
   const router = useRouter();
 
+  // Translate property type to Hebrew
+  const translatePropertyType = (type) => {
+    const translations = {
+      apartment: 'דירה',
+      house: 'בית',
+      villa: 'וילה',
+      penthouse: 'פנטהאוז',
+      duplex: 'דופלקס',
+      triplex: 'טריפלקס',
+      studio: 'סטודיו',
+      loft: 'לופט',
+      cottage: 'צימר',
+      townhouse: 'בית עירוני',
+      land: 'קרקע',
+      commercial: 'מסחרי',
+      office: 'משרד',
+      warehouse: 'מחסן',
+      garage: 'חניה/מוסך',
+      basement: 'מרתף',
+      roof: 'גג',
+      garden: 'גינה',
+      balcony: 'מרפסת',
+      terrace: 'טרסה',
+      condo: 'דירה'
+    };
+    return translations[type] || type;
+  };
+
   useEffect(() => {
     fetchMatches();
   }, [activeTab]);
@@ -65,7 +93,10 @@ export default function MatchingPage() {
     return (
       <div className="mt-3">
         <button
-          onClick={onToggle}
+          onClick={(e) => {
+            e.preventDefault();
+            onToggle();
+          }}
           className="text-xs text-blue-600 hover:text-blue-800 font-medium"
         >
           {isExpanded ? 'הסתר פרטים' : 'הצג פרטי התאמה'}
@@ -413,13 +444,13 @@ export default function MatchingPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
-                        <FaMapMarkerAlt className="h-4 w-4 mr-1 text-gray-400" />
+                        <FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />
                         {property.location || 'לא צוין'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {property.propertyType || 'לא צוין'}
+                        {translatePropertyType(property.propertyType) || 'לא צוין'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -430,13 +461,13 @@ export default function MatchingPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
-                        <FaBed className="h-4 w-4 mr-1 text-gray-400" />
+                        <FaBed className="h-4 w-4 mx-1 text-gray-400" />
                         {property.bedrooms || 0}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
-                        <FaExpand className="h-4 w-4 mr-1 text-gray-400" />
+                        <FaExpand className="h-4 w-4 mx-1 text-gray-400" />
                         {property.area || 0} מ"ר
                       </div>
                     </td>
@@ -638,7 +669,7 @@ export default function MatchingPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
                         <FaHome className="h-4 w-4 mr-1 text-gray-400" />
-                        {client.preferredPropertyType || 'לא צוין'}
+                        {translatePropertyType(client.preferredPropertyType) || 'לא צוין'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
