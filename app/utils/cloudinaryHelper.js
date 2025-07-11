@@ -13,7 +13,7 @@ export function extractPublicIdFromUrl(url, resourceType = 'video') {
   if (!url) return null;
   
   try {
-    // Example URL: https://res.cloudinary.com/cloud_name/video/upload/v1234567890/folder/public_id.mp4
+    console.log('Extracting public ID from URL:', url);
     const urlObj = new URL(url);
     
     // Check if it's a Cloudinary URL
@@ -24,32 +24,53 @@ export function extractPublicIdFromUrl(url, resourceType = 'video') {
     
     // Get the path segments
     const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+    console.log('Path segments:', pathSegments);
     
-    // The format should be: [resource_type, delivery_type, version, public_id+extension]
-    // We need to validate that the resource type matches and then extract the public ID
-    if (pathSegments.length < 4 || pathSegments[0] !== resourceType) {
-      console.warn('Invalid Cloudinary URL format:', url);
+    // Find the resource type and upload type indices
+    let resourceTypeIndex = -1;
+    let uploadIndex = -1;
+    
+    for (let i = 0; i < pathSegments.length; i++) {
+      if (pathSegments[i] === resourceType) {
+        resourceTypeIndex = i;
+      }
+      if (pathSegments[i] === 'upload') {
+        uploadIndex = i;
+        break;
+      }
+    }
+    
+    if (resourceTypeIndex === -1 || uploadIndex === -1) {
+      console.warn('Could not find resource type or upload in URL:', url);
       return null;
     }
     
-    // Check if we have a version segment (typically v1234567890)
-    const versionSegmentIndex = pathSegments.findIndex(segment => segment.startsWith('v'));
+    // Look for version segment after upload
+    let publicIdStartIndex = uploadIndex + 1;
     
-    if (versionSegmentIndex === -1 || versionSegmentIndex === pathSegments.length - 1) {
-      console.warn('Cannot find version segment in URL:', url);
+    // Check if there's a version segment (starts with 'v' followed by numbers)
+    if (publicIdStartIndex < pathSegments.length && 
+        pathSegments[publicIdStartIndex].match(/^v\d+$/)) {
+      // Skip the version segment
+      publicIdStartIndex++;
+    }
+    
+    // Check if we have any segments left for the public ID
+    if (publicIdStartIndex >= pathSegments.length) {
+      console.warn('No public ID segments found in URL:', url);
       return null;
     }
     
-    // Everything after the version segment is the public ID, need to join with '/'
-    // We also need to remove the file extension
-    const publicIdWithExt = pathSegments.slice(versionSegmentIndex + 1).join('/');
+    // Everything from publicIdStartIndex onwards is the public ID
+    const publicIdWithExt = pathSegments.slice(publicIdStartIndex).join('/');
     
-    // Remove extension
+    // Remove extension if present
     const lastDotIndex = publicIdWithExt.lastIndexOf('.');
     const publicId = lastDotIndex !== -1 
       ? publicIdWithExt.substring(0, lastDotIndex) 
       : publicIdWithExt;
     
+    console.log('Extracted public ID:', publicId);
     return publicId;
   } catch (error) {
     console.error('Error extracting public ID from URL:', error);

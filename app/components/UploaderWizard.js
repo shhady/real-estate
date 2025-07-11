@@ -13,8 +13,9 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [error, setError] = useState(null);
   
-  // Generated video URL from JSON2Video
+  // Generated video URL and public ID from video generation
   const [videoUrl, setVideoUrl] = useState('');
+  const [videoPublicId, setVideoPublicId] = useState('');
   const [isVideoMode, setIsVideoMode] = useState(false);
 
   console.log('Selected content type:', selectedContentType);
@@ -54,19 +55,23 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
 
   // Video generation status
   const [videoGenerationStatus, setVideoGenerationStatus] = useState("preparing");
+  
+  // User data state to store complete user information including profile image
+  const [userData, setUserData] = useState(null);
 
-  // Fetch user data for agent name, phone, and agency name
+  // Fetch user data for agent name, phone, agency name, and profile image
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const res = await fetch('/api/users/profile');
         if (res.ok) {
-          const userData = await res.json();
+          const fetchedUserData = await res.json();
+          setUserData(fetchedUserData); // Store complete user data
           setPropertyData(prev => ({
             ...prev,
-            agentName: userData.fullName || '',
-            phone: userData.phone || '',
-            agencyName: userData.agencyName || ''
+            agentName: fetchedUserData.fullName || '',
+            phone: fetchedUserData.phone || '',
+            agencyName: fetchedUserData.agencyName || ''
           }));
         }
       } catch (error) {
@@ -85,6 +90,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       setCurrentStep(1);
       setError(null);
       setVideoUrl('');
+      setVideoPublicId('');
       setIsVideoMode(false);
       // Reset property data but preserve agent name, phone, and agency name if they exist
       setPropertyData(prev => ({
@@ -201,6 +207,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         agentName: propertyData.agentName,
         phone: propertyData.phone,
         agencyName: propertyData.agencyName || '',
+        userProfileImage: userData?.profileImage?.secure_url || null, // Add user's profile image
         descriptionHE: descriptions.hebrew,
         // We're not using Arabic descriptions anymore
         languageChoice: effectiveLanguageChoice,
@@ -219,6 +226,8 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         imageCount: imageUrls.length,
         propertyTitle: listingData.listing.title,
         propertyLocation: listingData.listing.location,
+        agentName: listingData.agentName,
+        userProfileImage: listingData.userProfileImage ? 'Profile image available' : 'Using default image',
         languageChoice
       });
       
@@ -227,9 +236,10 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       
       const result = await generateRealEstateVideo(listingData);
       
-      // Store the video URL
+      // Store the video URL and public ID
       console.log('Video generation completed', result);
       setVideoUrl(result.videoUrl);
+      setVideoPublicId(result.videoPublicId);
       setVideoGenerationStatus("completed");
       
       // Move to step 4 to show completion
@@ -283,7 +293,8 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         descriptionHE: descriptions.hebrew,
         descriptionAR: descriptions.arabic,
         languageChoice: languageChoice,
-        videoUrl: videoUrl || null
+        videoUrl: videoUrl || null,
+        videoPublicId: videoPublicId || null
       };
       
       console.log('Saving property to MongoDB...', propertyPayload);
@@ -392,8 +403,9 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         const result = await deleteCloudinaryResource(videoUrl);
         console.log('Video deletion result:', result);
         
-        // Clear the video URL
+        // Clear the video URL and public ID
         setVideoUrl('');
+        setVideoPublicId('');
         
         alert('הסרטון נמחק בהצלחה.');
       }
@@ -794,7 +806,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                 </p>
                 {videoGenerationStatus === "generating" && (
                   <p className="mt-4 text-sm text-blue-600">
-                    תהליך זה ייצר סרטון בו כל תמונה מוצגת למשך 5 שניות, עם אנימציות ומידע על הנכס
+                    תהליך זה ייצר סרטון בו כל תמונה מוצגת למשך כמה שניות, עם אנימציות ומידע על הנכס
                   </p>
                 )}
               </div>
