@@ -131,7 +131,10 @@ export default async function PropertyPage({ params }) {
             {property.video && (property.contentType === 'video' || property.contentType === 'video-from-images') && (
               <div className="mb-4">
                 <video 
+                   autoPlay
+                   muted
                   controls 
+                  playsInline
                   className="w-full rounded-lg shadow-lg"
                   style={{ maxHeight: '500px' }}
                 >
