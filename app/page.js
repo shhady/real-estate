@@ -2,6 +2,7 @@ import Hero from './components/home/Hero';
 import PropertyCard from './components/ui/PropertyCard';
 import { FaHome, FaSearch, FaUserTie, FaHandshake } from 'react-icons/fa';
 import { Suspense } from 'react';
+import Link from 'next/link';
 import connectDB from './lib/mongodb';
 import Property from './models/Property';
 import User from './models/User';
@@ -18,7 +19,7 @@ async function getLatestProperties() {
         select: 'fullName email phone'
       })
       .sort({ createdAt: -1 })
-      .limit(10)
+      .limit(8)
       .lean();
 
     // Convert _id to string and sanitize data
@@ -72,6 +73,116 @@ export default async function Home() {
       </div>}>
         <Hero />
       </Suspense>
+
+      {/* User Guide Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900">מה חשוב לדעת</h2>
+            <p className="mt-4 text-xl text-gray-600">
+              מידע חיוני לכל סוג משתמש בשוק הנדל"ן
+            </p>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Seller Guide */}
+            <div className="bg-blue-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-blue-100">
+              <div className="flex justify-center">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                  <FaHome className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900 text-center ">
+                מוכר
+              </h3>
+              <ul className="mt-3 text-sm text-gray-600 space-y-2">
+                <li>• קבע מחיר הוגן לפי שוק</li>
+                <li>• הכן תמונות איכותיות</li>
+                <li>• וודא מסמכים חוקיים</li>
+                <li>• בחר סוכן מנוסה</li>
+                <li>• השקע בהכנה לצפייה</li>
+              </ul>
+              <div className="mt-4 text-center">
+                <Link href="/seller/1" className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
+                  קרא עוד
+                </Link>
+              </div>
+            </div>
+
+            {/* Buyer Guide */}
+            <div className="bg-green-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-green-100">
+              <div className="flex justify-center">
+                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                  <FaSearch className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900 text-center">
+                קונה
+              </h3>
+              <ul className="mt-3 text-sm text-gray-600 space-y-2">
+                <li>• קבע תקציב ומקורות מימון</li>
+                <li>• בדוק מחירי שוק באזור</li>
+                <li>• בצע בדיקת עורך דין</li>
+                <li>• בדוק תשתיות ומצב הנכס</li>
+                <li>• השווה כמה אפשרויות</li>
+              </ul>
+              <div className="mt-4 text-center">
+                <Link href="/buyer/1" className="text-green-600 hover:text-green-800 text-sm font-medium transition-colors">
+                  קרא עוד
+                </Link>
+              </div>
+            </div>
+
+            {/* Renter Guide */}
+            <div className="bg-purple-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-purple-100">
+              <div className="flex justify-center">
+                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                  <FaUserTie className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900 text-center">
+                שוכר
+              </h3>
+              <ul className="mt-3 text-sm text-gray-600 space-y-2">
+                <li>• בדוק הכנסה לעומת שכירות</li>
+                <li>• קרא בעיון את חוזה השכירות</li>
+                <li>• בדוק מצב הדירה בקפדנות</li>
+                <li>• ברר על דמי ועד/ארנונה</li>
+                <li>• הכן ערבויות נדרשות</li>
+              </ul>
+              <div className="mt-4 text-center">
+                <Link href="/renter/1" className="text-purple-600 hover:text-purple-800 text-sm font-medium transition-colors">
+                  קרא עוד
+                </Link>
+              </div>
+            </div>
+
+            {/* Landlord Guide */}
+            <div className="bg-orange-50 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-orange-100">
+              <div className="flex justify-center">
+                <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center">
+                  <FaHandshake className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900 text-center">
+                משכיר
+              </h3>
+              <ul className="mt-3 text-sm text-gray-600 space-y-2">
+                <li>• בדוק רקע פיננסי של שוכר</li>
+                <li>• הכן חוזה שכירות מפורט</li>
+                <li>• קבע דמי שכירות הוגנים</li>
+                <li>• ודא ביטוח נכס מתאים</li>
+                <li>• החזק את הנכס במצב טוב</li>
+              </ul>
+              <div className="mt-4 text-center">
+                <Link href="/landlord/1" className="text-orange-600 hover:text-orange-800 text-sm font-medium transition-colors">
+                  קרא עוד
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="py-16 bg-gray-50">
