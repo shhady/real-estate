@@ -31,6 +31,7 @@ export default function SignUpPage() {
   const [logoPreview, setLogoPreview] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [processingLogo, setProcessingLogo] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -104,31 +105,106 @@ export default function SignUpPage() {
         };
       }
 
-      // Upload logo to Cloudinary if selected
+      // Process logo with background removal if selected
       if (formData.logo) {
+        console.log('🎯 STARTING LOGO PROCESSING - Sign-up');
+        console.log('🎯 Logo exists:', !!formData.logo);
+        console.log('🎯 Logo details:', {
+          name: formData.logo.name,
+          size: formData.logo.size,
+          type: formData.logo.type
+        });
+
         const logoFormData = new FormData();
-        logoFormData.append('file', formData.logo);
-        logoFormData.append('upload_preset', 'real-estate');
+        logoFormData.append('logo', formData.logo);
+        
+        console.log('🎯 FormData created for logo');
+        console.log('🎯 FormData keys:', Array.from(logoFormData.keys()));
 
-        const uploadRes = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
+        console.log('🔄 Processing logo with background removal...');
+        console.log('Logo file details:', {
+          name: formData.logo.name,
+          size: formData.logo.size,
+          type: formData.logo.type
+        });
+        
+        setProcessingLogo(true);
+        
+        try {
+          console.log('📡 Making API call to /api/users/process-logo...');
+          console.log('📡 Request URL:', '/api/users/process-logo');
+          console.log('📡 Current location:', window.location.href);
+          
+          const uploadRes = await fetch('/api/users/process-logo', {
             method: 'POST',
+            headers: {
+              'x-signup-request': 'true'
+            },
             body: logoFormData,
-          }
-        );
+          });
 
-        if (!uploadRes.ok) throw new Error('Error uploading logo');
-        const logoResponse = await uploadRes.json();
-        
-        const overlayPublicId = logoResponse.public_id ? 
-          `l_${logoResponse.public_id.replace(/[\/\-\.]/g, '_')}` : null;
-        
-        logoData = {
-          secure_url: logoResponse.secure_url,
-          publicId: logoResponse.public_id,
-          overlayPublicId: overlayPublicId
-        };
+          console.log('Response status:', uploadRes.status);
+          console.log('Response headers:', Object.fromEntries(uploadRes.headers.entries()));
+
+          if (!uploadRes.ok) {
+            const errorText = await uploadRes.text();
+            console.error('❌ Background removal failed:', errorText);
+            throw new Error(`Background removal failed: ${uploadRes.status}`);
+          }
+          
+          const responseText = await uploadRes.text();
+          
+          try {
+            logoData = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error('❌ JSON parsing error:', parseError);
+            console.error('❌ Response text:', responseText);
+            throw new Error('Invalid response from background removal service');
+          }
+          
+          console.log('=== LOGO PROCESSING COMPLETE (Signup) ===');
+          console.log('Processed logo data:', logoData);
+          console.log('secure_url:', logoData.secure_url);
+          console.log('publicId:', logoData.publicId);
+          console.log('overlayPublicId:', logoData.overlayPublicId);
+          console.log('=========================================');
+        } catch (fetchError) {
+          console.error('❌ Error in background removal request:', fetchError);
+          console.error('❌ Error type:', typeof fetchError);
+          console.error('❌ Error constructor:', fetchError.constructor.name);
+          console.error('❌ Error message:', fetchError.message);
+          console.error('❌ Full error object:', fetchError);
+          
+          // Fall back to direct upload if background removal fails
+          console.log('🔄 Falling back to direct upload due to error...');
+          const fallbackLogoFormData = new FormData();
+          fallbackLogoFormData.append('file', formData.logo);
+          fallbackLogoFormData.append('upload_preset', 'real-estate');
+
+          const uploadRes = await fetch(
+            `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+              method: 'POST',
+              body: fallbackLogoFormData,
+            }
+          );
+
+          if (!uploadRes.ok) throw new Error('Error uploading logo');
+          const logoResponse = await uploadRes.json();
+          
+          const overlayPublicId = logoResponse.public_id ? 
+            `l_${logoResponse.public_id.replace(/[\/\-\.]/g, '_')}` : null;
+          
+          logoData = {
+            secure_url: logoResponse.secure_url,
+            publicId: logoResponse.public_id,
+            overlayPublicId: overlayPublicId
+          };
+          
+          console.log('⚠️ Used fallback upload (no background removal)');
+        } finally {
+          setProcessingLogo(false);
+        }
       }
 
       // Register user with Cloudinary image data
@@ -325,7 +401,7 @@ export default function SignUpPage() {
               <label htmlFor="agencyLogo" className="block text-sm font-medium text-gray-700">
                 הלוגו של הסוכנות
               </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+              <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${processingLogo ? 'border-blue-400 bg-blue-50' : 'border-gray-300'}`}>
                 <div className="space-y-1 text-center">
                   {logoPreview ? (
                     <div className="relative w-32 h-32 mx-auto">
@@ -355,6 +431,7 @@ export default function SignUpPage() {
                             type="file"
                             accept="image/*"
                             onChange={handleLogoChange}
+                            disabled={processingLogo}
                             className="sr-only"
                           />
                         </label>
@@ -363,6 +440,11 @@ export default function SignUpPage() {
                       <p className="text-xs text-gray-500">
                         PNG, JPG עד 10MB
                       </p>
+                      {processingLogo && (
+                        <p className="text-xs text-blue-600 font-medium">
+                          מעבד את הלוגו ומסיר רקע...
+                        </p>
+                      )}
                     </>
                   )}
                 </div>
@@ -494,10 +576,10 @@ export default function SignUpPage() {
             <div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || processingLogo}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                {loading ? 'מבצע הרשמה...' : 'הרשמה'}
+                {processingLogo ? 'מעבד לוגו...' : loading ? 'מבצע הרשמה...' : 'הרשמה'}
               </button>
             </div>
           </form>

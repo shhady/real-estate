@@ -6,7 +6,7 @@ This is a comprehensive real estate platform built with Next.js that provides an
 ## 🔐 Authentication & User Management
 
 ### User Registration & Login
-- **Sign Up**: `/sign-up` - Complete agent registration with profile images and logos
+- **Sign Up**: `/sign-up` - Complete agent registration with profile images and logos (automatic background removal)
 - **Sign In**: `/sign-in` - User authentication with session management
 - **Profile Management**: `/dashboard/profile` - Update personal information, profile images, and agency logos (automatic background removal)
 
@@ -285,23 +285,23 @@ This is a comprehensive real estate platform built with Next.js that provides an
 - `POST /api/cloudinary/signature` - Signed upload authentication
 - `GET /api/cloudinary/test` - Connection testing
 - `POST /api/cloudinary/delete` - Media deletion
-- `POST /api/users/process-logo` - Logo processing with background removal (authenticated users)
+- `POST /api/users/process-logo` - Logo processing with background removal (authenticated users and registration)
 
 ### Media Features
 - **User Logo System**: Dynamic logo overlay application
 - **Multi-format Support**: Images, videos, audio files
 - **Automatic Optimization**: Size and quality optimization
 - **Secure Upload**: Signed uploads with authentication
-- **Background Removal**: Automatic logo background removal using Remove.bg API (profile updates only)
+- **Background Removal**: Automatic logo background removal using Remove.bg API
 
 ### Background Removal System
-- **Automatic Processing**: Seamless background removal for uploaded logos during profile updates
+- **Automatic Processing**: Seamless background removal for uploaded logos during registration and profile updates
 - **Remove.bg Integration**: Professional-grade background removal service
 - **Quality Preservation**: Maintains logo quality while removing backgrounds
 - **Cloudinary Integration**: Processed logos automatically uploaded to Cloudinary
 - **Error Handling**: Graceful handling of processing errors with user feedback
 - **Overlay Generation**: Automatic generation of overlay IDs for video processing
-- **Authenticated Users Only**: Background removal available for profile updates only
+- **Dual Endpoints**: Separate endpoints for registration and authenticated user updates
 - **Fallback Support**: Automatically falls back to regular upload if background removal fails
 - **Visual Feedback**: Real-time processing indicators and status updates
 

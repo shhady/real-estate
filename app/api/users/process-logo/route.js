@@ -4,13 +4,17 @@ import { removeBg, uploadProcessedImage } from '../../../utils/backgroundRemoval
 
 export async function POST(request) {
   try {
-    const user = await getUser();
-    if (!user) {
-      console.log('❌ Unauthorized access attempt');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    console.log('🚀 /api/users/process-logo endpoint called');
+    
+    // Try to get user (for profile updates), but allow non-authenticated requests (for sign-up)
+    let user = null;
+    try {
+      user = await getUser();
+      if (user) {
+        console.log('✅ Authenticated user (profile update):', user.userId);
+      }
+    } catch (authError) {
+      console.log('📝 Non-authenticated request (sign-up)');
     }
 
     // Get the uploaded file from form data
@@ -27,7 +31,6 @@ export async function POST(request) {
 
     console.log('=== LOGO PROCESSING START ===');
     console.log('Original file:', file.name, 'Size:', file.size, 'Type:', file.type);
-    console.log('User ID:', user.userId);
     
     // Check if Remove.bg API key is configured
     if (!process.env.REMOVEBG_API_KEY) {

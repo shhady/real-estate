@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server';
-
 export async function removeBg(imageBuffer) {
   try {
     if (!process.env.REMOVEBG_API_KEY) {
