@@ -254,7 +254,7 @@ export async function POST(request) {
                lastCallSummary: analysis.summary,
                lastCallDate: new Date(),
                source: 'call',
-               status: 'prospect'
+               status: 'active'
              });
              
              clientId = newClient._id;
