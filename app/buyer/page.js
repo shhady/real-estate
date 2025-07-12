@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FaCalculator, FaUniversity, FaSearch, FaHome, FaGavel, FaFileContract, FaArrowLeft } from 'react-icons/fa';
+import { FaCalculator, FaUniversity, FaSearch, FaHome, FaGavel, FaFileContract, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 const steps = [
   {
