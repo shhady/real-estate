@@ -4,6 +4,7 @@ import Property from '../../../models/Property';
 import { getUser } from '../../../lib/auth';
 import { deleteImage } from '../../../lib/cloudinary';
 
+
 // GET single property
 export async function GET(request, { params }) {
   const { id } = await params;
@@ -51,6 +52,11 @@ export async function PUT(request, { params }) {
 
     console.log('Updating property with data:', data); // Debug log
     
+    // Check if collaboration is being enabled (was false, now true)
+    const wasCollaborationEnabled = Boolean(property.collaboration);
+    const isCollaborationEnabled = Boolean(data.collaboration);
+    const collaborationJustEnabled = !wasCollaborationEnabled && isCollaborationEnabled;
+    
     // Clean undefined values from data
     const cleanData = {};
     Object.keys(data).forEach(key => {
@@ -68,6 +74,9 @@ export async function PUT(request, { params }) {
       model: 'User',
       select: 'fullName email phone whatsapp bio profileImage'
     });
+
+    // Note: Collaboration emails are now handled in the UI to allow users to select which agents to notify
+    // This ensures emails are only sent when explicitly requested by the user
 
     return NextResponse.json(updatedProperty);
   } catch (error) {

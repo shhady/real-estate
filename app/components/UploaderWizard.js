@@ -21,6 +21,12 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   const [videoPublicId, setVideoPublicId] = useState('');
   const [isVideoMode, setIsVideoMode] = useState(false);
 
+  // Agent selection for collaboration
+  const [showAgentSelection, setShowAgentSelection] = useState(false);
+  const [matchingAgents, setMatchingAgents] = useState([]);
+  const [selectedAgents, setSelectedAgents] = useState({});
+  const [savedProperty, setSavedProperty] = useState(null);
+  
   console.log('Selected content type:', selectedContentType);
   // Property data
   const [propertyData, setPropertyData] = useState({
@@ -35,7 +41,8 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     notes: '',
     agentName: '',
     phone: '',
-    agencyName: ''
+    agencyName: '',
+    collaboration: false
   });
 
   // Character counter for description
@@ -113,7 +120,8 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         notes: '',
         agentName: prev.agentName || '',
         phone: prev.phone || '',
-        agencyName: prev.agencyName || ''
+        agencyName: prev.agencyName || '',
+        collaboration: false
       }));
       setLanguageChoice('both');
       setCharCount({
@@ -328,7 +336,8 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         descriptionAR: descriptions.arabic,
         languageChoice: languageChoice,
         videoUrl: videoUrl || null,
-        videoPublicId: videoPublicId || null
+        videoPublicId: videoPublicId || null,
+        collaboration: propertyData.collaboration // Explicitly include collaboration field
       };
       
       console.log('Saving property to MongoDB...', propertyPayload);
@@ -339,7 +348,44 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       if (response.data && response.data.success) {
         console.log('Property saved successfully:', response.data);
         
-        // Close wizard and notify parent component
+        // Check if collaboration is enabled and handle agent selection
+        if (propertyData.collaboration) {
+          console.log('🤝 Collaboration enabled, checking for matching agents...');
+          setSavedProperty(response.data.property);
+          
+          try {
+            // Get matching agents for this property
+            const matchResponse = await axios.post('/api/collaboration-matches', {
+              propertyId: response.data.property._id
+            });
+            
+            if (matchResponse.data && matchResponse.data.success && matchResponse.data.totalAgents > 0) {
+              const agentData = matchResponse.data.agents;
+              
+              setMatchingAgents(agentData);
+              
+              // Set all agents as selected by default
+              const defaultSelection = {};
+              agentData.forEach(agent => {
+                defaultSelection[agent.id] = true;
+              });
+              setSelectedAgents(defaultSelection);
+              
+              // Show agent selection UI
+              setShowAgentSelection(true);
+              return; // Don't close the wizard yet
+            }
+            
+            // If no matches or error, proceed normally
+            console.log('No matching agents found, proceeding normally...');
+            
+          } catch (matchError) {
+            console.error('Error checking collaboration matches:', matchError);
+            // Continue with normal flow if matching fails
+          }
+        }
+        
+        // Close wizard and notify parent component (normal flow)
         onClose();
         if (onUploadComplete) {
           onUploadComplete({
@@ -448,6 +494,79 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       alert(`שגיאה במחיקת הסרטון: ${error.message}`);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle agent selection
+  const handleAgentToggle = (agentId) => {
+    setSelectedAgents(prev => ({
+      ...prev,
+      [agentId]: !prev[agentId]
+    }));
+  };
+
+  // Send collaboration emails to selected agents
+  const sendCollaborationEmails = async () => {
+    setIsLoading(true);
+    try {
+      const selectedAgentIds = Object.keys(selectedAgents).filter(id => selectedAgents[id]);
+      
+      if (selectedAgentIds.length === 0) {
+        setError('אנא בחר לפחות סוכן אחד לשליחת מייל');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('🤝 Sending collaboration emails to selected agents:', selectedAgentIds);
+      
+      // Send emails via collaboration API
+      const emailResponse = await axios.post('/api/send-collaboration-emails', {
+        propertyId: savedProperty._id,
+        selectedAgentIds: selectedAgentIds
+      });
+
+      if (emailResponse.data && emailResponse.data.success) {
+        console.log('✅ Collaboration emails sent successfully');
+        
+        // Close wizard and notify success
+        setShowAgentSelection(false);
+        onClose();
+        if (onUploadComplete) {
+          onUploadComplete({
+            success: true,
+            property: savedProperty,
+            contentType: selectedContentType,
+            mediaUrls: uploadedMedia.map(item => item.url),
+            message: `הנכס נשמר בהצלחה ונשלחו מיילים ל-${selectedAgentIds.length} סוכנים!`,
+            collaborationSent: true,
+            agentCount: selectedAgentIds.length
+          });
+        }
+      } else {
+        setError('שגיאה בשליחת מיילים לסוכנים');
+      }
+      
+    } catch (error) {
+      console.error('Error sending collaboration emails:', error);
+      setError('שגיאה בשליחת מיילים לסוכנים');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Skip collaboration and close wizard
+  const skipCollaboration = () => {
+    setShowAgentSelection(false);
+    onClose();
+    if (onUploadComplete) {
+      onUploadComplete({
+        success: true,
+        property: savedProperty,
+        contentType: selectedContentType,
+        mediaUrls: uploadedMedia.map(item => item.url),
+        message: 'הנכס נשמר בהצלחה במערכת!',
+        collaborationSent: false
+      });
     }
   };
 
@@ -705,6 +824,26 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="מידע נוסף על הנכס"
                 ></textarea>
+              </div>
+              
+              {/* Collaboration checkbox */}
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="collaboration"
+                    name="collaboration"
+                    checked={propertyData.collaboration}
+                    onChange={(e) => setPropertyData(prev => ({ ...prev, collaboration: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="collaboration" className="text-sm font-medium text-gray-700 mr-3">
+                    🤝 מוכן לשיתוף פעולה עם סוכנים אחרים
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mr-7">
+                  הפעלת אפשרות זו תאפשר לסוכנים אחרים לראות את הנכס ולהציע לקוחות מתאימים
+                </p>
               </div>
             </form>
           </div>
@@ -1151,118 +1290,161 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   };
 
   return (
-    <>
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        onStartAgain={onStartAgain}
-        title={
-          isVideoMode 
-            ? `פרסום אוסף תמונות - צעד ${currentStep} מתוך 4` 
-            : currentStep >= 1 
-              ? ` העלאה - שלב ${currentStep} מתוך 3`
-              : `Upload Wizard - Step ${currentStep} of 3`
-        }
-        closeButtonText={currentStep >= 1 ? 'סגור' : 'Close'}
-        startAgainButtonText={currentStep >= 1 ? 'התחל מחדש' : 'Start Again'}
-        isRtl={currentStep >= 1}
-      >
-        <div className={`py-2 ${currentStep >= 1 ? 'rtl-content' : ''}`}>
-          {/* Progress bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-            <div 
-              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-in-out" 
-              style={{ width: `${(currentStep / (isVideoMode ? 4 : 3)) * 100}%` }}
-            ></div>
-          </div>
-          
-          {/* Error message */}
-          {error && (
-            <div className={`mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md ${currentStep >= 1 ? 'text-right' : ''}`}>
-              {error}
-            </div>
-          )}
-          
-          {/* Step content */}
-          {renderStepContent()}
-          
-          {/* Navigation buttons in a fixed height container */}
-          <div className="mt-6 h-16 flex items-center">
-            {renderNavigationButtons()}
-          </div>
-        </div>
-      </Modal>
-      
-      {/* Hebrew Download Modal */}
-      <Modal
-        isOpen={showDownloadModal}
-        onClose={() => setShowDownloadModal(false)}
-        title="אפשרויות הורדה"
-        closeButtonText="סגור"
-        startAgainButtonText="התחל מחדש"
-        isRtl={true}
-      >
-        <div className="text-black" dir="rtl">
-          <p className="mb-4 font-medium">בחר אפשרות הורדה עבור הקובץ שלך:</p>
-          
-          {downloadItem && (
-            <div className="mb-6">
-              <div className="bg-gray-100 rounded-lg p-4 mb-4">
-                {downloadItem.mediaType === 'image' ? (
-                  <img 
-                    src={downloadItem.url} 
-                    alt="Media preview" 
-                    className="max-h-64 max-w-full mx-auto mb-4 rounded"
-                  />
-                ) : (
-                  <video 
-                    src={downloadItem.url} 
-                    controls 
-                    className="max-h-64 max-w-full mx-auto mb-4 rounded"
-                  />
+    <Modal isOpen={isOpen} onClose={onClose} title="אשף העלאת נכסים">
+      <div className="max-w-4xl mx-auto">
+        {/* Agent Selection Overlay */}
+        {showAgentSelection && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto" dir="rtl">
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  🤝 בחר סוכנים לשיתוף פעולה
+                </h3>
+                
+                <p className="text-gray-600 mb-6">
+                  נמצאו {matchingAgents.length} סוכנים עם לקוחות שמתאימים לנכס שלך.
+                  בחר לאילו סוכנים לשלוח הודעת שיתוף פעולה:
+                </p>
+
+                {error && (
+                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    {error}
+                  </div>
                 )}
-                <div className="text-sm text-center text-gray-700">
-                  {downloadItem.url.split('/').pop() || 'Media file'}
+
+                <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+                  {matchingAgents.map((agent) => (
+                    <div key={agent.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        id={`agent-${agent.id}`}
+                        checked={selectedAgents[agent.id] || false}
+                        onChange={() => handleAgentToggle(agent.id)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 ml-3"
+                      />
+                      <label htmlFor={`agent-${agent.id}`} className="flex-1 cursor-pointer">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-gray-900">{agent.name}</p>
+                            <p className="text-sm text-gray-600">{agent.agencyName}</p>
+                            <p className="text-sm text-blue-600">
+                              {agent.clientCount} לקוח{agent.clientCount > 1 ? 'ות' : ''} מתאים{agent.clientCount > 1 ? 'ים' : ''}
+                            </p>
+                          </div>
+                          <div className="text-left">
+                            <p className="text-xs text-gray-500">{agent.email}</p>
+                            {agent.phone && (
+                              <p className="text-xs text-gray-500">{agent.phone}</p>
+                            )}
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-between gap-3">
+                  <button
+                    onClick={skipCollaboration}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    disabled={isLoading}
+                  >
+                    דלג על שיתוף פעולה
+                  </button>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        const allSelected = {};
+                        matchingAgents.forEach(agent => {
+                          allSelected[agent.id] = true;
+                        });
+                        setSelectedAgents(allSelected);
+                      }}
+                      className="px-3 py-2 text-sm text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50"
+                      disabled={isLoading}
+                    >
+                      בחר הכל
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        const noneSelected = {};
+                        matchingAgents.forEach(agent => {
+                          noneSelected[agent.id] = false;
+                        });
+                        setSelectedAgents(noneSelected);
+                      }}
+                      className="px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                      disabled={isLoading}
+                    >
+                      בטל הכל
+                    </button>
+                    
+                    <button
+                      onClick={sendCollaborationEmails}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={isLoading || Object.values(selectedAgents).filter(Boolean).length === 0}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2"></div>
+                          שולח...
+                        </div>
+                      ) : (
+                        `שלח ל-${Object.values(selectedAgents).filter(Boolean).length} סוכנים`
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            </div>
+          </div>
+        )}
+
+        {/* Rest of the wizard */}
+        {!showAgentSelection && (
+          <>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded" dir="rtl">
+                {error}
+              </div>
+            )}
+
+            {renderStepContent()}
+            {renderNavigationButtons()}
+          </>
+        )}
+      </div>
+
+      {/* Download Modal */}
+      {showDownloadModal && downloadItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full m-4" dir="rtl">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">הורדת מדיה</h3>
+              <p className="text-gray-600 mb-6">
+                האם ברצונך להוריד את הקובץ: {downloadItem.fileName || 'קובץ ללא שם'}?
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDownloadModal(false)}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  ביטול
+                </button>
                 <button
                   onClick={() => executeDownload(downloadItem.url)}
-                  className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  הורד למחשב
+                  הורד
                 </button>
-                
-                <a 
-                  href={downloadItem.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center px-4 py-3 bg-gray-200 text-gray-800 font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  פתח בלשונית חדשה
-                </a>
               </div>
             </div>
-          )}
-          
-          <div className="pt-4 flex justify-center">
-            <button
-              onClick={() => setShowDownloadModal(false)}
-              className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-            >
-              חזור למסך הקודם
-            </button>
           </div>
         </div>
-      </Modal>
-    </>
+      )}
+    </Modal>
   );
 };
 

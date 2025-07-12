@@ -122,7 +122,12 @@ const propertySchema = new mongoose.Schema({
   },
   // External listing ID for integrations
   externalListingId: String,
-  listingUrl: String
+  listingUrl: String,
+  // Agent-to-agent collaboration matching
+  collaboration: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true,
 });

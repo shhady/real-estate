@@ -241,7 +241,8 @@ export async function POST(request) {
       user: user.userId,
       languageChoice: data.languageChoice || 'both',
       externalListingId: data.listingId || null,
-      listingUrl: data.listingUrl || null
+      listingUrl: data.listingUrl || null,
+      collaboration: Boolean(data.collaboration) || false
     };
 
     // Only add video field if it's properly formed
