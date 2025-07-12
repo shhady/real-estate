@@ -327,7 +327,7 @@ export default function PropertyMatchingPage({ params }) {
                 onClick={() => router.back()}
                 className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 mb-4"
               >
-                <FaArrowLeft className="mr-2 h-4 w-4" />
+                {/* <FaArrowLeft className="mr-2 h-4 w-4" /> */}
                 חזור להתאמות
               </button>
               <h1 className="text-3xl font-bold text-gray-900">התאמות עבור {property.title}</h1>
