@@ -245,7 +245,7 @@ export async function POST(request) {
                preferredPropertyType: analysis.propertyType || undefined,
                minRooms: analysis.rooms || undefined,
                minArea: analysis.area || undefined,
-               minPrice: analysis.price || undefined,
+               maxPrice: analysis.price || undefined,
                preferredCondition: analysis.condition || undefined,
                needsParking: analysis.parking,
                needsBalcony: analysis.balcony,
@@ -261,31 +261,34 @@ export async function POST(request) {
              logger.info(`✅ Created new client: ${newClient.clientName}`);
            }
 
-           // Create the call record
-           if (clientId) {
-             const newCall = await Call.create({
-               userId: user.userId,
-               clientId: clientId,
-               audioFileUrl: cloudinaryUrlToDownload,
-               transcription: analysis.transcription || transcription,
-               summary: analysis.summary,
-               followUps: analysis.followUps || [],
-               positives: analysis.positives || [],
-               negatives: analysis.negatives || [],
-               improvementPoints: analysis.improvementPoints || [],
-               issues: analysis.issues || [],
-               intent: analysis.intent || 'unknown',
-               location: analysis.location || '',
-               rooms: analysis.rooms || null,
-               area: analysis.area || null,
-               price: analysis.price || null,
-               condition: analysis.condition || '',
-               floor: analysis.floor || null,
-               parking: analysis.parking || null,
-               balcony: analysis.balcony || null,
-               propertyNotes: analysis.propertyNotes || '',
-               preApproval: analysis.preApproval || null
-             });
+                        // Create the call record
+             if (clientId) {
+               const newCall = await Call.create({
+                 userId: user.userId,
+                 clientId: clientId,
+                 audioFileUrl: cloudinaryUrlToDownload,
+                 transcription: analysis.transcription || transcription,
+                 summary: analysis.summary,
+                 followUps: analysis.followUps || [],
+                 positives: analysis.positives || [],
+                 negatives: analysis.negatives || [],
+                 improvementPoints: analysis.improvementPoints || [],
+                 issues: analysis.issues || [],
+                 intent: analysis.intent || 'unknown',
+                 location: analysis.location || '',
+                 rooms: analysis.rooms || null,
+                 bathrooms: analysis.bathrooms || null,
+                 area: analysis.area || null,
+                 price: analysis.price || null,
+                 condition: analysis.condition || '',
+                 floor: analysis.floor || null,
+                 parking: analysis.parking || null,
+                 balcony: analysis.balcony || null,
+                 propertyNotes: analysis.propertyNotes || '',
+                 preApproval: analysis.preApproval || null,
+                 ambiguousFields: analysis.ambiguousFields || [],
+                 agentTips: analysis.agentTips || []
+               });
 
              // Link call to client
              await Client.findByIdAndUpdate(
@@ -321,6 +324,7 @@ export async function POST(request) {
          location: analysis.location,
          propertyType: analysis.propertyType,
          rooms: analysis.rooms,
+         bathrooms: analysis.bathrooms,
          area: analysis.area,
          price: analysis.price,
          condition: analysis.condition,
@@ -329,6 +333,8 @@ export async function POST(request) {
          balcony: analysis.balcony,
          propertyNotes: analysis.propertyNotes,
          preApproval: analysis.preApproval,
+         ambiguousFields: analysis.ambiguousFields,
+         agentTips: analysis.agentTips,
          cloudinaryUrl: cloudinaryUrlToDownload, // Optionally return the URL
          cloudinaryPublicId: cloudinaryPublicId, // Optionally return the ID
          clientId: clientId, // NEW: Return client ID if created/linked

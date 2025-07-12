@@ -391,7 +391,7 @@ export default function PropertyMatchingPage({ params }) {
         </div>
 
         {/* Matching Results */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1  gap-8">
           {/* Matched Clients */}
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -422,7 +422,7 @@ export default function PropertyMatchingPage({ params }) {
           </div>
 
           {/* Matched Calls */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          {/* <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                 <FaPhone className="w-5 h-5 mr-2 text-green-600" />
@@ -448,7 +448,7 @@ export default function PropertyMatchingPage({ params }) {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

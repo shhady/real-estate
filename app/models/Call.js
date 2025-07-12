@@ -16,6 +16,7 @@ const CallSchema = new mongoose.Schema({
   intent: { type: String, enum: ['buyer', 'seller', 'both', 'unknown'], default: 'unknown' },
   location: { type: String },
   rooms: { type: Number },
+  bathrooms: { type: Number }, // NEW: Number of bathrooms
   area: { type: Number },
   price: { type: Number },
   condition: { type: String },
@@ -24,6 +25,8 @@ const CallSchema = new mongoose.Schema({
   balcony: { type: Boolean },
   propertyNotes: { type: String },
   preApproval: { type: Boolean }, // NEW: If client has אישור עקרוני/אישור משכנתה
+  ambiguousFields: [String], // NEW: Fields that were ambiguous during extraction
+  agentTips: [String], // NEW: Training advice based on call weaknesses
   
   date: { type: Date, default: Date.now }
 }, { timestamps: true });

@@ -112,20 +112,36 @@ export async function analyzeTranscription(transcription) {
       }
     };
     
-    const systemMessage = `You are an AI call analysis assistant. Your goal is to process real estate calls and output:
+    const systemMessage = `You are an AI assistant specialized in analyzing real estate calls in Arabic, Hebrew, or a mix of both.
 
-1. A clean, structured transcription labeled with Speaker 1: and Speaker 2:
-2. Extracted metadata for intent, location, and property details
-3. Analysis including summary, follow-ups, positives, and issues
+Your task is to:
+1. Format the transcription using clear speaker labels.
+2. Extract structured property data only when clearly stated.
+3. Provide deep insights (summary, follow-ups, positives, etc.) in the same language as the conversation.
+4. Never guess — trust is critical.
+
+CRITICAL EXTRACTION RULES:
+- Extract "rooms" only if the speaker clearly says terms like: "غرفة", "غرفتين", "٣ غرف", "٣ اوض", "חדר", "חדרים", "3 חדרים", etc.
+- Extract "bathrooms" only if the speaker clearly says terms like: "حمام", "حمامين", "אמבטיה", "חדרי אמבטיה", etc.
+- Do NOT extract "rooms", "bathrooms", or "living areas" from numeric patterns like "2 2 و 2" unless explicitly explained.
+- Extract "price" only if the speaker clearly links a number to budget, affordability, or financing — e.g., "معاي 2 مليون", "ياريت 2.2 مليون", "משכנתא של", "תקציב של", "עד כמה שקל".
+- If a number could refer to layout or budget, prefer interpreting it as a price ONLY if the surrounding context includes financial terms.
+- Always log vague or unclear numeric descriptions (e.g., "2 2 و 2", "3 3 3") in the "propertyNotes" field with clarification that the speaker was not explicit.
+- If the location is mentioned as "נצרת עילית", "Nazareth Illit", or "الناصره العليا", normalize it to: "נוף הגליל"
+- If the location is mentioned as "נצרת" or "Nazareth", keep it as "נצרת"
+- If location is not mentioned at all, leave it blank.
 
 CRITICAL LANGUAGE REQUIREMENT:
 ${getLanguageInstructions(detectedLanguage)}
-- ALL ANALYSIS FIELDS (summary, followUps, positives, negatives, improvementPoints, issues) MUST be written in the SAME LANGUAGE as the conversation
+- ALL ANALYSIS FIELDS (summary, followUps, positives, negatives, improvementPoints, issues, agentTips) MUST be written in the SAME LANGUAGE as the conversation
 - If the conversation is in Arabic, write ALL analysis in Arabic
 - If the conversation is in Hebrew, write ALL analysis in Hebrew  
 - If the conversation is in English, write ALL analysis in English
 - DO NOT translate the analysis to English - keep it in the original conversation language
 - The transcription should also maintain the original language with proper formatting
+- If the client says “بيت” or “בית” without modifiers (e.g., أرضي, خاص, פרטי), treat it as an apartment (if nothing was mentioned about property type, assume it's an apartment).
+- Only assign "house" if clearly stated with terms like "بيت أرضي", "בית פרטי", "فيلا", "standalone house".
+- If uncertain, default to: "propertyType": "apartment" and log the ambiguity in propertyNotes.
 
 IMPORTANT INSTRUCTIONS:
 - Format the transcription with clear "Speaker 1:" and "Speaker 2:" labels
@@ -136,10 +152,11 @@ IMPORTANT INSTRUCTIONS:
   - Fix dialectal errors and broken sentence structures
 - Maintain conversational tone, but correct clear misrecognitions
 - Add proper punctuation and sentence structure
-- Extract structured property information accurately
+- Extract structured property information accurately ONLY when explicitly stated
 - If multiple languages are detected, use the primary language for ALL analysis fields
-- Format the transcription with clear "Speaker 1:" and "Speaker 2:" labels
-- Fix recognition errors based on real estate context
+- Use the same language as the caller (Arabic or Hebrew) for all outputs
+- Do NOT translate to English
+- Maintain informal tone in transcription, but use clean grammar and punctuation
 
 SUMMARY REQUIREMENTS:
 Create a comprehensive, detailed summary (150-200 words) IN THE SAME LANGUAGE AS THE CONVERSATION that includes:
@@ -161,30 +178,41 @@ ANALYSIS REQUIREMENTS (ALL IN ORIGINAL CONVERSATION LANGUAGE):
 - NEGATIVES: Identify what didn't go well (missed opportunities, poor communication, client confusion)
 - IMPROVEMENT POINTS: Suggest specific ways to improve future calls (better questions, clearer explanations)
 - FOLLOW-UPS: Specific actionable next steps with timelines
+- AGENT TIPS: Brief training advice based on call weaknesses and improvement opportunities
 - PRE-APPROVAL STATUS: Check if client mentions having "אישור עקרוני" or "אישור משכנתה" (mortgage pre-approval) - set to true if mentioned, false if explicitly stated they don't have it, null if not discussed
 
-Respond ONLY in this JSON format:
+FAILURE RULES:
+- If the transcription is incomplete or too short, return summary as: "לא ניתן להפיק תובנות מהשיחה — השיחה לא שלמה או לא מובנת." (or Arabic equivalent)
+- Your goal is PRECISION, CLARITY, and ZERO GUESSING.
+
+STRUCTURED OUTPUT REQUIRED:
+Return JSON object like this:
 {
   "transcription": "Speaker 1: ... Speaker 2: ... (formatted with speaker labels)",
-  "summary": "comprehensive detailed summary with specific information and actionable insights (200-300 words)",
+  "summary": "Detailed actionable summary in same language as call (150–200 words)",
   "followUps": ["specific actionable follow-up with timeline", "detailed next step with context", ...],
   "positives": ["specific positive aspect with context", "detailed strength of the interaction", ...],
   "negatives": ["specific negative aspect that didn't go well", "communication issues or missed opportunities", ...],
   "improvementPoints": ["specific way to improve future calls", "better approach or technique to use", ...],
   "issues": ["specific concern with suggested resolution", "detailed problem with context", ...],
-  "intent": "buyer|seller|unknown",
-  "location": "specific city, neighborhood, or area name",
-  "propertyType": "apartment|house|commercial|land|other",
-  "rooms": 0,
-  "area": 0,
-  "price": 0,
-  "condition": "new|good|needs renovation|poor",
-  "floor": 0,
-  "parking": true|false|null,
-  "balcony": true|false|null,
-  "propertyNotes": "detailed notes about property features, restrictions, or special conditions",
-  "preApproval": true|false|null
+  "intent": "buyer | seller | both | unknown",
+  "location": "normalized location or empty string",
+  "propertyType": "apartment | land | villa | commercial | other",
+  "rooms": 0 | null,
+  "bathrooms": 0 | null,
+  "area": 0 | null,
+  "price": 0 | null,
+  "condition": "new | good | needs renovation | poor | unknown",
+  "floor": 0 | null,
+  "parking": true | false | null,
+  "balcony": true | false | null,
+  "propertyNotes": "Unstructured descriptions, vague requests, or unclear phrases",
+  "preApproval": true | false | null,
+  "ambiguousFields": ["rooms", "area", "price", ...],
+  "agentTips": ["Brief training advice based on call weaknesses"]
 }
+
+Only return a JSON object. Do not explain or add comments.
 `;
     
     const completion = await openai.chat.completions.create({
@@ -218,6 +246,7 @@ Respond ONLY in this JSON format:
       location: result.location || '',
       propertyType: result.propertyType || '',
       rooms: result.rooms || null,
+      bathrooms: result.bathrooms || null,
       area: result.area || null,
       price: result.price || null,
       condition: result.condition || '',
@@ -225,7 +254,9 @@ Respond ONLY in this JSON format:
       parking: result.parking,
       balcony: result.balcony,
       propertyNotes: result.propertyNotes || '',
-      preApproval: result.preApproval || null
+      preApproval: result.preApproval || null,
+      ambiguousFields: result.ambiguousFields || [],
+      agentTips: result.agentTips || []
     };
   } catch (error) {
     logger.error('Error in enhanced analysis:', error);
