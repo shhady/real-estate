@@ -4,14 +4,34 @@
  */
 
 /**
- * Get formatted deal score badge text in Hebrew
+ * Get formatted deal score badge text and style based on deal score
  */
-export function getDealScoreBadgeText(dealScore) {
-  if (!dealScore || dealScore <= 0) {
-    return null; // No badge for properties at or above market price
+export function getDealScoreBadgeInfo(dealScore) {
+  if (!dealScore || dealScore < 70) {
+    return null; // No badge for properties below 70% deal score
   }
   
-  return `נמוך ממחיר שוק ב-${dealScore}%`;
+  if (dealScore >= 80) {
+    return {
+      text: `מחיר אטרקטיבי`,
+      colorClass: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    };
+  } else if (dealScore >= 70) {
+    return {
+      text: ` נמוך ממחיר שוק ב-${100 - dealScore}% 🔥`,
+      colorClass: 'bg-green-100 text-green-800 border-green-200'
+    };
+  }
+  
+  return null;
+}
+
+/**
+ * Get formatted deal score badge text in Hebrew (legacy function for backward compatibility)
+ */
+export function getDealScoreBadgeText(dealScore) {
+  const badgeInfo = getDealScoreBadgeInfo(dealScore);
+  return badgeInfo ? badgeInfo.text : null;
 }
 
 /**
