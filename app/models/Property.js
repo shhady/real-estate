@@ -103,6 +103,17 @@ const propertySchema = new mongoose.Schema({
     email: { type: Number, default: 0 },
     calls: { type: Number, default: 0 },
   },
+  // Deal Score: 0-100 (price-per-m vs city average price per meter)
+  dealScore: { 
+    type: Number, 
+    min: 0, 
+    max: 100,
+    default: null // null means not calculated yet
+  },
+  dealScoreCalculatedAt: {
+    type: Date,
+    default: null
+  },
   // Additional metadata
   languageChoice: {
     type: String,

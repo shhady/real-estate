@@ -33,11 +33,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       icon: <FaBuilding className="w-5 h-5" />,
       href: '/dashboard/properties',
     },
-    {
-      title: 'בלוג שלי',
-      icon: <FaEdit className="w-5 h-5" />,
-      href: '/dashboard/blog',
-    },
+    // {
+    //   title: 'בלוג שלי',
+    //   icon: <FaEdit className="w-5 h-5" />,
+    //   href: '/dashboard/blog',
+    // },
     {
       title: 'פרופיל',
       icon: <FaUser className="w-5 h-5" />,
@@ -61,11 +61,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       icon: <FaUsers className="w-5 h-5" />,
       href: '/agents',
     },
-    {
-      title: 'בלוג',
-      icon: <FaEdit className="w-5 h-5" />,
-      href: '/blog',
-    },
+    // {
+    //   title: 'בלוג',
+    //   icon: <FaEdit className="w-5 h-5" />,
+    //   href: '/blog',
+    // },
     {
       title: 'צור קשר',
       icon: <FaEnvelope className="w-5 h-5" />,

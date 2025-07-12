@@ -6,6 +6,7 @@ import connectDB from '../../lib/mongodb';
 import Property from '../../models/Property';
 import User from '../../models/User';
 import ImageCarousel from '../../components/ui/ImageCarousel';
+import { DealScoreBadgeLarge } from '../../components/ui/DealScoreBadge';
 
 // Format price consistently
 const formatPrice = (num) => {
@@ -172,8 +173,11 @@ export default async function PropertyPage({ params }) {
                       <span>{property.location}</span>
                     </div>
                   </div>
-                  <div className="text-2xl font-bold text-blue-600">
-                    ₪{formatPrice(property.price)}
+                  <div className="flex flex-col items-end gap-3">
+                    <div className="text-2xl font-bold text-blue-600">
+                      ₪{formatPrice(property.price)}
+                    </div>
+                    <DealScoreBadgeLarge dealScore={property.dealScore} />
                   </div>
                 </div>
 

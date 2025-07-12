@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaBed, FaBath, FaRuler, FaMapMarkerAlt } from 'react-icons/fa';
+import DealScoreBadge from './DealScoreBadge';
 
 const PropertyCard = ({ property }) => {
   const {
@@ -14,7 +15,8 @@ const PropertyCard = ({ property }) => {
     images,
     video,
     contentType,
-    status
+    status,
+    dealScore
   } = property;
 
   // Format price consistently
@@ -50,8 +52,15 @@ const PropertyCard = ({ property }) => {
             />
           )}
           <div className="absolute inset-0 bg-black bg-opacity-20 transition-opacity duration-300 group-hover:bg-opacity-30" />
-          <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
-            {status === 'For Sale' ? 'למכירה' : 'להשכרה'}
+          {/* Status badge - always in the same position */}
+          <div className="absolute top-4 right-4">
+            <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+              {status === 'For Sale' ? 'למכירה' : 'להשכרה'}
+            </div>
+          </div>
+          {/* Deal score badge - positioned below status badge */}
+          <div className="absolute top-[3.5rem] right-4">
+            <DealScoreBadge dealScore={dealScore} className="shadow-lg" />
           </div>
         </div>
         

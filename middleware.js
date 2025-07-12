@@ -26,6 +26,7 @@ export async function middleware(request) {
     '/api/auth/register',
     '/api/users/process-logo',
     '/api/test-logo',
+    '/api/deal-scores',
     '/sign-in',
     '/sign-up'
   ];
