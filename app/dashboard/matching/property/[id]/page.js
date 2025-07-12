@@ -83,6 +83,7 @@ export default function PropertyMatchingPage({ params }) {
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             onToggle();
           }}
           className="text-xs text-blue-600 hover:text-blue-800 font-medium"
@@ -341,7 +342,7 @@ export default function PropertyMatchingPage({ params }) {
             <h2 className="text-xl font-semibold text-gray-900">פרטי הנכס</h2>
           </div>
           <div className="p-6">
-            <div className="flex items-start space-x-6">
+            <div className="flex items-start gap-6">
               {property.images && property.images.length > 0 && (
                 <div className="flex-shrink-0">
                   <Image
@@ -355,32 +356,32 @@ export default function PropertyMatchingPage({ params }) {
               )}
               <div className="flex-1">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center">
-                    <FaPhone className="w-4 h-4 mr-2 text-gray-400" />
+                  {/* <div className="flex items-center">
+                    <FaPhone className="w-4 h-4 mx-2 text-gray-400" />
                     <span className="text-gray-600">{property.phoneNumber || 'לא צוין'}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <FaEnvelope className="w-4 h-4 mr-2 text-gray-400" />
+                  </div> */}
+                  {/* <div className="flex items-center">
+                    <FaEnvelope className="w-4 h-4 mx-2 text-gray-400" />
                     <span className="text-gray-600">{property.email || 'לא צוין'}</span>
-                  </div>
+                  </div> */}
                   <div className="flex items-center">
-                    <FaMapMarkerAlt className="w-4 h-4 mr-2 text-gray-400" />
+                    <FaMapMarkerAlt className="w-4 h-4 mx-2 text-gray-400" />
                     <span className="text-gray-600">{property.location || 'לא צוין'}</span>
                   </div>
                   <div className="flex items-center">
-                    <FaHome className="w-4 h-4 mr-2 text-gray-400" />
+                    <FaHome className="w-4 h-4 mx-2 text-gray-400" />
                     <span className="text-gray-600">{property.propertyType || 'לא צוין'}</span>
                   </div>
                   <div className="flex items-center">
-                    <FaDollarSign className="w-4 h-4 mr-2 text-gray-400" />
+                    <FaDollarSign className="w-4 h-4 mx-2 text-gray-400" />
                     <span className="text-gray-600">{formatPrice(property.price)}</span>
                   </div>
                   <div className="flex items-center">
-                    <FaBed className="w-4 h-4 mr-2 text-gray-400" />
+                    <FaBed className="w-4 h-4 mx-2 text-gray-400" />
                     <span className="text-gray-600">{property.bedrooms || 0} חדרים</span>
                   </div>
                   <div className="flex items-center">
-                    <FaExpand className="w-4 h-4 mr-2 text-gray-400" />
+                    <FaExpand className="w-4 h-4 mx-2 text-gray-400" />
                     <span className="text-gray-600">{property.area || 0} מ"ר</span>
                   </div>
                 </div>

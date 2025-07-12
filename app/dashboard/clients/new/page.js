@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { cityOptions } from '../../../utils/cityOptions';
 
 export default function NewClientPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -35,6 +38,35 @@ export default function NewClientPage() {
     source: 'other',
     tags: []
   });
+
+  const filteredCities = cityOptions.filter(city =>
+    city.label.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
+
+  const handleCitySelect = (cityValue) => {
+    setFormData(prev => ({ ...prev, preferredLocation: cityValue }));
+    setShowCityDropdown(false);
+    setCitySearchTerm('');
+  };
+
+  const handleLocationInputChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, preferredLocation: value }));
+    setCitySearchTerm(value);
+    setShowCityDropdown(true);
+  };
+
+  const handleLocationInputBlur = () => {
+    // Delay hiding dropdown to allow for selection
+    setTimeout(() => {
+      setShowCityDropdown(false);
+    }, 200);
+  };
+
+  const handleLocationInputFocus = () => {
+    setShowCityDropdown(true);
+    setCitySearchTerm(formData.preferredLocation);
+  };
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -247,7 +279,7 @@ export default function NewClientPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">העדפות נכס</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   איזור מועדף
                 </label>
@@ -255,10 +287,25 @@ export default function NewClientPage() {
                   type="text"
                   name="preferredLocation"
                   value={formData.preferredLocation}
-                  onChange={handleChange}
+                  onChange={handleLocationInputChange}
+                  onFocus={handleLocationInputFocus}
+                  onBlur={handleLocationInputBlur}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
-                  placeholder="תל אביב, רמת גן, פתח תקווה..."
+                  placeholder="בחר עיר או כתוב איזור מועדף..."
                 />
+                {showCityDropdown && filteredCities.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredCities.map((city) => (
+                      <div
+                        key={city.value}
+                        className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                        onClick={() => handleCitySelect(city.value)}
+                      >
+                        {city.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>

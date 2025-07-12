@@ -4,6 +4,7 @@ import Modal from './Modal';
 import { downloadMedia } from '../utils/downloadMedia';
 import { generateRealEstateVideo } from '../utils/generateVideoFromPhotos';
 import { deleteCloudinaryResource } from '../utils/cloudinaryHelper';
+import { cityOptions } from '../utils/cityOptions';
 
 const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onUploadComplete, selectedContentType }) => {
   // State for the wizard
@@ -12,6 +13,8 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
   const [error, setError] = useState(null);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
   
   // Generated video URL and public ID from video generation
   const [videoUrl, setVideoUrl] = useState('');
@@ -27,6 +30,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     area: '',
     price: '',
     rooms: '',
+    bathrooms: '',
     floor: '',
     notes: '',
     agentName: '',
@@ -58,6 +62,10 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   
   // User data state to store complete user information including profile image
   const [userData, setUserData] = useState(null);
+
+  const filteredCities = cityOptions.filter(city =>
+    city.label.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
 
   // Fetch user data for agent name, phone, agency name, and profile image
   useEffect(() => {
@@ -100,6 +108,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         area: '',
         price: '',
         rooms: '',
+        bathrooms: '',
         floor: '',
         notes: '',
         agentName: prev.agentName || '',
@@ -129,6 +138,31 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleCitySelect = (cityValue) => {
+    setPropertyData(prev => ({ ...prev, location: cityValue }));
+    setShowCityDropdown(false);
+    setCitySearchTerm('');
+  };
+
+  const handleLocationInputChange = (e) => {
+    const value = e.target.value;
+    setPropertyData(prev => ({ ...prev, location: value }));
+    setCitySearchTerm(value);
+    setShowCityDropdown(true);
+  };
+
+  const handleLocationInputBlur = () => {
+    // Delay hiding dropdown to allow for selection
+    setTimeout(() => {
+      setShowCityDropdown(false);
+    }, 200);
+  };
+
+  const handleLocationInputFocus = () => {
+    setShowCityDropdown(true);
+    setCitySearchTerm(propertyData.location);
   };
 
   // Generate descriptions based on property data
@@ -544,7 +578,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                 </select>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <label htmlFor="location" className="block text-sm font-medium text-gray-700">
                   מיקום <span className="text-red-500">*</span>
                 </label>
@@ -553,11 +587,26 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   id="location"
                   name="location"
                   value={propertyData.location}
-                  onChange={handleInputChange}
+                  onChange={handleLocationInputChange}
+                  onFocus={handleLocationInputFocus}
+                  onBlur={handleLocationInputBlur}
                   className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="עיר, שכונה או כתובת מלאה"
                   required
                 />
+                {showCityDropdown && filteredCities.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredCities.map((city) => (
+                      <div
+                        key={city.value}
+                        className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                        onClick={() => handleCitySelect(city.value)}
+                      >
+                        {city.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -605,6 +654,22 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   onChange={handleInputChange}
                   className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="4"
+                  min="0"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
+                  חדרי אמבטיה
+                </label>
+                <input
+                  type="number"
+                  id="bathrooms"
+                  name="bathrooms"
+                  value={propertyData.bathrooms}
+                  onChange={handleInputChange}
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="2"
                   min="0"
                 />
               </div>

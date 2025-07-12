@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaCloudUploadAlt, FaTimes } from 'react-icons/fa';
 import Image from 'next/image';
+import { cityOptions } from '../../utils/cityOptions';
 
 const PropertyForm = ({ property = null }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState(property?.images || []);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
   const [formData, setFormData] = useState({
     title: property?.title || '',
     description: property?.description || '',
@@ -20,9 +23,38 @@ const PropertyForm = ({ property = null }) => {
     features: property?.features?.join(', ') || ''
   });
 
+  const filteredCities = cityOptions.filter(city =>
+    city.label.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCitySelect = (cityValue) => {
+    setFormData(prev => ({ ...prev, location: cityValue }));
+    setShowCityDropdown(false);
+    setCitySearchTerm('');
+  };
+
+  const handleLocationInputChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, location: value }));
+    setCitySearchTerm(value);
+    setShowCityDropdown(true);
+  };
+
+  const handleLocationInputBlur = () => {
+    // Delay hiding dropdown to allow for selection
+    setTimeout(() => {
+      setShowCityDropdown(false);
+    }, 200);
+  };
+
+  const handleLocationInputFocus = () => {
+    setShowCityDropdown(true);
+    setCitySearchTerm(formData.location);
   };
 
   const handleImageUpload = async (e) => {
@@ -122,16 +154,32 @@ const PropertyForm = ({ property = null }) => {
           />
         </div>
 
-        <div>
+        <div className="relative">
           <label className="block text-sm font-medium text-gray-700">Location</label>
           <input
             type="text"
             name="location"
             value={formData.location}
-            onChange={handleChange}
+            onChange={handleLocationInputChange}
+            onFocus={handleLocationInputFocus}
+            onBlur={handleLocationInputBlur}
             required
+            placeholder="Enter city or location"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
+          {showCityDropdown && filteredCities.length > 0 && (
+            <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              {filteredCities.map((city) => (
+                <div
+                  key={city.value}
+                  className="px-4 py-2 cursor-pointer hover:bg-blue-100"
+                  onClick={() => handleCitySelect(city.value)}
+                >
+                  {city.label}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
@@ -190,7 +238,6 @@ const PropertyForm = ({ property = null }) => {
             name="bathrooms"
             value={formData.bathrooms}
             onChange={handleChange}
-            required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
         </div>

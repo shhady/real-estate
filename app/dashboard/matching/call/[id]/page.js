@@ -93,6 +93,7 @@ export default function CallMatchingPage({ params }) {
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             onToggle();
           }}
           className="text-xs text-blue-600 hover:text-blue-800 font-medium"

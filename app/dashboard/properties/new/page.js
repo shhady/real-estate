@@ -2,11 +2,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '../../../components/ui/Button';
+import { cityOptions } from '../../../utils/cityOptions';
   
 export default function NewPropertyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     agentName: '',
@@ -16,9 +19,14 @@ export default function NewPropertyPage() {
     area: '',
     price: '',
     rooms: '',
+    bathrooms: '',
     floor: '',
     notes: ''
   });
+
+  const filteredCities = cityOptions.filter(city =>
+    city.label.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
 
   // Fetch user data when component mounts
   useEffect(() => {
@@ -52,6 +60,31 @@ export default function NewPropertyPage() {
     }));
   };
 
+  const handleCitySelect = (cityValue) => {
+    setFormData(prev => ({ ...prev, location: cityValue }));
+    setShowCityDropdown(false);
+    setCitySearchTerm('');
+  };
+
+  const handleLocationInputChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, location: value }));
+    setCitySearchTerm(value);
+    setShowCityDropdown(true);
+  };
+
+  const handleLocationInputBlur = () => {
+    // Delay hiding dropdown to allow for selection
+    setTimeout(() => {
+      setShowCityDropdown(false);
+    }, 200);
+  };
+
+  const handleLocationInputFocus = () => {
+    setShowCityDropdown(true);
+    setCitySearchTerm(formData.location);
+  };
+
   const handleNext = () => {
     // TODO: Navigate to next step (step 3)
     console.log('Form data:', formData);
@@ -73,6 +106,7 @@ export default function NewPropertyPage() {
       area: '',
       price: '',
       rooms: '',
+      bathrooms: '',
       floor: '',
       notes: ''
     });
@@ -211,7 +245,7 @@ export default function NewPropertyPage() {
                 </select>
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">
                   מיקום
                 </label>
@@ -219,10 +253,26 @@ export default function NewPropertyPage() {
                   type="text"
                   name="location"
                   value={formData.location}
-                  onChange={handleChange}
+                  onChange={handleLocationInputChange}
+                  onFocus={handleLocationInputFocus}
+                  onBlur={handleLocationInputBlur}
                   required
+                  placeholder="עיר, שכונה או כתובת מלאה"
                   className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
                 />
+                {showCityDropdown && filteredCities.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredCities.map((city) => (
+                      <div
+                        key={city.value}
+                        className="px-4 py-2 cursor-pointer hover:bg-blue-100"
+                        onClick={() => handleCitySelect(city.value)}
+                      >
+                        {city.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -262,7 +312,6 @@ export default function NewPropertyPage() {
                   name="bathrooms"
                   value={formData.bathrooms}
                   onChange={handleChange}
-                  required
                   className="mt-1 block w-full rounded-md border border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
                 />
               </div>

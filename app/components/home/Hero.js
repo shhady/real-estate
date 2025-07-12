@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { FaSearch } from 'react-icons/fa';
+import { cityOptions } from '../../utils/cityOptions';
 
 const Hero = () => {
   const router = useRouter();
@@ -11,6 +12,12 @@ const Hero = () => {
     location: searchParams?.get('location') || '',
     propertyType: searchParams?.get('type') || ''
   });
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
+
+  const filteredCities = cityOptions.filter(city =>
+    city.label.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,6 +25,31 @@ const Hero = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleCitySelect = (cityValue) => {
+    setFilters(prev => ({ ...prev, location: cityValue }));
+    setShowCityDropdown(false);
+    setCitySearchTerm('');
+  };
+
+  const handleLocationInputChange = (e) => {
+    const value = e.target.value;
+    setFilters(prev => ({ ...prev, location: value }));
+    setCitySearchTerm(value);
+    setShowCityDropdown(true);
+  };
+
+  const handleLocationInputBlur = () => {
+    // Delay hiding dropdown to allow for selection
+    setTimeout(() => {
+      setShowCityDropdown(false);
+    }, 200);
+  };
+
+  const handleLocationInputFocus = () => {
+    setShowCityDropdown(true);
+    setCitySearchTerm(filters.location);
   };
 
   const handleSubmit = (e) => {
@@ -63,11 +95,26 @@ const Hero = () => {
                 type="text"
                 name="location"
                 value={filters.location}
-                onChange={handleChange}
+                onChange={handleLocationInputChange}
+                onFocus={handleLocationInputFocus}
+                onBlur={handleLocationInputBlur}
                 placeholder="איזור"
                 className="h-12 w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              {showCityDropdown && filteredCities.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {filteredCities.map((city) => (
+                    <div
+                      key={city.value}
+                      className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                      onClick={() => handleCitySelect(city.value)}
+                    >
+                      {city.label}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="sm:w-48">
               <select
