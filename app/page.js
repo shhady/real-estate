@@ -103,7 +103,7 @@ export default async function Home() {
                 <li>• השקע בהכנה לצפייה</li>
               </ul>
               <div className="mt-4 text-center">
-                <Link href="/seller/1" className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
+                <Link href="/seller" className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
                   קרא עוד
                 </Link>
               </div>
@@ -127,7 +127,7 @@ export default async function Home() {
                 <li>• השווה כמה אפשרויות</li>
               </ul>
               <div className="mt-4 text-center">
-                <Link href="/buyer/1" className="text-green-600 hover:text-green-800 text-sm font-medium transition-colors">
+                <Link href="/buyer" className="text-green-600 hover:text-green-800 text-sm font-medium transition-colors">
                   קרא עוד
                 </Link>
               </div>
@@ -151,7 +151,7 @@ export default async function Home() {
                 <li>• הכן ערבויות נדרשות</li>
               </ul>
               <div className="mt-4 text-center">
-                <Link href="/renter/1" className="text-purple-600 hover:text-purple-800 text-sm font-medium transition-colors">
+                <Link href="/renter" className="text-purple-600 hover:text-purple-800 text-sm font-medium transition-colors">
                   קרא עוד
                 </Link>
               </div>
@@ -175,7 +175,7 @@ export default async function Home() {
                 <li>• החזק את הנכס במצב טוב</li>
               </ul>
               <div className="mt-4 text-center">
-                <Link href="/landlord/1" className="text-orange-600 hover:text-orange-800 text-sm font-medium transition-colors">
+                <Link href="/landlord" className="text-orange-600 hover:text-orange-800 text-sm font-medium transition-colors">
                   קרא עוד
                 </Link>
               </div>

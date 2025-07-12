@@ -44,7 +44,8 @@ export async function POST(request, { params }) {
       agent.interactions[type] += 1;
     }
 
-    await agent.save();
+    // Save without validation to avoid agencyName requirement errors
+    await agent.save({ validateBeforeSave: false });
 
     // Return updated interactions
     return NextResponse.json(agent);

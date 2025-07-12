@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const [imagePreview, setImagePreview] = useState(null);
   const [logo, setLogo] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [processingLogo, setProcessingLogo] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -162,31 +163,73 @@ export default function ProfilePage() {
 
       if (logo) {
         const logoFormData = new FormData();
-        logoFormData.append('file', logo);
-        logoFormData.append('upload_preset', 'real-estate');
+        logoFormData.append('logo', logo);
 
-        const uploadRes = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
+        console.log('🔄 Processing logo with background removal...');
+        console.log('Logo file details:', {
+          name: logo.name,
+          size: logo.size,
+          type: logo.type
+        });
+        
+        setProcessingLogo(true);
+        setMessage({ type: 'info', text: 'מעבד את הלוגו ומסיר רקע...' });
+        
+        try {
+          const uploadRes = await fetch('/api/users/process-logo', {
             method: 'POST',
             body: logoFormData,
-          }
-        );
+          });
 
-        if (!uploadRes.ok) throw new Error('Error uploading logo');
-        logoData = await uploadRes.json();
-        
-        console.log('=== CLOUDINARY LOGO UPLOAD RESPONSE (Profile) ===');
-        console.log('Full response:', logoData);
-        console.log('public_id:', logoData.public_id);
-        console.log('secure_url:', logoData.secure_url);
-        console.log('================================================');
-        
-        // Create overlay public_id format by replacing special characters
-        const overlayPublicId = logoData.public_id ? 
-          `l_${logoData.public_id.replace(/[\/\-\.]/g, '_')}` : null;
-        
-        console.log('Generated overlay public_id:', overlayPublicId);
+          console.log('Response status:', uploadRes.status);
+          console.log('Response headers:', Object.fromEntries(uploadRes.headers.entries()));
+
+          if (!uploadRes.ok) {
+            const errorData = await uploadRes.json();
+            console.error('❌ Background removal failed:', errorData);
+            throw new Error(errorData.error || 'Error processing logo');
+          }
+          
+          logoData = await uploadRes.json();
+          
+          console.log('=== LOGO PROCESSING COMPLETE (Profile) ===');
+          console.log('Processed logo data:', logoData);
+          console.log('secure_url:', logoData.secure_url);
+          console.log('publicId:', logoData.publicId);
+          console.log('overlayPublicId:', logoData.overlayPublicId);
+          console.log('=========================================');
+        } catch (fetchError) {
+          console.error('❌ Error in background removal request:', fetchError);
+          // Fall back to direct upload if background removal fails
+          console.log('🔄 Falling back to direct upload...');
+          const logoFormData = new FormData();
+          logoFormData.append('file', logo);
+          logoFormData.append('upload_preset', 'real-estate');
+
+          const uploadRes = await fetch(
+            `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+              method: 'POST',
+              body: logoFormData,
+            }
+          );
+
+          if (!uploadRes.ok) throw new Error('Error uploading logo');
+          const logoResponse = await uploadRes.json();
+          
+          const overlayPublicId = logoResponse.public_id ? 
+            `l_${logoResponse.public_id.replace(/[\/\-\.]/g, '_')}` : null;
+          
+          logoData = {
+            secure_url: logoResponse.secure_url,
+            publicId: logoResponse.public_id,
+            overlayPublicId: overlayPublicId
+          };
+          
+          console.log('⚠️ Used fallback upload (no background removal)');
+        } finally {
+          setProcessingLogo(false);
+        }
       }
 
       const res = await fetch('/api/users/profile', {
@@ -202,9 +245,8 @@ export default function ProfilePage() {
           } : undefined,
           logo: logoData ? {
             secure_url: logoData.secure_url,
-            publicId: logoData.public_id,
-            overlayPublicId: logoData.public_id ? 
-              `l_${logoData.public_id.replace(/[\/\-\.]/g, '_')}` : null
+            publicId: logoData.publicId,
+            overlayPublicId: logoData.overlayPublicId
           } : undefined
         }),
       });
@@ -254,7 +296,9 @@ export default function ProfilePage() {
 
         {message.text && (
           <div className={`p-4 rounded-md mb-6 ${
-            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            message.type === 'success' ? 'bg-green-50 text-green-800' : 
+            message.type === 'info' ? 'bg-blue-50 text-blue-800' : 
+            'bg-red-50 text-red-800'
           }`}>
             {message.text}
           </div>
@@ -311,8 +355,15 @@ export default function ProfilePage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 לוגו הסוכנות
+                {processingLogo && (
+                  <span className="text-blue-600 text-sm mr-2">
+                    (מעבד ומסיר רקע...)
+                  </span>
+                )}
               </label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+              <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${
+                processingLogo ? 'border-blue-300 bg-blue-50' : 'border-gray-300'
+              }`}>
                 <div className="space-y-1 text-center">
                   {logoPreview ? (
                     <div className="relative w-32 h-32 mx-auto">
@@ -326,9 +377,17 @@ export default function ProfilePage() {
                         type="button"
                         onClick={removeLogo}
                         className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        disabled={processingLogo}
                       >
                         <FaTimes className="w-4 h-4" />
                       </button>
+                      {processingLogo && (
+                        <div className="absolute inset-0 bg-blue-200 bg-opacity-75 rounded-md flex items-center justify-center">
+                          <div className="text-blue-600 text-sm font-medium">
+                            מעבד...
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <>
@@ -341,11 +400,15 @@ export default function ProfilePage() {
                             className="sr-only"
                             accept="image/*"
                             onChange={handleLogoChange}
+                            disabled={processingLogo}
                           />
                         </label>
                         <p className="pr-1">או גרור לכאן</p>
                       </div>
                       <p className="text-xs text-gray-500">PNG, JPG עד 10MB</p>
+                      <p className="text-xs text-blue-600 font-medium">
+                        הרקע יוסר אוטומטית בעת העלאה
+                      </p>
                     </>
                   )}
                 </div>

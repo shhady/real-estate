@@ -110,7 +110,7 @@ export default function SignUpPage() {
         logoFormData.append('file', formData.logo);
         logoFormData.append('upload_preset', 'real-estate');
 
-        const cloudinaryRes = await fetch(
+        const uploadRes = await fetch(
           `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
           {
             method: 'POST',
@@ -118,22 +118,11 @@ export default function SignUpPage() {
           }
         );
 
-        if (!cloudinaryRes.ok) {
-          throw new Error('Failed to upload logo');
-        }
-
-        const logoResponse = await cloudinaryRes.json();
-        console.log('=== CLOUDINARY LOGO UPLOAD RESPONSE ===');
-        console.log('Full response:', logoResponse);
-        console.log('public_id:', logoResponse.public_id);
-        console.log('secure_url:', logoResponse.secure_url);
-        console.log('========================================');
+        if (!uploadRes.ok) throw new Error('Error uploading logo');
+        const logoResponse = await uploadRes.json();
         
-        // Create overlay public_id format by replacing special characters
         const overlayPublicId = logoResponse.public_id ? 
           `l_${logoResponse.public_id.replace(/[\/\-\.]/g, '_')}` : null;
-        
-        console.log('Generated overlay public_id:', overlayPublicId);
         
         logoData = {
           secure_url: logoResponse.secure_url,
