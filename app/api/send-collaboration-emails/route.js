@@ -2,8 +2,162 @@ import { NextResponse } from 'next/server';
 import connectDB from '../../lib/mongodb';
 import Property from '../../models/Property';
 import User from '../../models/User';
-import matchPropertyToClients from '../../services/matchPropertyToClients.js';
+import Client from '../../models/Client';
 import sendEmail from '../../services/sendEmail.js';
+
+// Helper function to normalize location strings
+function normalizeLocation(location) {
+  if (!location) return '';
+  return location.toLowerCase()
+    .replace(/נוף הגליל|نوف هجليل|nazareth illit/gi, 'נוף הגליל')
+    .replace(/נצרת|الناصرة|nazareth/gi, 'נצרת')
+    .replace(/תל אביב|تل أبيب|tel aviv/gi, 'תל אביב')
+    .replace(/חיפה|حيفا|haifa/gi, 'חיפה')
+    .replace(/ירושלים|القدس|jerusalem/gi, 'ירושלים')
+    .trim();
+}
+
+// Helper function to normalize property type
+function normalizePropertyType(type) {
+  if (!type) return '';
+  return type.toLowerCase()
+    .replace(/דירה|شقة|apartment/gi, 'apartment')
+    .replace(/בית|منزل|house/gi, 'house')
+    .replace(/וילה|فيلا|villa/gi, 'villa')
+    .trim();
+}
+
+// Helper function to check if values match within a range
+function isWithinRange(value, min, max, tolerance = 0) {
+  if (!value || (!min && !max)) return true;
+  
+  const numValue = Number(value);
+  const numMin = Number(min);
+  const numMax = Number(max);
+  
+  if (min && max) {
+    return numValue >= (numMin * (1 - tolerance)) && numValue <= (numMax * (1 + tolerance));
+  } else if (min) {
+    return numValue >= (numMin * (1 - tolerance));
+  } else if (max) {
+    return numValue <= (numMax * (1 + tolerance));
+  }
+  
+  return true;
+}
+
+// Helper function to calculate match score for collaboration
+function calculateCollaborationMatchScore(property, client) {
+  let score = 0;
+  let totalCriteria = 0;
+  let budgetStatus = 'within';
+  let matchReasons = [];
+  
+  // 1. Intent/Status matching - Must match for collaboration
+  let intentMatch = false;
+  if (client.intent) {
+    totalCriteria++;
+    if (client.intent === 'buyer' && property.status === 'For Sale') {
+      intentMatch = true;
+      score++;
+      matchReasons.push('סטטוס');
+    } else if (client.intent === 'renter' && property.status === 'For Rent') {
+      intentMatch = true;
+      score++;
+      matchReasons.push('סטטוס');
+    } else if (client.intent === 'both' && (property.status === 'For Sale' || property.status === 'For Rent')) {
+      intentMatch = true;
+      score++;
+      matchReasons.push('סטטוס');
+    }
+  }
+  
+  // If client intent doesn't match property status, skip entirely
+  if (!intentMatch) {
+    return { score: 0, totalCriteria: 1, isMatch: false, budgetStatus: 'within', matchReasons: [] };
+  }
+  
+  // 2. Location matching
+  if (client.preferredLocation) {
+    totalCriteria++;
+    const locationMatch = normalizeLocation(property.location) === normalizeLocation(client.preferredLocation);
+    if (locationMatch) {
+      score++;
+      matchReasons.push('מיקום');
+    }
+  }
+  
+  // 3. Property type matching
+  if (client.preferredPropertyType) {
+    totalCriteria++;
+    const typeMatch = normalizePropertyType(property.propertyType) === normalizePropertyType(client.preferredPropertyType);
+    if (typeMatch) {
+      score++;
+      matchReasons.push('סוג נכס');
+    }
+  }
+  
+  // 4. Price matching
+  if (client.maxPrice) {
+    totalCriteria++;
+    const maxBudget = Number(client.maxPrice);
+    const propertyPrice = Number(property.price || 0);
+    const budgetPercentage = (propertyPrice / maxBudget) * 100;
+    
+    if (client.intent === 'renter') {
+      // For renters: allow up to 110% of budget
+      const maxAllowed = maxBudget * 1.1;
+      
+      if (propertyPrice <= maxBudget) {
+        score++;
+        budgetStatus = 'within';
+        matchReasons.push('מחיר');
+      } else if (propertyPrice <= maxAllowed) {
+        // Don't add score for above budget (5/6 instead of 6/6)
+        budgetStatus = 'above';
+        matchReasons.push('מחיר (מעל תקציב)');
+      } else {
+        // Above 110% - skip entirely
+        return { score: 0, totalCriteria, isMatch: false, budgetStatus: 'way_above', matchReasons: [] };
+      }
+    } else {
+      // For buyers: use original 15% tolerance
+      const priceMatch = isWithinRange(property.price, client.minPrice, client.maxPrice, 0.15);
+      if (priceMatch) {
+        score++;
+        matchReasons.push('מחיר');
+      }
+      if (propertyPrice > maxBudget) {
+        budgetStatus = 'above';
+      }
+    }
+  }
+  
+  // 5. Rooms matching
+  if (client.minRooms || client.maxRooms) {
+    totalCriteria++;
+    const roomsMatch = isWithinRange(property.bedrooms, client.minRooms, client.maxRooms);
+    if (roomsMatch) {
+      score++;
+      matchReasons.push('חדרים');
+    }
+  }
+  
+  // 6. Area matching
+  if (client.minArea || client.maxArea) {
+    totalCriteria++;
+    const areaMatch = isWithinRange(property.area, client.minArea, client.maxArea, 0.2);
+    if (areaMatch) {
+      score++;
+      matchReasons.push('שטח');
+    }
+  }
+  
+  // For collaboration: minimum 5/6 match required
+  const isMatch = score >= 5;
+  
+  return { score, totalCriteria, isMatch, budgetStatus, matchReasons };
+}
 
 export async function POST(request) {
   try {
@@ -27,54 +181,50 @@ export async function POST(request) {
     }
 
     console.log(`📧 Sending collaboration emails for property: ${property.title}`);
+    console.log(`📧 Property Status: ${property.status}`);
+    console.log(`📧 Looking for ${property.status === 'For Sale' ? 'buyers' : 'renters'} only`);
     console.log(`📧 Selected agents: ${selectedAgentIds.length}`);
     
-    // Get all matches for this property
-    const matches = await matchPropertyToClients(propertyId);
-    
-    // Filter for strong matches (score >= 4)
-    const strongMatches = matches.filter(m => m.score >= 4);
-    
-    if (strongMatches.length === 0) {
-      return NextResponse.json({
-        success: false,
-        error: 'No strong matches found for this property'
-      }, { status: 400 });
-    }
-    
-    // Group matches by agent and filter for selected agents only
+    // Get matching agents with proper intent filtering
     const groupedByAgent = {};
     
-    for (const match of strongMatches) {
-      const agentId = match.agentId.toString();
-      
-      // Only include selected agents
-      if (selectedAgentIds.includes(agentId)) {
-        if (!groupedByAgent[agentId]) {
-          groupedByAgent[agentId] = [];
-        }
+    for (const agentId of selectedAgentIds) {
+      // Get clients for this agent with strict intent filtering
+      const clients = await Client.find({ 
+        userId: agentId,
+        // Filter by intent based on property status
+        intent: property.status === 'For Sale' ? 'buyer' : 'renter'
+      }).lean();
+
+      console.log(`📧 Agent ${agentId}: Found ${clients.length} ${property.status === 'For Sale' ? 'buyer' : 'renter'} clients`);
+
+      const matchingClients = [];
+
+      for (const client of clients) {
+        const matchResult = calculateCollaborationMatchScore(property, client);
         
-        groupedByAgent[agentId].push({
-          name: match.client.name,
-          phone: match.client.phone,
-          email: match.client.email,
-          matchReasons: match.reasons.map(reason => {
-            switch (reason) {
-              case 'location': return 'מיקום';
-              case 'propertyType': return 'סוג נכס';
-              case 'price': return 'מחיר';
-              case 'rooms': return 'חדרים';
-              case 'area': return 'שטח';
-              default: return reason;
-            }
-          }),
-          score: match.score
-        });
+        console.log(`📧 Client: ${client.clientName} - Score: ${matchResult.score}/6 - IsMatch: ${matchResult.isMatch}`);
+
+        if (matchResult.isMatch) {
+          matchingClients.push({
+            name: client.clientName,
+            phone: client.phoneNumber,
+            email: client.email,
+            matchReasons: matchResult.matchReasons,
+            score: matchResult.score
+          });
+        }
+      }
+
+      if (matchingClients.length > 0) {
+        groupedByAgent[agentId] = matchingClients;
       }
     }
     
     const filteredAgentIds = Object.keys(groupedByAgent);
     const totalMatchedClients = Object.values(groupedByAgent).flat().length;
+    
+    console.log(`📧 Final results: ${filteredAgentIds.length} agents with ${totalMatchedClients} matching clients`);
     
     if (filteredAgentIds.length === 0) {
       return NextResponse.json({

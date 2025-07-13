@@ -109,12 +109,16 @@ export default function ClientDetailsPage() {
     const colors = {
       buyer: 'bg-green-100 text-green-800',
       seller: 'bg-blue-100 text-blue-800',
+      renter: 'bg-purple-100 text-purple-800',
+      landlord: 'bg-orange-100 text-orange-800',
       both: 'bg-purple-100 text-purple-800',
       unknown: 'bg-gray-100 text-gray-800'
     };
     const labels = {
       buyer: 'קונה',
       seller: 'מוכר',
+      renter: 'שוכר',
+      landlord: 'משכיר',
       both: 'קונה ומוכר',
       unknown: 'לא ידוע'
     };
@@ -405,11 +409,15 @@ export default function ClientDetailsPage() {
                                 call.intent === 'buyer' ? 'bg-green-100 text-green-800' :
                                 call.intent === 'seller' ? 'bg-blue-100 text-blue-800' :
                                 call.intent === 'both' ? 'bg-purple-100 text-purple-800' :
+                                call.intent === 'renter' ? 'bg-purple-100 text-purple-800' :
+                                call.intent === 'landlord' ? 'bg-orange-100 text-orange-800' :
                                 'bg-gray-100 text-gray-800'
                               }`}>
                                 {call.intent === 'buyer' ? 'קונה' :
                                  call.intent === 'seller' ? 'מוכר' :
-                                 call.intent === 'both' ? 'קונה ומוכר' : call.intent}
+                                 call.intent === 'both' ? 'קונה ומוכר' :
+                                 call.intent === 'renter' ? 'שוכר' :
+                                 call.intent === 'landlord' ? 'משכיר' : call.intent}
                               </span>
                             )}
                           </div>

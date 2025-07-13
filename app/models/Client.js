@@ -7,7 +7,7 @@ const ClientSchema = new mongoose.Schema({
   email: { type: String },
   
   // Property preferences and history
-  intent: { type: String, enum: ['buyer', 'seller', 'both', 'unknown'], default: 'unknown' },
+  intent: { type: String, enum: ['buyer', 'seller', 'both', 'unknown', 'renter', 'landlord'], default: 'unknown' },
   preferredLocation: { type: String },
   preferredPropertyType: { type: String },
   minRooms: { type: Number },

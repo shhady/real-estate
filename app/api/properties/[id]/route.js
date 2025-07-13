@@ -84,6 +84,54 @@ export async function PUT(request, { params }) {
   }
 }
 
+// PATCH update property (partial update)
+export async function PATCH(request, { params }) {
+  const { id } = await params;
+  
+  try {
+    const user = await getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectDB();
+    const data = await request.json();
+    
+    const property = await Property.findById(id);
+    if (!property) {
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+    }
+
+    if (property.user.toString() !== user.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    console.log('Updating property with partial data:', data); // Debug log
+    
+    // Clean undefined values from data
+    const cleanData = {};
+    Object.keys(data).forEach(key => {
+      if (data[key] !== undefined) {
+        cleanData[key] = data[key];
+      }
+    });
+
+    const updatedProperty = await Property.findByIdAndUpdate(
+      id,
+      cleanData,
+      { new: true, runValidators: true }
+    ).populate({
+      path: 'user',
+      model: 'User',
+      select: 'fullName email phone whatsapp bio profileImage'
+    });
+
+    return NextResponse.json(updatedProperty);
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 // DELETE property
 export async function DELETE(request, { params }) {
   const { id } = await params;

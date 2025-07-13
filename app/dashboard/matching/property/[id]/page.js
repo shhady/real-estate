@@ -142,11 +142,18 @@ export default function PropertyMatchingPage({ params }) {
       <div className="border border-gray-200 rounded-lg p-4 bg-white">
         <div className="flex justify-between items-start mb-2">
           <h4 className="text-lg font-semibold text-gray-900">{client.clientName}</h4>
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-            getMatchScoreColor(match.score, match.totalCriteria)
-          }`}>
-            התאמה: {match.score}/{match.totalCriteria}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+              getMatchScoreColor(match.score, match.totalCriteria)
+            }`}>
+              התאמה: {match.score}/{match.totalCriteria}
+            </span>
+            {match.budgetStatus === 'above' && match.budgetPercentage && (
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                מעל תקציב {(match.budgetPercentage - 100).toFixed(1)}%
+              </span>
+            )}
+          </div>
         </div>
         
         <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">

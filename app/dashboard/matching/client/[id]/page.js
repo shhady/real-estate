@@ -192,13 +192,23 @@ export default function ClientMatchingPage({ params }) {
                     <span className="text-gray-600">{detail.propertyValue}</span>
                     <span className="text-gray-400">vs</span>
                     <span className="text-gray-600">{detail.clientValue}</span>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      detail.match 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {detail.match ? '✓' : '✗'}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        detail.match 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {detail.match ? '✓' : '✗'}
+                      </span>
+                      {/* {detail.budgetStatus === 'above' && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          {detail.budgetPercentage ? 
+                            `מעל תקציב ${(detail.budgetPercentage - 100).toFixed(1)}% יותר` : 
+                            'מעל תקציב'
+                          }
+                        </span>
+                      )} */}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -251,6 +261,14 @@ export default function ClientMatchingPage({ params }) {
                 }`}>
                   התאמה: {match.score}/{match.totalCriteria}
                 </span>
+                {match.budgetStatus === 'above' && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    {match.budgetPercentage ? 
+                      `מעל תקציב ${(match.budgetPercentage - 100).toFixed(1)}% יותר` : 
+                      'מעל תקציב'
+                    }
+                  </span>
+                )}
                 {match.isExternal && (
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                     <FaExternalLinkAlt className="w-3 h-3 mr-1" />

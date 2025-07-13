@@ -94,6 +94,8 @@ export default function ClientsPage() {
     const colors = {
       buyer: 'bg-green-100 text-green-800',
       seller: 'bg-blue-100 text-blue-800',
+      renter: 'bg-orange-100 text-orange-800',
+      landlord: 'bg-indigo-100 text-indigo-800',
       both: 'bg-purple-100 text-purple-800',
       unknown: 'bg-gray-100 text-gray-800'
     };
@@ -166,6 +168,8 @@ export default function ClientsPage() {
               <option value="">כל הכוונות</option>
               <option value="buyer">קונה</option>
               <option value="seller">מוכר</option>
+              <option value="renter">שוכר</option>
+              <option value="landlord">משכיר</option>
               <option value="both">קונה ומוכר</option>
               <option value="unknown">לא ידוע</option>
             </select>
@@ -270,6 +274,8 @@ export default function ClientsPage() {
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getIntentBadge(client.intent)}`}>
                               {client.intent === 'buyer' ? 'קונה' :
                                client.intent === 'seller' ? 'מוכר' :
+                               client.intent === 'renter' ? 'שוכר' :
+                               client.intent === 'landlord' ? 'משכיר' :
                                client.intent === 'both' ? 'קונה ומוכר' : 'לא ידוע'}
                             </span>
                           </div>

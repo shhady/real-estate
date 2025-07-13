@@ -32,6 +32,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   const [propertyData, setPropertyData] = useState({
     title: '',
     type: 'apartment',
+    status: 'For Sale',
     location: '',
     area: '',
     price: '',
@@ -111,6 +112,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       setPropertyData(prev => ({
         title: '',
         type: 'apartment',
+        status: 'For Sale',
         location: '',
         area: '',
         price: '',
@@ -694,6 +696,23 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   <option value="store">חנות</option>
                   <option value="land">קרקע</option>
                   <option value="warehouse">מחסן</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                  סטטוס <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  value={propertyData.status}
+                  onChange={handleInputChange}
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="For Sale">למכירה</option>
+                  <option value="For Rent">להשכרה</option>
                 </select>
               </div>
               

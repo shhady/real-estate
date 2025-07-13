@@ -226,6 +226,8 @@ export default function NewClientPage() {
                   <option value="buyer">קונה</option>
                   <option value="seller">מוכר</option>
                   <option value="both">קונה ומוכר</option>
+                  <option value="renter">שוכר</option>
+                  <option value="landlord">משכיר</option>
                 </select>
               </div>
 

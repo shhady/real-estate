@@ -51,14 +51,82 @@ function isWithinRange(value, min, max, tolerance = 0) {
 function calculateMatchScore(property, client) {
   let score = 0;
   let totalCriteria = 0;
+  let budgetStatus = 'within'; // 'within', 'above', 'way_above'
   
-  // Core criteria (location, type, price, rooms, area)
+  // 1. Intent/Status matching - NEW 6th criterion
+  let intentMatch = false;
+  if (client.intent) {
+    totalCriteria++;
+    if (client.intent === 'buyer' && property.status === 'For Sale') {
+      intentMatch = true;
+      score++;
+    } else if (client.intent === 'renter' && property.status === 'For Rent') {
+      intentMatch = true;
+      score++;
+    } else if (client.intent === 'both' && (property.status === 'For Sale' || property.status === 'For Rent')) {
+      intentMatch = true;
+      score++;
+    }
+  }
+  
+  // If client is renter and property is not for rent, skip this property entirely
+  if (client.intent === 'renter' && property.status !== 'For Rent') {
+    return { score: 0, totalCriteria: 1, matchDetails: [], isMatch: false, budgetStatus: 'within' };
+  }
+  
+  // If client is buyer and property is not for sale, skip this property entirely
+  if (client.intent === 'buyer' && property.status !== 'For Sale') {
+    return { score: 0, totalCriteria: 1, matchDetails: [], isMatch: false, budgetStatus: 'within' };
+  }
+  
+  // 2. Location matching
   const locationMatch = normalizeLocation(property.location) === normalizeLocation(client.preferredLocation);
+  
+  // 3. Property type matching
   const typeMatch = normalizePropertyType(property.propertyType) === normalizePropertyType(client.preferredPropertyType);
-  const priceMatch = isWithinRange(property.price, client.minPrice, client.maxPrice, 0.15);
+  
+  // 4. Price matching - Updated for renters with 110% budget
+  let priceMatch = false;
+  let budgetPercentage = 0;
+  
+  if (client.maxPrice) {
+    const maxBudget = Number(client.maxPrice);
+    const propertyPrice = Number(property.price || 0);
+    budgetPercentage = (propertyPrice / maxBudget) * 100;
+    
+    if (client.intent === 'renter') {
+      // For renters: allow up to 110% of budget
+      const maxAllowed = maxBudget * 1.1;
+      
+      if (propertyPrice <= maxBudget) {
+        priceMatch = true;
+        budgetStatus = 'within';
+      } else if (propertyPrice <= maxAllowed) {
+        priceMatch = true;
+        budgetStatus = 'above'; // 100-110% of budget
+      } else {
+        priceMatch = false;
+        budgetStatus = 'way_above'; // Above 110%
+      }
+    } else {
+      // For buyers: use original 15% tolerance
+      priceMatch = isWithinRange(property.price, client.minPrice, client.maxPrice, 0.15);
+      if (propertyPrice > maxBudget) {
+        budgetStatus = 'above';
+      }
+    }
+  } else {
+    // No price limit set
+    priceMatch = true;
+  }
+  
+  // 5. Rooms matching
   const roomsMatch = isWithinRange(property.bedrooms, client.minRooms, client.maxRooms);
+  
+  // 6. Area matching
   const areaMatch = isWithinRange(property.area, client.minArea, client.maxArea, 0.2);
   
+  // Count criteria and matches
   if (client.preferredLocation) {
     totalCriteria++;
     if (locationMatch) score++;
@@ -71,7 +139,8 @@ function calculateMatchScore(property, client) {
   
   if (client.minPrice || client.maxPrice) {
     totalCriteria++;
-    if (priceMatch) score++;
+    // Only add score point if price is within budget (not above budget)
+    if (priceMatch && budgetStatus !== 'above') score++;
   }
   
   if (client.minRooms || client.maxRooms) {
@@ -86,6 +155,21 @@ function calculateMatchScore(property, client) {
   
   // Add match details
   const matchDetails = [];
+  
+  // Intent/Status details
+  if (client.intent) {
+    const statusText = property.status === 'For Sale' ? 'למכירה' : 'להשכרה';
+    const intentText = client.intent === 'buyer' ? 'קונה' : 
+                      client.intent === 'renter' ? 'שוכר' : 'קונה ושוכר';
+    
+    matchDetails.push({
+      criterion: 'intent',
+      label: 'סטטוס',
+      match: intentMatch,
+      propertyValue: statusText,
+      clientValue: intentText
+    });
+  }
   
   if (client.preferredLocation) {
     matchDetails.push({
@@ -108,12 +192,20 @@ function calculateMatchScore(property, client) {
   }
   
   if (client.minPrice || client.maxPrice) {
+    let priceDisplay = `₪${property.price ? property.price.toLocaleString() : 'לא צוין'}`;
+    if (budgetStatus === 'above' && client.intent === 'renter' && budgetPercentage > 100) {
+      const overPercentage = (budgetPercentage - 100).toFixed(1);
+      priceDisplay += ` (מעל תקציב ${overPercentage}% יותר)`;
+    }
+    
     matchDetails.push({
       criterion: 'price',
       label: 'מחיר',
       match: priceMatch,
-      propertyValue: `₪${property.price ? property.price.toLocaleString() : 'לא צוין'}`,
-      clientValue: `₪${client.minPrice || 0} - ${client.maxPrice ? `₪${client.maxPrice.toLocaleString()}` : 'ללא מגבלה'}`
+      propertyValue: priceDisplay,
+      clientValue: `עד ₪${client.maxPrice ? client.maxPrice.toLocaleString() : 'ללא מגבלה'}`,
+      budgetStatus: budgetStatus,
+      budgetPercentage: budgetPercentage
     });
   }
   
@@ -137,17 +229,19 @@ function calculateMatchScore(property, client) {
     });
   }
   
-  // More flexible matching criteria:
-  // - If client has 3+ criteria, need at least 3 matches
-  // - If client has 2 criteria, need at least 2 matches
-  // - If client has 1 criterion, need 1 match
-  // - Minimum 2 criteria required for matching
-  const minCriteriaRequired = Math.max(2, Math.min(totalCriteria, 4));
-  const minMatchesRequired = Math.max(2, Math.min(totalCriteria, 4));
+  // For renters: don't show properties above 110% budget at all
+  if (client.intent === 'renter' && budgetStatus === 'way_above') {
+    console.log(`❌ Filtering out property (above 110% budget): ${property.title} - Budget: ${budgetPercentage.toFixed(1)}%`);
+    return { score: 0, totalCriteria, matchDetails, isMatch: false, budgetStatus, budgetPercentage };
+  }
   
-  const isMatch = totalCriteria >= minCriteriaRequired && score >= minMatchesRequired;
+  // Show properties with 4+ matches out of available criteria
+  const minMatchesRequired = 4;
+  const isMatch = score >= minMatchesRequired;
   
-  return { score, totalCriteria, matchDetails, isMatch };
+  console.log(`🔍 Property: ${property.title} - Score: ${score}/${totalCriteria} - MinRequired: ${minMatchesRequired} - IsMatch: ${isMatch} - BudgetStatus: ${budgetStatus}`);
+  
+  return { score, totalCriteria, matchDetails, isMatch, budgetStatus, budgetPercentage };
 }
 
 // Helper function to calculate call match score
@@ -308,6 +402,9 @@ export async function GET(request) {
 
           // Match clients
           console.log(`\n=== MATCHING CLIENTS ===`);
+          console.log(`Property Status: ${property.status}`);
+          console.log(`Property Details: Location=${property.location}, Type=${property.propertyType}, Price=${property.price}, Rooms=${property.bedrooms}, Area=${property.area}`);
+          
           for (const client of clients) {
             // Skip if client is invalid
             if (!client || !client.clientName) {
@@ -315,15 +412,25 @@ export async function GET(request) {
               continue;
             }
             
+            console.log(`\n--- Checking Client: ${client.clientName} ---`);
+            console.log(`Client Intent: ${client.intent}`);
+            console.log(`Client Location: ${client.preferredLocation}`);
+            console.log(`Client Type: ${client.preferredPropertyType}`);
+            console.log(`Client Price: ${client.minPrice} - ${client.maxPrice}`);
+            console.log(`Client Rooms: ${client.minRooms} - ${client.maxRooms}`);
+            console.log(`Client Area: ${client.minArea} - ${client.maxArea}`);
+            
             const matchResult = calculateMatchScore(property, client);
-            console.log(`Client: ${client.clientName} - Score: ${matchResult.score}/${matchResult.totalCriteria} - IsMatch: ${matchResult.isMatch}`);
+            console.log(`Result: ${client.clientName} - Score: ${matchResult.score}/${matchResult.totalCriteria} - IsMatch: ${matchResult.isMatch} - BudgetStatus: ${matchResult.budgetStatus}`);
             
             if (matchResult.isMatch) {
               propertyMatches.matchedClients.push({
                 client: client,
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails
+                matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage
               });
             }
           }
@@ -527,6 +634,8 @@ export async function GET(request) {
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
                 matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage,
                 isExternal: false,
                 priority: 1
               });
@@ -547,6 +656,8 @@ export async function GET(request) {
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
                 matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage,
                 isExternal: true,
                 priority: 2
               });
@@ -567,6 +678,8 @@ export async function GET(request) {
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
                 matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage,
                 isExternal: false,
                 priority: 3
               });
@@ -587,6 +700,8 @@ export async function GET(request) {
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
                 matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage,
                 isExternal: true,
                 priority: 4
               });
@@ -643,6 +758,8 @@ export async function GET(request) {
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
                 matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage,
                 isExternal: false,
                 priority: 1
               });
@@ -660,6 +777,8 @@ export async function GET(request) {
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
                 matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage,
                 isExternal: true,
                 priority: 2
               });
@@ -677,6 +796,8 @@ export async function GET(request) {
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
                 matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage,
                 isExternal: false,
                 priority: 3
               });
@@ -694,6 +815,8 @@ export async function GET(request) {
                 score: matchResult.score,
                 totalCriteria: matchResult.totalCriteria,
                 matchDetails: matchResult.matchDetails,
+                budgetStatus: matchResult.budgetStatus,
+                budgetPercentage: matchResult.budgetPercentage,
                 isExternal: true,
                 priority: 4
               });

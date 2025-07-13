@@ -227,7 +227,7 @@ export async function POST(request) {
       price: parseFloat(listing.price || data.price || 0),
       location: listing.location || data.location || '',
       propertyType: listing.type || data.propertyType || 'apartment',
-      status: data.status || 'For Sale',
+      status: listing.status || data.status || 'For Sale',
       bedrooms: parseInt(listing.rooms || data.bedrooms || 0),
       bathrooms: listing.bathrooms || data.bathrooms ? parseInt(listing.bathrooms || data.bathrooms) : undefined,
       area: parseFloat(listing.area || data.area || 0),

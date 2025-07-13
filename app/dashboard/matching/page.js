@@ -548,18 +548,18 @@ export default function MatchingPage() {
           console.error('Error fetching calls:', callsError);
         }
         
-        // Filter clients to include only buyers (exclude sellers-only)
+        // Filter clients to include buyers and renters (exclude sellers-only and landlords-only)
         const buyerClients = clientsData.filter(client => {
           if (!client || !client.clientName) return false;
           console.log('Client intent:', client.clientName, client.intent);
-          return client.intent === 'buyer' || client.intent === 'both';
+          return client.intent === 'buyer' || client.intent === 'renter' || client.intent === 'both';
         });
         
-        // Filter calls to include only those from buyers/sellers (exclude sellers-only)
+        // Filter calls to include those from buyers and renters (exclude sellers-only and landlords-only)
         const buyerCalls = callsData.filter(call => {
           if (!call || !call.summary) return false;
           console.log('Call intent:', call.summary?.substring(0, 30), call.intent);
-          return call.intent === 'buyer' || call.intent === 'both';
+          return call.intent === 'buyer' || call.intent === 'renter' || call.intent === 'both';
         });
         
         console.log('Filtered buyer clients:', buyerClients);
@@ -600,7 +600,7 @@ export default function MatchingPage() {
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
               <FaUsers className="w-5 h-5 mr-2 text-blue-600" />
-              הלקוחות שלי - קונים ({clients.length})
+              הלקוחות שלי - קונים ושוכרים ({clients.length})
             </h3>
             <p className="text-sm text-gray-600 mt-1">
               לחץ על לקוח כדי לראות נכסים מתאימים
@@ -657,19 +657,19 @@ export default function MatchingPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
-                        <FaPhone className="h-4 w-4 mr-1 text-gray-400" />
+                        <FaPhone className="h-4 w-4 mx-1 text-gray-400" />
                         {client.phoneNumber || 'לא צוין'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
-                        <FaMapMarkerAlt className="h-4 w-4 mr-1 text-gray-400" />
+                        <FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />
                         {client.preferredLocation || 'לא צוין'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
-                        <FaHome className="h-4 w-4 mr-1 text-gray-400" />
+                        <FaHome className="h-4 w-4 mx-1 text-gray-400" />
                         {translatePropertyType(client.preferredPropertyType) || 'לא צוין'}
                       </div>
                     </td>
@@ -708,11 +708,11 @@ export default function MatchingPage() {
         </div>
 
         {/* Calls Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        {/* <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
               <FaPhone className="w-5 h-5 mr-2 text-green-600" />
-              שיחות מלקוחות קונים ({calls.length})
+              שיחות מלקוחות קונים ושוכרים ({calls.length})
             </h3>
             <p className="text-sm text-gray-600 mt-1">
               לחץ על שיחה כדי לראות נכסים מתאימים
@@ -806,11 +806,11 @@ export default function MatchingPage() {
               <FaPhone className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">אין שיחות</h3>
               <p className="mt-1 text-sm text-gray-500">
-                לא נמצאו שיחות מלקוחות המעוניינים לקנות נכסים
+                לא נמצאו שיחות מלקוחות המעוניינים לקנות או לשכור נכסים
               </p>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     );
   };
