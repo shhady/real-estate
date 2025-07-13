@@ -100,10 +100,19 @@ export default function DashboardPropertiesPage() {
       if (!res.ok) throw new Error('Failed to fetch matching agents');
       
       const data = await res.json();
-      setMatchingAgents(data.agents || []);
+      const agents = data.agents || [];
+      setMatchingAgents(agents);
+      
+      // Set all agents as selected by default
+      const defaultSelection = {};
+      agents.forEach(agent => {
+        defaultSelection[agent._id] = true;
+      });
+      setSelectedAgents(defaultSelection);
     } catch (error) {
       console.error('Error fetching matching agents:', error);
       setMatchingAgents([]);
+      setSelectedAgents({});
     } finally {
       setAgentsLoading(false);
     }
@@ -159,126 +168,158 @@ export default function DashboardPropertiesPage() {
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto mx-4" dir="rtl">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">
-              סוכנים עם לקוחות מתאימים - {selectedProperty.title}
-            </h2>
-            <button
-              onClick={() => setShowAgentsModal(false)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <FaTimes className="h-6 w-6" />
-            </button>
-          </div>
-          
-          <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-2">פרטי הנכס:</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>סטטוס: {selectedProperty.status === 'For Sale' ? 'למכירה' : 'להשכרה'}</div>
-              <div>מחיר: ₪{selectedProperty.price.toLocaleString()}</div>
-              <div>מיקום: {selectedProperty.location}</div>
-              <div>חדרים: {selectedProperty.bedrooms}</div>
-              <div>שטח: {selectedProperty.area} מ"ר</div>
-              <div>סוג: {selectedProperty.propertyType}</div>
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4" dir="rtl">
+          <div className="p-6 sm:p-8">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                סוכנים עם לקוחות מתאימים - {selectedProperty.title}
+              </h2>
+              <button
+                onClick={() => setShowAgentsModal(false)}
+                className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <FaTimes className="h-6 w-6" />
+              </button>
             </div>
-          </div>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
-
-          {agentsLoading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-              <p className="mt-2 text-gray-600">מחפש סוכנים מתאימים...</p>
-            </div>
-          ) : matchingAgents.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              לא נמצאו סוכנים עם לקוחות מתאימים (מינימום 5/6 התאמה)
-            </div>
-          ) : (
-            <>
-              <div className="mb-4 flex justify-between items-center">
-                <h3 className="text-lg font-medium">
-                  נמצאו {matchingAgents.length} סוכנים עם לקוחות מתאימים
-                </h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => toggleAllAgents(true)}
-                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                  >
-                    בחר הכל
-                  </button>
-                  <button
-                    onClick={() => toggleAllAgents(false)}
-                    className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-                  >
-                    בטל הכל
-                  </button>
+            
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 text-black">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">פרטי הנכס:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">סטטוס:</span>
+                  <span className="font-medium">{selectedProperty.status === 'For Sale' ? 'למכירה' : 'להשכרה'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">מחיר:</span>
+                  <span className="font-medium">₪{selectedProperty.price.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">מיקום:</span>
+                  <span className="font-medium">{selectedProperty.location}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">חדרים:</span>
+                  <span className="font-medium">{selectedProperty.bedrooms}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">שטח:</span>
+                  <span className="font-medium">{selectedProperty.area} מ"ר</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">סוג:</span>
+                  <span className="font-medium">
+                    {selectedProperty.propertyType === 'house' && 'בית פרטי'}
+                    {selectedProperty.propertyType === 'apartment' && 'דירה'}
+                    {selectedProperty.propertyType === 'condo' && 'קונדו'}
+                    {selectedProperty.propertyType === 'villa' && 'וילה'}
+                    {selectedProperty.propertyType === 'land' && 'קרקע'}
+                    {selectedProperty.propertyType === 'commercial' && 'מסחרי'}
+                    {selectedProperty.propertyType === 'cottage' && 'קוטג׳'}
+                    {selectedProperty.propertyType === 'duplex' && 'דופלקס'}
+                  </span>
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-4 mb-6">
-                {matchingAgents.map((agent) => (
-                  <div key={agent._id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`agent-${agent._id}`}
-                        checked={selectedAgents[agent._id] || false}
-                        onChange={() => {
-                          setSelectedAgents(prev => ({
-                            ...prev,
-                            [agent._id]: !prev[agent._id]
-                          }));
-                        }}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 ml-3"
-                      />
-                      <label htmlFor={`agent-${agent._id}`} className="flex-1 cursor-pointer">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-semibold text-lg">{agent.fullName}</h4>
-                            <p className="text-gray-600">{agent.agencyName}</p>
-                            <p className="text-sm text-gray-500">{agent.email} • {agent.phone}</p>
-                          </div>
-                          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                            {agent.matchingClients.length} לקוחות מתאימים
-                          </span>
-                        </div>
-                      </label>
-                    </div>
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {agentsLoading ? (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+                <p className="mt-4 text-gray-600 text-lg">מחפש סוכנים מתאימים...</p>
+              </div>
+            ) : matchingAgents.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                <p className="text-lg">לא נמצאו סוכנים עם לקוחות מתאימים (מינימום 5/6 התאמה)</p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    נמצאו {matchingAgents.length} סוכנים עם לקוחות מתאימים
+                  </h3>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => toggleAllAgents(true)}
+                      className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    >
+                      בחר הכל
+                    </button>
+                    <button
+                      onClick={() => toggleAllAgents(false)}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                    >
+                      בטל הכל
+                    </button>
                   </div>
-                ))}
-              </div>
+                </div>
 
-              <div className="flex justify-between items-center">
-                <button
-                  onClick={sendEmails}
-                  disabled={agentsLoading || Object.values(selectedAgents).filter(Boolean).length === 0}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {agentsLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2"></div>
-                      שולח...
+                <div className="space-y-4 mb-8">
+                  {matchingAgents.map((agent) => (
+                    <div key={agent._id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors border border-gray-200">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`agent-${agent._id}`}
+                          checked={selectedAgents[agent._id] || false}
+                          onChange={() => {
+                            setSelectedAgents(prev => ({
+                              ...prev,
+                              [agent._id]: !prev[agent._id]
+                            }));
+                          }}
+                          className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ml-4"
+                        />
+                        <label htmlFor={`agent-${agent._id}`} className="flex-1 cursor-pointer">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h4 className="text-lg font-semibold text-gray-900 mb-1">{agent.fullName}</h4>
+                              <p className="text-gray-600 mb-1">{agent.agencyName}</p>
+                              <p className="text-sm text-gray-500 mb-1">{agent.email} • {agent.phone}</p>
+                            </div>
+                            <div className="ml-4">
+                              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                {agent.matchingClients.length} לקוחות מתאימים
+                              </span>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
                     </div>
-                  ) : (
-                    `שלח מייל ל-${Object.values(selectedAgents).filter(Boolean).length} סוכנים`
-                  )}
-                </button>
-                
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowAgentsModal(false)}
-                >
-                  סגור
-                </Button>
-              </div>
-            </>
-          )}
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowAgentsModal(false)}
+                    className="w-full sm:w-auto"
+                  >
+                    סגור
+                  </Button>
+                  
+                  <button
+                    onClick={sendEmails}
+                    disabled={agentsLoading || Object.values(selectedAgents).filter(Boolean).length === 0}
+                    className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {agentsLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
+                        שולח...
+                      </div>
+                    ) : (
+                      `שלח מייל ל-${Object.values(selectedAgents).filter(Boolean).length} סוכנים`
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -384,12 +425,12 @@ export default function DashboardPropertiesPage() {
                       <button
                         onClick={() => handleCollaborationToggle(property._id, property.collaboration)}
                         className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                          property.collaboration ? 'bg-blue-600' : 'bg-gray-200'
+                          property.collaboration ? 'bg-green-600' : 'bg-gray-200'
                         }`}
                       >
                         <span
                           className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                            property.collaboration ? 'translate-x-0' : 'translate-x-5'
+                            property.collaboration ? 'translate-x-0' : '-translate-x-5'
                           }`}
                         />
                       </button>

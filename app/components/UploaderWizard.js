@@ -353,23 +353,31 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         // Check if collaboration is enabled and handle agent selection
         if (propertyData.collaboration) {
           console.log('🤝 Collaboration enabled, checking for matching agents...');
+          console.log('Property data:', {
+            status: propertyData.status,
+            location: propertyData.location,
+            type: propertyData.type,
+            price: propertyData.price,
+            rooms: propertyData.rooms
+          });
           setSavedProperty(response.data.property);
           
           try {
             // Get matching agents for this property
-            const matchResponse = await axios.post('/api/collaboration-matches', {
-              propertyId: response.data.property._id
-            });
+            const matchResponse = await axios.get(`/api/collaboration-matches?propertyId=${response.data.property._id}&minMatch=5`);
             
-            if (matchResponse.data && matchResponse.data.success && matchResponse.data.totalAgents > 0) {
+            console.log('🔍 API Response:', matchResponse.data);
+            
+            if (matchResponse.data && matchResponse.data.agents && matchResponse.data.agents.length > 0) {
               const agentData = matchResponse.data.agents;
               
+              console.log('✅ Found matching agents:', agentData.length);
               setMatchingAgents(agentData);
               
               // Set all agents as selected by default
               const defaultSelection = {};
               agentData.forEach(agent => {
-                defaultSelection[agent.id] = true;
+                defaultSelection[agent._id] = true; // Use _id to match the API response
               });
               setSelectedAgents(defaultSelection);
               
@@ -379,12 +387,20 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
             }
             
             // If no matches or error, proceed normally
-            console.log('No matching agents found, proceeding normally...');
+            console.log('❌ No matching agents found, proceeding normally...');
+            console.log('Response details:', {
+              success: matchResponse.data?.success,
+              agentsLength: matchResponse.data?.agents?.length,
+              totalAgents: matchResponse.data?.totalAgents
+            });
             
           } catch (matchError) {
-            console.error('Error checking collaboration matches:', matchError);
+            console.error('❌ Error checking collaboration matches:', matchError);
+            console.error('Error details:', matchError.response?.data);
             // Continue with normal flow if matching fails
           }
+        } else {
+          console.log('🚫 Collaboration not enabled for this property');
         }
         
         // Close wizard and notify parent component (normal flow)
@@ -1314,73 +1330,77 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         {/* Agent Selection Overlay */}
         {showAgentSelection && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 max-h-[80vh] overflow-y-auto" dir="rtl">
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  🤝 בחר סוכנים לשיתוף פעולה
-                </h3>
-                
-                <p className="text-gray-600 mb-6">
-                  נמצאו {matchingAgents.length} סוכנים עם לקוחות שמתאימים לנכס שלך.
-                  בחר לאילו סוכנים לשלוח הודעת שיתוף פעולה:
-                </p>
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full m-4 max-h-[90vh] overflow-y-auto" dir="rtl">
+              <div className="p-6 sm:p-8">
+                <div className="mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                    🤝 בחר סוכנים לשיתוף פעולה
+                  </h3>
+                  
+                  <p className="text-gray-600 text-lg leading-relaxed">
+                    נמצאו {matchingAgents.length} סוכנים עם לקוחות שמתאימים לנכס שלך.
+                    בחר לאילו סוכנים לשלוח הודעת שיתוף פעולה:
+                  </p>
+                </div>
 
                 {error && (
-                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
                     {error}
                   </div>
                 )}
 
-                <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+                <div className="space-y-4 mb-8 max-h-96 overflow-y-auto">
                   {matchingAgents.map((agent) => (
-                    <div key={agent.id} className="flex items-center p-3 border rounded-lg hover:bg-gray-50">
-                      <input
-                        type="checkbox"
-                        id={`agent-${agent.id}`}
-                        checked={selectedAgents[agent.id] || false}
-                        onChange={() => handleAgentToggle(agent.id)}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 ml-3"
-                      />
-                      <label htmlFor={`agent-${agent.id}`} className="flex-1 cursor-pointer">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium text-gray-900">{agent.name}</p>
-                            <p className="text-sm text-gray-600">{agent.agencyName}</p>
-                            <p className="text-sm text-blue-600">
-                              {agent.clientCount} לקוח{agent.clientCount > 1 ? 'ות' : ''} מתאים{agent.clientCount > 1 ? 'ים' : ''}
-                            </p>
+                    <div key={agent._id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors border border-gray-200">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`agent-${agent._id}`}
+                          checked={selectedAgents[agent._id] || false}
+                          onChange={() => handleAgentToggle(agent._id)}
+                          className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 ml-4"
+                        />
+                        <label htmlFor={`agent-${agent._id}`} className="flex-1 cursor-pointer">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h4 className="text-lg font-semibold text-gray-900 mb-1">{agent.fullName}</h4>
+                              <p className="text-gray-600 mb-1">{agent.agencyName}</p>
+                              <p className="text-sm text-blue-600 font-medium">
+                                {agent.matchingClients.length} לקוח{agent.matchingClients.length > 1 ? 'ות' : ''} מתאים{agent.matchingClients.length > 1 ? 'ים' : ''}
+                              </p>
+                            </div>
+                            <div className="text-left ml-4">
+                              <p className="text-sm text-gray-500 mb-1">{agent.email}</p>
+                              {agent.phone && (
+                                <p className="text-sm text-gray-500">{agent.phone}</p>
+                              )}
+                            </div>
                           </div>
-                          <div className="text-left">
-                            <p className="text-xs text-gray-500">{agent.email}</p>
-                            {agent.phone && (
-                              <p className="text-xs text-gray-500">{agent.phone}</p>
-                            )}
-                          </div>
-                        </div>
-                      </label>
+                        </label>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex justify-between gap-3">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                   <button
                     onClick={skipCollaboration}
-                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    className="w-full sm:w-auto px-6 py-3 text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors font-medium"
                     disabled={isLoading}
                   >
                     דלג על שיתוף פעולה
                   </button>
                   
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => {
                         const allSelected = {};
                         matchingAgents.forEach(agent => {
-                          allSelected[agent.id] = true;
+                          allSelected[agent._id] = true;
                         });
                         setSelectedAgents(allSelected);
                       }}
-                      className="px-3 py-2 text-sm text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50"
+                      className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                       disabled={isLoading}
                     >
                       בחר הכל
@@ -1390,11 +1410,11 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                       onClick={() => {
                         const noneSelected = {};
                         matchingAgents.forEach(agent => {
-                          noneSelected[agent.id] = false;
+                          noneSelected[agent._id] = false;
                         });
                         setSelectedAgents(noneSelected);
                       }}
-                      className="px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
                       disabled={isLoading}
                     >
                       בטל הכל
@@ -1402,12 +1422,12 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                     
                     <button
                       onClick={sendCollaborationEmails}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-8 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       disabled={isLoading || Object.values(selectedAgents).filter(Boolean).length === 0}
                     >
                       {isLoading ? (
                         <div className="flex items-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2"></div>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
                           שולח...
                         </div>
                       ) : (
