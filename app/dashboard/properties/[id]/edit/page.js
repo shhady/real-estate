@@ -32,6 +32,11 @@ export default function EditPropertyPage({ params }) {
     floor: '',
     notes: '',
     agencyName: '',
+    address: {
+      neighborhood: '',
+      street: '',
+      number: ''
+    },
     descriptions: {
       hebrew: '',
       arabic: ''
@@ -107,6 +112,7 @@ export default function EditPropertyPage({ params }) {
         floor: property.floor || '',
         notes: property.notes || '',
         agencyName: property.agencyName || '',
+        address: property.address || { neighborhood: '', street: '', number: '' },
         descriptions: {
           hebrew: property.descriptions?.hebrew || '',
           arabic: property.descriptions?.arabic || ''
@@ -132,6 +138,15 @@ export default function EditPropertyPage({ params }) {
         descriptions: {
           ...prev.descriptions,
           [lang]: value
+        }
+      }));
+    } else if (name.startsWith('address.')) {
+      const [addressPart, subPart] = name.split('.');
+      setFormData(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [subPart]: value
         }
       }));
     } else {
@@ -319,7 +334,8 @@ export default function EditPropertyPage({ params }) {
         descriptions: formData.descriptions,
         floor: formData.floor,
         notes: formData.notes,
-        agencyName: formData.agencyName
+        agencyName: formData.agencyName,
+        address: formData.address
       };
 
       console.log('Updating property with data:', propertyData); // Debug log
@@ -651,6 +667,49 @@ export default function EditPropertyPage({ params }) {
               />
             </div>
           </div>
+
+          {/* Address Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                שכונה
+              </label>
+              <input
+                type="text"
+                name="address.neighborhood"
+                value={formData.address.neighborhood}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                רחוב
+              </label>
+              <input
+                type="text"
+                name="address.street"
+                value={formData.address.street}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+              />
+            </div>
+                         <div>
+               <label className="block text-sm font-medium text-gray-700">
+                 מספר בית
+               </label>
+               <input
+                 type="text"
+                 name="address.number"
+                 value={formData.address.number}
+                 onChange={handleChange}
+                 className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+               />
+             </div>
+           </div>
+           <p className="text-xs text-gray-500 mt-2">
+             הזן שכונה, רחוב ומספר בית לתצוגה מדויקת יותר במפה
+           </p>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">

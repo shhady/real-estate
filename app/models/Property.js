@@ -34,6 +34,20 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  address: {
+    street: {
+      type: String,
+      required: false,
+    },
+    number: {
+      type: String,
+      required: false,
+    },
+    neighborhood: {
+      type: String,
+      required: false,
+    }
+  },
   propertyType: {
     type: String,
     required: true,

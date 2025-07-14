@@ -477,6 +477,110 @@ npm start
 - **Multi-tenant Architecture**: Support for multiple agencies
 - **Advanced Matching**: AI-powered recommendation engine
 
+## 🤝 Advanced Collaboration System
+
+### Property Collaboration Features
+- **Collaboration Toggle**: Enable/disable collaboration for individual properties
+- **Intent-Based Matching**: Properties automatically filtered by client intent
+  - **For Sale Properties**: Only matches agents with buyer clients
+  - **For Rent Properties**: Only matches agents with renter clients
+- **Minimum Match Criteria**: Requires 5/6 matching criteria for collaboration
+- **Professional Collaboration UI**: Enhanced popup styling matching property creation forms
+
+### Collaboration Workflow
+- **Automatic Agent Discovery**: System automatically finds agents with matching clients
+- **Default Selection**: All matching agents are pre-selected for convenience
+- **Email Notifications**: Automated collaboration emails in Hebrew with RTL support
+- **Privacy Protection**: Only shows agent information and client count, no personal client details
+- **Real-time Matching**: Instant collaboration matches when properties are uploaded
+
+### Collaboration Popup Features
+- **Enhanced Styling**: Professional popup design matching create property form aesthetics
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Agent Cards**: Detailed agent information with client match counts
+- **Bulk Selection**: "Select All" and "Deselect All" options
+- **Property Details**: Comprehensive property information display with Hebrew translations
+- **Loading States**: Professional loading animations and status indicators
+
+### API Endpoints
+- `GET /api/collaboration-matches` - Find matching agents with intent filtering
+- `POST /api/send-collaboration-emails` - Send collaboration emails with strict intent filtering
+- `PATCH /api/properties/[id]` - Update property collaboration status
+
+### Collaboration Email System
+- **Hebrew Email Content**: Fully localized email templates with RTL support
+- **Intent Filtering**: Ensures proper client intent matching in email system
+- **Property Details**: Comprehensive property information in emails
+- **Agent Notifications**: Automatic notifications to property owners
+- **Client Privacy**: Protected client information with match summaries only
+
+## 🎯 Enhanced Intelligent Matching System
+
+### Advanced Matching Criteria (6-Point System)
+1. **Intent/Status Matching**: Buyer/renter intent must match property sale/rental status
+2. **Location Matching**: Intelligent location normalization and matching
+3. **Property Type Matching**: Apartment, house, villa, etc. matching
+4. **Price Range Matching**: Budget tolerance with 110% flexibility for renters
+5. **Room Count Matching**: Bedroom requirements matching
+6. **Area Matching**: Square meter requirements matching
+
+### Budget Status Enhancement
+- **Percentage Over Budget**: Displays exact percentage when clients exceed budget
+- **110% Rule for Renters**: Special budget tolerance for rental properties
+- **Visual Budget Indicators**: Color-coded budget status badges
+- **Budget Filtering**: Properties above 110% budget are filtered out
+- **Score Reduction**: Above-budget properties receive 5/6 instead of 6/6 score
+
+### Collaboration Matching Features
+- **Minimum 5/6 Criteria**: Collaboration requires high-quality matches
+- **Intent Validation**: Double verification of client intent matching
+- **Real-time Calculation**: Instant match score calculation
+- **Debug Logging**: Comprehensive logging for troubleshooting
+- **Agent Filtering**: Only shows agents with qualifying client matches
+
+### Enhanced Property Display
+- **Hebrew Property Types**: Proper Hebrew translations (דירה, בית פרטי, וילה, etc.)
+- **Budget Status Badges**: "מעל תקציב X%" indicators
+- **Match Score Display**: Visual 5/6 or 6/6 match indicators
+- **Client Count Display**: Number of matching clients per agent
+- **Intent Labels**: Clear buyer/renter intent indicators
+
+## 🎨 Enhanced User Interface & Experience
+
+### RTL (Right-to-Left) Improvements
+- **Toggle Switch Positioning**: Fixed toggle switches for Hebrew interface
+- **Collaboration Toggle**: Green color for enabled state with proper RTL positioning
+- **Modal Layouts**: Optimized modal positioning for RTL languages
+- **Form Styling**: Consistent RTL form layouts across all components
+
+### Professional Styling Enhancements
+- **Consistent Design Language**: Unified styling across property creation and collaboration
+- **Enhanced Typography**: Improved font sizes and hierarchy
+- **Color Scheme**: Professional blue and gray color palette
+- **Responsive Layouts**: Optimized for desktop, tablet, and mobile devices
+- **Transition Effects**: Smooth hover and focus state transitions
+
+### Form Component Improvements
+- **Input Field Styling**: Consistent border and focus states
+- **Button Styling**: Enhanced button designs with proper focus states
+- **Checkbox Styling**: Improved checkbox and radio button appearance
+- **Error States**: Professional error message styling
+- **Loading States**: Enhanced loading indicators and animations
+
+## 🔧 Technical Improvements
+
+### API Integration Fixes
+- **Method Correction**: Fixed UploaderWizard to use GET instead of POST for collaboration matches
+- **Response Handling**: Improved API response validation and error handling
+- **Agent ID Consistency**: Standardized use of `_id` across all components
+- **Debug Logging**: Added comprehensive debug logging for troubleshooting
+
+### State Management Enhancements
+- **Default Selections**: Automatic agent selection on popup open
+- **State Synchronization**: Improved state consistency between UI components
+- **Error Recovery**: Better error handling and recovery mechanisms
+- **Performance Optimization**: Reduced unnecessary re-renders and API calls
+
 ---
 
-This comprehensive real estate platform provides a complete solution for modern real estate professionals, combining traditional property management with cutting-edge AI technology and intelligent automation systems. 
+This comprehensive real estate platform provides a complete solution for modern real estate professionals, combining traditional property management with cutting-edge AI technology, intelligent automation systems, and advanced collaboration features. 

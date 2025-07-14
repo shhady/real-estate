@@ -57,11 +57,20 @@ export async function PUT(request, { params }) {
     const isCollaborationEnabled = Boolean(data.collaboration);
     const collaborationJustEnabled = !wasCollaborationEnabled && isCollaborationEnabled;
     
-    // Clean undefined values from data
+    // Clean undefined values from data and handle address properly
     const cleanData = {};
     Object.keys(data).forEach(key => {
       if (data[key] !== undefined) {
-        cleanData[key] = data[key];
+        // Handle address object specifically
+        if (key === 'address' && data[key] && typeof data[key] === 'object') {
+          cleanData[key] = {
+            neighborhood: data[key].neighborhood || '',
+            street: data[key].street || '',
+            number: data[key].number || ''
+          };
+        } else {
+          cleanData[key] = data[key];
+        }
       }
     });
 

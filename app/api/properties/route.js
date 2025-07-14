@@ -226,6 +226,11 @@ export async function POST(request) {
       descriptions: descriptions,
       price: parseFloat(listing.price || data.price || 0),
       location: listing.location || data.location || '',
+      address: {
+        street: listing.address?.street || data.address?.street || '',
+        number: listing.address?.number || data.address?.number || '',
+        neighborhood: listing.address?.neighborhood || data.address?.neighborhood || ''
+      },
       propertyType: listing.type || data.propertyType || 'apartment',
       status: listing.status || data.status || 'For Sale',
       bedrooms: parseInt(listing.rooms || data.bedrooms || 0),

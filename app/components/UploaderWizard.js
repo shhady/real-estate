@@ -34,6 +34,11 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     type: 'apartment',
     status: 'For Sale',
     location: '',
+    address: {
+      street: '',
+      number: '',
+      neighborhood: ''
+    },
     area: '',
     price: '',
     rooms: '',
@@ -114,6 +119,11 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         type: 'apartment',
         status: 'For Sale',
         location: '',
+        address: {
+          street: '',
+          number: '',
+          neighborhood: ''
+        },
         area: '',
         price: '',
         rooms: '',
@@ -173,6 +183,16 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   const handleLocationInputFocus = () => {
     setShowCityDropdown(true);
     setCitySearchTerm(propertyData.location);
+  };
+
+  const handleAddressChange = (field, value) => {
+    setPropertyData(prev => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        [field]: value
+      }
+    }));
   };
 
   // Generate descriptions based on property data
@@ -761,6 +781,54 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                     ))}
                   </div>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  כתובת (אופציונלי)
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="שכונה"
+                      value={propertyData.address.neighborhood}
+                      onChange={(e) => handleAddressChange('neighborhood', e.target.value)}
+                      className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="רחוב"
+                      value={propertyData.address.street}
+                      onChange={(e) => handleAddressChange('street', e.target.value)}
+                      className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="מספר בית"
+                      value={propertyData.address.number}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent number-only input without street
+                        if (value && !propertyData.address.street) {
+                          // Don't update if trying to enter number without street
+                          return;
+                        }
+                        handleAddressChange('number', value);
+                      }}
+                      className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      disabled={!propertyData.address.street}
+                      title={!propertyData.address.street ? "הזן רחוב קודם" : ""}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                  הזן שכונה, רחוב ומספר בית לתצוגה מדויקת יותר במפה
+                </p>
               </div>
               
               <div className="space-y-2">
