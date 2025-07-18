@@ -376,7 +376,7 @@ export default function AgentProfile({ agent }) {
 
                     {/* Property Filters */}
                     <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-                      <h3 className="text-lg font-semibold mb-4">סינון נכסים</h3>
+                      <h3 className="text-lg font-semibold mb-4 text-black">סינון נכסים של {agent.fullName}</h3>
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">מחיר מינימלי</label>
