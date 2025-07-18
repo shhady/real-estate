@@ -31,7 +31,7 @@ export default async function AgentPage({ params }) {
     // Fetch agent's properties
     const properties = await Property.find({ user: agent._id })
       .populate('user', 'fullName email phone')
-      .select('title description price location images status bedrooms bathrooms area propertyType createdAt updatedAt')
+      .select('title description price location images video contentType status bedrooms bathrooms area propertyType createdAt updatedAt')
       .lean();
 
     // Initialize analytics if not exists
@@ -62,7 +62,12 @@ export default async function AgentPage({ params }) {
         images: property.images?.map(img => ({
           secure_url: img.secure_url,
           publicId: img.publicId
-        })) || []
+        })) || [],
+        video: property.video ? {
+          secure_url: property.video.secure_url,
+          publicId: property.video.publicId,
+          type: property.video.type
+        } : undefined
       }))
     };
 

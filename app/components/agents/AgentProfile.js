@@ -441,47 +441,8 @@ export default function AgentProfile({ agent }) {
                     {/* Properties Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       {filteredProperties.length > 0 ? (
-                        filteredProperties.map((property, index) => (
-                          <Link key={property._id} href={`/properties/${property._id}`}>
-                            <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
-                              <div className="relative h-48 w-full">
-                                <Image
-                                  src={property.images[0]?.secure_url || '/placeholder-property.jpg'}
-                                  alt={property.title}
-                                  fill
-                                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                  className="object-cover"
-                                  priority={index === 0}
-                                />
-                                <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-sm">
-                                  {property.status === 'For Sale' ? 'למכירה' : 'להשכרה'}
-                                </div>
-                              </div>
-                              
-                              <div className="p-4">
-                                <h3 className="text-lg font-semibold text-gray-900 truncate">{property.title}</h3>
-                                <p className="text-gray-600 text-sm mb-2">{property.location}</p>
-                                <p className="text-blue-600 text-xl font-bold mb-4">
-                                  ₪{property.price.toLocaleString()}
-                                </p>
-                                
-                                 <div className="grid grid-cols-3 gap-2 text-gray-600 border-t pt-4">
-            <div className="flex flex-col gap-2 items-center justify-center border-l border-gray-200">
-              <FaBed className="ml-2 text-blue-600" />
-              <span className="text-sm text-center">{property.bedrooms} חדרים</span>
-            </div>
-            <div className="flex flex-col gap-2 items-center justify-center ">
-              <FaBath className="ml-2 text-blue-600" />
-              <span className="text-sm text-center">{property.bathrooms} חדרי רחצה</span>
-            </div>
-            <div className="flex flex-col gap-2 items-center justify-center border-r border-gray-200">
-                                  <FaRuler className="ml-2 text-blue-600" />
-                                  <span className="text-sm text-center">{property.area} מ"ר</span>
-                                </div>
-                              </div>
-                              </div>
-                            </div>
-                          </Link>
+                        filteredProperties.map((property) => (
+                          <PropertyCard key={property._id} property={property} />
                         ))
                       ) : (
                         <p className="text-gray-500 text-center col-span-2 py-8 bg-gray-50 rounded-lg">
