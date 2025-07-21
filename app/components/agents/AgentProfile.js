@@ -16,6 +16,7 @@ export default function AgentProfile({ agent }) {
     propertyType: ''
   });
   console.log(agent)
+  
   // Initialize analytics state with the data from props
   const [analytics, setAnalytics] = useState({
     profileViews: agent.interactions?.profileViews || 0,
@@ -29,32 +30,45 @@ export default function AgentProfile({ agent }) {
 
     if (!mounted) {
       setMounted(true);
-      // Only track view if we have an agent ID
+      // Only track view if we have a valid agent ID - but don't break if it fails
       if (agent?._id) {
-        trackView();
+        trackView().catch(error => {
+          console.warn('Tracking failed, but continuing normally:', error);
+        });
       }
     }
 
     return () => {
       isMounted = false;
     };
-  }, [mounted, agent._id]);
+  }, [mounted, agent?._id]);
 
   const trackView = async () => {
     try {
+      // Skip tracking if no valid agent ID
+      if (!agent?._id) {
+        console.warn('No agent ID available for tracking');
+        return;
+      }
+
       const res = await fetch(`/api/agents/${agent._id}/track`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ type: 'profile' }),
-        // Add cache control to prevent caching
         cache: 'no-store'
       });
 
+      // If tracking fails, just log and continue - don't break the page
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Track view error:', errorText);
+        console.warn('Tracking failed with status:', res.status);
+        return;
+      }
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.warn('Tracking response is not JSON, skipping');
         return;
       }
 
@@ -68,25 +82,37 @@ export default function AgentProfile({ agent }) {
         });
       }
     } catch (error) {
-      console.error('Error tracking view:', error);
+      // Just log the error, don't break the page
+      console.warn('Tracking error (non-critical):', error.message);
     }
   };
 
   const trackInteraction = async (type) => {
     try {
+      // Skip tracking if no valid agent ID
+      if (!agent?._id) {
+        console.warn('No agent ID available for interaction tracking');
+        return;
+      }
+      
       const res = await fetch(`/api/agents/${agent._id}/track`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ type }),
-        // Add cache control to prevent caching
         cache: 'no-store'
       });
 
+      // If tracking fails, just log and continue - don't break functionality
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Track interaction error:', errorText);
+        console.warn('Interaction tracking failed with status:', res.status);
+        return;
+      }
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.warn('Interaction tracking response is not JSON, skipping');
         return;
       }
 
@@ -100,7 +126,8 @@ export default function AgentProfile({ agent }) {
         });
       }
     } catch (error) {
-      console.error('Error tracking interaction:', error);
+      // Just log the error, don't break functionality
+      console.warn('Interaction tracking error (non-critical):', error.message);
     }
   };
 

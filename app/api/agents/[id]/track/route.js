@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
 import connectDB from '../../../../lib/mongodb';
 import User from '../../../../models/User';
+import mongoose from 'mongoose';
 
 export async function POST(request, { params }) {
   try {
     const { id } = await params;
+    
+    // Basic validation
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid agent ID' },
+        { status: 400 }
+      );
+    }
+
     const { type } = await request.json();
 
     // Validate interaction type
@@ -47,13 +57,25 @@ export async function POST(request, { params }) {
     // Save without validation to avoid agencyName requirement errors
     await agent.save({ validateBeforeSave: false });
 
-    // Return updated interactions
-    return NextResponse.json(agent);
+    // Return updated agent interactions
+    return NextResponse.json({ 
+      agent: {
+        interactions: agent.interactions
+      }
+    });
   } catch (error) {
     console.error('Error tracking interaction:', error);
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { 
+        error: 'Internal server error'
+      },
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
   }
 }
