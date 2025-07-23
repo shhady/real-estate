@@ -324,6 +324,8 @@ export default function NewClientPage() {
                   <option value="apartment">דירה</option>
                   <option value="house">בית</option>
                   <option value="commercial">מסחרי</option>
+                  <option value="office">משרד</option>
+                  <option value="warehouse">מחסן</option>
                   <option value="land">קרקע</option>
                   <option value="other">אחר</option>
                 </select>

@@ -563,6 +563,9 @@ export default function EditPropertyPage({ params }) {
                 <option value="villa">וילה</option>
                 <option value="land">מגרש</option>
                 <option value="commercial">מסחרי</option>
+                <option value="office">משרד</option>
+                <option value="warehouse">מחסן</option>
+                <option value="other">אחר</option>
                 <option value="cottage">קוטג'/קיר משותף</option>
                 <option value="duplex">דופלקס</option>
               </select>

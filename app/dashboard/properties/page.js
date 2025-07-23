@@ -214,6 +214,9 @@ export default function DashboardPropertiesPage() {
                     {selectedProperty.propertyType === 'villa' && 'וילה'}
                     {selectedProperty.propertyType === 'land' && 'קרקע'}
                     {selectedProperty.propertyType === 'commercial' && 'מסחרי'}
+                    {selectedProperty.propertyType === 'office' && 'משרד'}
+                    {selectedProperty.propertyType === 'warehouse' && 'מחסן'}
+                    {selectedProperty.propertyType === 'other' && 'אחר'}
                     {selectedProperty.propertyType === 'cottage' && 'קוטג׳'}
                     {selectedProperty.propertyType === 'duplex' && 'דופלקס'}
                   </span>

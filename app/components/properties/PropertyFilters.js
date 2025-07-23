@@ -11,6 +11,9 @@ const propertyTypes = [
   { value: 'villa', label: 'וילה' },
   { value: 'land', label: 'מגרש' },
   { value: 'commercial', label: 'מסחרי' },
+  { value: 'office', label: 'משרד' },
+  { value: 'warehouse', label: 'מחסן' },
+  { value: 'other', label: 'אחר' },
   { value: 'cottage', label: `קוטג'/קיר משותף'`},
   { value: 'duplex', label: 'דופלקס' }
 ];
@@ -139,6 +142,9 @@ export default function PropertyFilters() {
               <option value="villa">וילה</option>
               <option value="land">מגרש</option>
               <option value="commercial">מסחרי</option>
+              <option value="office">משרד</option>
+              <option value="warehouse">מחסן</option>
+              <option value="other">אחר</option>
               <option value="cottage">קוטג'/קיר משותף</option>
               <option value="duplex">דופלקס</option>
             </select>

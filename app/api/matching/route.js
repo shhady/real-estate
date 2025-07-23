@@ -25,6 +25,9 @@ function normalizePropertyType(type) {
     .replace(/בית|بيت|house/gi, 'house')
     .replace(/וילה|فيلا|villa/gi, 'villa')
     .replace(/מסחרי|تجاري|commercial/gi, 'commercial')
+    .replace(/משרד|مكتب|office/gi, 'office')
+    .replace(/מחסן|مخزن|warehouse/gi, 'warehouse')
+    .replace(/אחר|أخر|other/gi, 'other')
     .trim();
 }
 

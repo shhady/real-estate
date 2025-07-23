@@ -198,6 +198,9 @@ const PropertyForm = ({ property = null }) => {
             <option value="villa">Villa</option>
             <option value="land">Land</option>
             <option value="commercial">מסחרי</option>
+            <option value="office">משרד</option>
+            <option value="warehouse">מחסן</option>
+            <option value="other">אחר</option>
             <option value="cottage">קוטג'/קיר משותף</option>
             <option value="duplex">דופלקס</option>
 

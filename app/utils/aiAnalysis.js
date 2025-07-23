@@ -197,7 +197,7 @@ Return JSON object like this:
   "issues": ["specific concern with suggested resolution", "detailed problem with context", ...],
   "intent": "buyer | seller | both | unknown",
   "location": "normalized location or empty string",
-  "propertyType": "apartment | land | villa | commercial | other",
+  "propertyType": "apartment | land | villa | commercial | other | office | warehouse",
   "rooms": 0 | null,
   "bathrooms": 0 | null,
   "area": 0 | null,

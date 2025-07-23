@@ -23,6 +23,9 @@ export default function AnalyticsPage() {
       Villa: 0,
       Land: 0,
       commercial: 0,
+      office: 0,
+      warehouse: 0,
+      other: 0,
       cottage: 0,
       duplex: 0
     },

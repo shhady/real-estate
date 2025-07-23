@@ -458,6 +458,9 @@ export default function AgentProfile({ agent }) {
                             <option value="Villa">וילה</option>
                             <option value="Land">מגרש</option>
                             <option value="commercial">מסחרי</option>
+                            <option value="office">משרד</option>
+                            <option value="warehouse">מחסן</option>
+                            <option value="other">אחר</option>
                             <option value="cottage">קוטג'/קיר משותף </option>
                             <option value="duplex">דופלקס</option>
                           </select>
