@@ -219,8 +219,6 @@ export default async function PropertyPage({ params }) {
                      property.propertyType === 'land' ? 'מגרש' :
                      property.propertyType === 'commercial' ? 'מסחרי' :
                      property.propertyType === 'office' ? 'משרד' :
-                     property.propertyType === 'warehouse' ? 'מחסן' :
-                     property.propertyType === 'other' ? 'אחר' :
                      property.propertyType === 'cottage' ? 'קוטג\'' :
                      property.propertyType === 'duplex' ? 'דופלקס' :
                      property.propertyType}

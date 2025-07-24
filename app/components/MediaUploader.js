@@ -27,6 +27,10 @@ export default function MediaUploader({ onUploadComplete }) {
   const [userLogoOverlayId, setUserLogoOverlayId] = useState(null);
   const [loadingUserLogo, setLoadingUserLogo] = useState(true);
 
+
+console.log('selectedContentType', selectedContentType);
+
+
   const onDrop = useCallback((acceptedFiles) => {
     // Clear previous errors
     setErrors({});
@@ -506,7 +510,7 @@ export default function MediaUploader({ onUploadComplete }) {
             </div>
           </button>
           <button
-            onClick={() => selectContentType('Video')}
+            onClick={() => selectContentType('video')}
             className="px-6 py-8 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
           >
             <div className="text-center">
