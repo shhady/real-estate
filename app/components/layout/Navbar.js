@@ -166,7 +166,7 @@ const Navbar = () => {
               <>
                 <Link
                   href="/sign-in"
-                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-900 bg-[#F6F6F6] hover:text-[#08171f] hover:bg-[#F6F6F6]"
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-900 bg-[#F6F6F6] hover:text-[#08171f] hover:bg-[#a7a6a6]"
                 >
                   התחברות
                 </Link>
