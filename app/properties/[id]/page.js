@@ -29,15 +29,51 @@ export async function generateMetadata({ params }) {
   
   try {
     await connectDB();
-    const property = await Property.findById(id).select('title location price').lean();
+    const property = await Property.findById(id).select('title location price images video descriptions status bedrooms area propertyType').lean();
     
     if (!property) {
       return { title: 'נכס לא נמצא' };
     }
 
+    // Get the first image for Open Graph
+    const imageUrl = property.video?.secure_url || (property.images && property.images[0]?.secure_url);
+    
+    // Create description
+    const description = property.descriptions?.hebrew || property.descriptions?.arabic || 
+      `נכס ${property.status === 'For Sale' ? 'למכירה' : 'להשכרה'} ב${property.location} - ${property.bedrooms} חדרים, ${property.area} מ"ר`;
+
     return {
       title: `${property.title} - ${property.location} | ₪${formatPrice(property.price)}`,
-      description: `נכס למכירה ב${property.location} במחיר ₪${formatPrice(property.price)}`
+      description: description,
+      openGraph: {
+        title: `${property.title} - ${property.location}`,
+        description: description,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/properties/${id}`,
+        siteName: 'RealEstate Platform',
+        images: imageUrl ? [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: property.title,
+          }
+        ] : [],
+        locale: 'he_IL',
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${property.title} - ${property.location}`,
+        description: description,
+        images: imageUrl ? [imageUrl] : [],
+      },
+      other: {
+        'og:price:amount': property.price.toString(),
+        'og:price:currency': 'ILS',
+        'og:type': 'product',
+        'product:price:amount': property.price.toString(),
+        'product:price:currency': 'ILS',
+      }
     };
   } catch (error) {
     return { title: 'נכס' };

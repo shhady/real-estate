@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaEdit, FaTrash, FaPlus, FaUsers, FaTimes } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaUsers, FaTimes, FaEye } from 'react-icons/fa';
 import Button from '../../components/ui/Button';
 
 export default function DashboardPropertiesPage() {
@@ -361,105 +361,188 @@ export default function DashboardPropertiesPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    תמונה
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    כותרת
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    מחיר
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    סטטוס
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    מיקום
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    מוכן לשיתוף פעולה
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    עריכה / מחיקה
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {properties.map((property) => (
-                  <tr key={property._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="relative h-16 w-16">
-                        <Image
-                          src={property.images[0]?.secure_url || '/placeholder-property.jpg'}
-                          alt={property.title}
-                          fill
-                          className="rounded-lg object-cover"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {property.title}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        ₪{property.price.toLocaleString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        property.status === 'For Sale' 
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {property.status === 'For Sale' ? 'למכירה' : 'להשכרה'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {property.location}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => handleCollaborationToggle(property._id, property.collaboration)}
-                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                          property.collaboration ? 'bg-green-600' : 'bg-gray-200'
-                        }`}
-                      >
-                        <span
-                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                            property.collaboration ? 'translate-x-0' : '-translate-x-5'
-                          }`}
-                        />
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-4 space-x-3">
-                        <Link
-                          href={`/dashboard/properties/${property._id}/edit`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <FaEdit className="h-5 w-5" />
-                        </Link>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      תמונה
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      כותרת
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      מחיר
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      סטטוס
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      מיקום
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      מוכן לשיתוף פעולה
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      עריכה / מחיקה
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {properties.map((property) => (
+                    <tr key={property._id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="relative h-16 w-16">
+                          <Image
+                            src={property.images[0]?.secure_url || '/placeholder-property.jpg'}
+                            alt={property.title}
+                            fill
+                            className="rounded-lg object-cover"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {property.title}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          ₪{property.price.toLocaleString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          property.status === 'For Sale' 
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {property.status === 'For Sale' ? 'למכירה' : 'להשכרה'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {property.location}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => handleDelete(property._id)}
-                          className="text-red-600 hover:text-red-900"
+                          onClick={() => handleCollaborationToggle(property._id, property.collaboration)}
+                          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            property.collaboration ? 'bg-green-600' : 'bg-gray-200'
+                          }`}
                         >
-                          <FaTrash className="h-5 w-5" />
+                          <span
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                              property.collaboration ? 'translate-x-0' : '-translate-x-5'
+                            }`}
+                          />
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-4 space-x-3">
+                          <Link
+                            href={`/properties/${property._id}`}
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            <FaEye className="h-5 w-5" />
+                          </Link>
+                          <Link
+                            href={`/dashboard/properties/${property._id}/edit`}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <FaEdit className="h-5 w-5" />
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(property._id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <FaTrash className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {properties.map((property) => (
+              <div key={property._id} className="bg-white rounded-lg shadow p-4">
+                <div className="flex items-start space-x-4 space-x-reverse">
+                  <div className="relative h-20 w-20 flex-shrink-0">
+                    <Image
+                      src={property.images[0]?.secure_url || '/placeholder-property.jpg'}
+                      alt={property.title}
+                      fill
+                      className="rounded-lg object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {property.title}
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {property.location}
+                        </p>
+                        <p className="text-lg font-semibold text-gray-900 mt-2">
+                          ₪{property.price.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end space-y-2">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          property.status === 'For Sale' 
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {property.status === 'For Sale' ? 'למכירה' : 'להשכרה'}
+                        </span>
+                        <button
+                          onClick={() => handleCollaborationToggle(property._id, property.collaboration)}
+                          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            property.collaboration ? 'bg-green-600' : 'bg-gray-200'
+                          }`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                              property.collaboration ? 'translate-x-0' : '-translate-x-5'
+                            }`}
+                          />
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                    <div className="flex justify-end items-center space-x-4 space-x-reverse mt-4">
+                      <Link
+                        href={`/properties/${property._id}`}
+                        className="text-green-600 hover:text-green-900 p-2"
+                      >
+                        <FaEye className="h-5 w-5" />
+                      </Link>
+                      <Link
+                        href={`/dashboard/properties/${property._id}/edit`}
+                        className="text-blue-600 hover:text-blue-900 p-2"
+                      >
+                        <FaEdit className="h-5 w-5" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(property._id)}
+                        className="text-red-600 hover:text-red-900 p-2"
+                      >
+                        <FaTrash className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </>
       )}
       <AgentsModal />
     </div>

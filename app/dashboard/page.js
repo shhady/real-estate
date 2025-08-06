@@ -100,24 +100,37 @@ export default async function DashboardPage() {
         
         {/* Analytics Cards */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((item) => (
-            <div
-              key={item.id}
-              className="relative bg-white pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden shadow"
-            >
-              <dt>
-                <div className={`absolute rounded-md p-3 ${item.color}`}>
-                  {item.icon}
-                </div>
-                <p className="mr-16 text-sm font-medium text-gray-500 truncate">
-                  {item.name}
-                </p>
-              </dt>
-              <dd className="mr-16 pb-6 flex flex-col sm:pb-7">
-                <p className="text-2xl font-semibold text-gray-900">{item.total}</p>
-              </dd>
-            </div>
-          ))}
+          {stats.map((item) => {
+            const cardContent = (
+              <div
+                key={item.id}
+                className="relative bg-white pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden shadow"
+              >
+                <dt>
+                  <div className={`absolute rounded-md p-3 ${item.color}`}>
+                    {item.icon}
+                  </div>
+                  <p className="mr-16 text-sm font-medium text-gray-500 truncate">
+                    {item.name}
+                  </p>
+                </dt>
+                <dd className="mr-16 pb-6 flex flex-col sm:pb-7">
+                  <p className="text-2xl font-semibold text-gray-900">{item.total}</p>
+                </dd>
+              </div>
+            );
+
+            // Make profile views card clickable
+            if (item.id === 1) {
+              return (
+                <Link key={item.id} href="dashboard/profile" className="block hover:shadow-lg transition-shadow">
+                  {cardContent}
+                </Link>
+              );
+            }
+
+            return cardContent;
+          })}
         </div>
 
         <div className="mt-8">

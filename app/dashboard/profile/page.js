@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaCloudUploadAlt, FaTimes, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendarAlt, FaAward, FaBed, FaBath, FaRuler } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaTimes, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendarAlt, FaAward, FaBed, FaBath, FaRuler, FaEye } from 'react-icons/fa';
 import Button from '../../components/ui/Button';
 
 export default function ProfilePage() {
@@ -14,6 +14,7 @@ export default function ProfilePage() {
   const [logo, setLogo] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [processingLogo, setProcessingLogo] = useState(false);
+  const [userId, setUserId] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -46,6 +47,8 @@ export default function ProfilePage() {
       const res = await fetch('/api/users/profile');
       if (!res.ok) throw new Error('Failed to fetch profile');
       const data = await res.json();
+      
+      setUserId(data._id);
       
       setFormData({
         fullName: data.fullName,
@@ -292,7 +295,18 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="p-6">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-6">עריכת פרופיל</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900">עריכת פרופיל</h1>
+          {userId && (
+            <Link 
+              href={`/agents/${userId}`}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <FaEye className="h-4 w-4 ml-2" />
+              צפה בפרופיל
+            </Link>
+          )}
+        </div>
 
         {message.text && (
           <div className={`p-4 rounded-md mb-6 ${
