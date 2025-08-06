@@ -166,13 +166,13 @@ const Navbar = () => {
               <>
                 <Link
                   href="/sign-in"
-                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-600 hover:text-gray-900"
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-600 hover:text-[#08171f] hover:bg-[#F6F6F6]"
                 >
                   התחברות
                 </Link>
                 <Link
                   href="/sign-up"
-                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#08171f] hover:bg-[#F6F6F6] hover:text-[#08171f]"
                 >
                   הרשמה
                 </Link>
@@ -256,14 +256,14 @@ const Navbar = () => {
               <Link
                 href="/sign-in"
                 onClick={closeMenu}
-                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
+                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-300 hover:bg-[#F6F6F6]"
               >
                 התחברות
               </Link>
               <Link
                 href="/sign-up"
                 onClick={closeMenu}
-                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
+                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-300 hover:bg-[#F6F6F6]"
               >
                 הרשמה
               </Link>
