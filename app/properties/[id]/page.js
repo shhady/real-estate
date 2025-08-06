@@ -220,25 +220,25 @@ export default async function PropertyPage({ params }) {
                 {/* Property Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-gray-200 mb-6">
                   <div className="flex flex-col items-center">
-                    <FaBed className="h-6 w-6 text-blue-600 mb-2" />
+                    <FaBed className="h-6 w-6 text-[#08171f] mb-2" />
                     <span className="text-lg text-black font-semibold">{property.bedrooms}</span>
                     <span className="text-sm text-gray-600">חדרים</span>
                   </div>
                   {property.bathrooms && (
                     <div className="flex flex-col items-center">
-                      <FaBath className="h-6 w-6 text-blue-600 mb-2" />
+                      <FaBath className="h-6 w-6 text-[#08171f] mb-2" />
                       <span className="text-lg text-black font-semibold">{property.bathrooms}</span>
                       <span className="text-sm text-gray-600">חדרי רחצה</span>
                     </div>
                   )}
                   <div className="flex flex-col items-center">
-                    <FaRuler className="h-6 w-6 text-blue-600 mb-2" />
+                    <FaRuler className="h-6 w-6 text-[#08171f] mb-2" />
                     <span className="text-lg text-black font-semibold">{property.area}</span>
                     <span className="text-sm text-gray-600">מ"ר</span>
                   </div>
                   {property.floor && (
                     <div className="flex flex-col items-center">
-                      <FaBuilding className="h-6 w-6 text-blue-600 mb-2" />
+                      <FaBuilding className="h-6 w-6 text-[#08171f] mb-2" />
                       <span className="text-lg text-black font-semibold">{property.floor}</span>
                       <span className="text-sm text-gray-600">קומה</span>
                     </div>
@@ -448,7 +448,7 @@ export default async function PropertyPage({ params }) {
                 {property.user.phone && (
                   <a
                     href={`tel:${property.user.phone}`}
-                    className="flex items-center justify-center w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex items-center justify-center w-full px-4 py-2 bg-[#08171f] text-white rounded-lg hover:bg-[#F6F6F6] hover:text-[#08171f] transition-colors"
                   >
                     <FaPhone className="ml-2" />
                     התקשר עכשיו

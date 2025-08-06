@@ -232,7 +232,7 @@ export default function PropertyFilters() {
           </button>
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#08171f] hover:bg-[#F6F6F6] hover:text-[#08171f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <FaSearch className="h-4 w-4 ml-2" />
             חפש

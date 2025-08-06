@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { FaBars, FaTimes, FaUser } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -100,32 +101,32 @@ const Navbar = () => {
   };
 
   return (
-    <nav ref={navRef} className="bg-white shadow-lg">
+    <nav ref={navRef} className="bg-[#08171f] shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-24">
           <div className="flex">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold text-blue-600">נדל"ן</span>
+                <Image src="/logo.png" alt="Logo" width={500}  height={500} className="w-28 h-28" />
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex md:items-center justify-center md:gap-4 mr-4">
               <Link
                 href="/"
-                className="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600"
+                className="inline-flex items-center px-1 pt-1 text-gray-100 hover:text-blue-600"
               >
                 דף הבית
               </Link>
               <Link
                 href="/properties"
-                className="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600"
+                className="inline-flex items-center px-1 pt-1 text-gray-100 hover:text-blue-600"
               >
                 נכסים
               </Link>
               <Link
                 href="/agents"
-                className="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600"
+                className="inline-flex items-center px-1 pt-1 text-gray-100 hover:text-blue-600"
               >
                 סוכנים
               </Link>
@@ -137,7 +138,7 @@ const Navbar = () => {
               </Link> */}
               <Link
                 href="/contact"
-                className="inline-flex items-center px-1 pt-1 text-gray-900 hover:text-blue-600"
+                className="inline-flex items-center px-1 pt-1 text-gray-100 hover:text-blue-600"
               >
                 צור קשר
               </Link>
@@ -150,13 +151,13 @@ const Navbar = () => {
               <>
                 <Link
                   href="/dashboard"
-                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#08171f] bg-[#F6F6F6] hover:bg-[#08171f] hover:text-[#F6F6F6]"
                 >
                   לוח בקרה
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-600 hover:text-gray-900"
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-100 hover:text-gray-900"
                 >
                   התנתק
                 </button>
@@ -202,35 +203,35 @@ const Navbar = () => {
           <Link
             href="/"
             onClick={closeMenu}
-            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
           >
             דף הבית
           </Link>
           <Link
             href="/properties"
             onClick={closeMenu}
-            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
           >
             נכסים
           </Link>
           <Link
             href="/agents"
             onClick={closeMenu}
-            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
           >
             סוכנים
           </Link>
           {/* <Link
             href="/blog"
             onClick={closeMenu}
-            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
           >
             בלוג
           </Link> */}
           <Link
             href="/contact"
             onClick={closeMenu}
-            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
           >
             צור קשר
           </Link>
@@ -239,13 +240,13 @@ const Navbar = () => {
               <Link
                 href="/dashboard"
                 onClick={closeMenu}
-                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
               >
                 לוח בקרה
               </Link>
               <button
                 onClick={handleLogout}
-                className="block w-full text-right pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                className="block w-full text-right pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
               >
                 התנתק
               </button>
@@ -255,14 +256,14 @@ const Navbar = () => {
               <Link
                 href="/sign-in"
                 onClick={closeMenu}
-                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
               >
                 התחברות
               </Link>
               <Link
                 href="/sign-up"
                 onClick={closeMenu}
-                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                className="block pr-3 pl-4 py-2 text-base font-medium text-gray-100 hover:text-gray-900 hover:bg-gray-50"
               >
                 הרשמה
               </Link>

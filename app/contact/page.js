@@ -80,7 +80,7 @@ export default function ContactPage() {
             <div className="space-y-6">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <FaPhone className="h-6 w-6 text-blue-600" />
+                  <FaPhone className="h-6 w-6 text-[#08171f]" />
                 </div>
                 <div className="mr-4">
                   <h3 className="text-lg font-medium text-gray-900">טלפון</h3>
@@ -91,7 +91,7 @@ export default function ContactPage() {
 
               <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <FaEnvelope className="h-6 w-6 text-blue-600" />
+                  <FaEnvelope className="h-6 w-6 text-[#08171f]" />
                 </div>
                 <div className="mr-4">
                   <h3 className="text-lg font-medium text-gray-900">דוא"ל</h3>
@@ -102,7 +102,7 @@ export default function ContactPage() {
 
               <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <FaMapMarkerAlt className="h-6 w-6 text-blue-600" />
+                  <FaMapMarkerAlt className="h-6 w-6 text-[#08171f]" />
                 </div>
                 <div className="mr-4">
                   <h3 className="text-lg font-medium text-gray-900">כתובת</h3>
@@ -219,7 +219,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={status.loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#08171f] hover:bg-[#F6F6F6] hover:text-[#08171f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {status.loading ? 'שולח...' : 'שלח הודעה'}
               </button>

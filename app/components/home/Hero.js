@@ -139,7 +139,7 @@ const Hero = () => {
             </div>
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+              className="bg-[#08171f] hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
             >
               חיפוש
             </button>

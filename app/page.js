@@ -200,11 +200,11 @@ export default async function Home() {
                 key={index}
                 className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
               >
-                <div className="flex justify-center">{feature.icon}</div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900 text-center">
+                <div className="flex justify-center text-[#08171f]">{feature.icon}</div>
+                <h3 className="mt-4 text-lg font-medium text-[#08171f] text-center">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-gray-600 text-center">{feature.description}</p>
+                <p className="mt-2 text-[#08171f] text-center">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -231,7 +231,7 @@ export default async function Home() {
             <div className="mt-12 text-center">
               <a
                 href="/properties"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#08171f] hover:bg-[#F6F6F6] hover:text-[#08171f] transition-colors"
               >
                 צפה בכל הנכסים
               </a>
@@ -241,12 +241,12 @@ export default async function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-blue-600 py-16">
+      <section className="bg-[#F6F6F6] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white">
+          <h2 className="text-3xl font-bold text-[#08171f]">
             מוכן למצוא את בית חלומותיך?
           </h2>
-          <p className="mt-4 text-xl text-blue-100">
+          <p className="mt-4 text-xl text-[#08171f]">
             הצטרף לאלפי לקוחות מרוצים שמצאו את הנכס המושלם שלהם איתנו
           </p>
           <div className="mt-8">
