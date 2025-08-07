@@ -24,11 +24,16 @@ export async function middleware(request) {
     '/api/agents',
     '/api/auth/login',
     '/api/auth/register',
+    '/api/auth/forgot-password',
+    '/api/auth/verify-reset-token',
+    '/api/auth/reset-password',
     '/api/users/process-logo',
     '/api/test-logo',
     '/api/deal-scores',
     '/sign-in',
-    '/sign-up'
+    '/sign-up',
+    '/forgot-password',
+    '/reset-password'
   ];
 
   // Check if the route is public
