@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '../../lib/mongodb';
 import Client from '../../models/Client';
+import Call from '../../models/Call';
 import { getUser } from '../../lib/auth';
 
 // GET - Fetch all clients for the authenticated user

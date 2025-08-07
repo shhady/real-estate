@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-
+import User from './User';
+import Client from './Client';
 const CallSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' }, // Link to client
