@@ -311,6 +311,11 @@ console.log('selectedContentType', selectedContentType);
       // Call parent callback
       onUploadComplete(successData);
       
+      // Reset form after successful upload
+      setTimeout(() => {
+        resetForm();
+      }, 1000); // Reset after 2 seconds to allow user to see success message
+      
       return { success: true };
     } catch (error) {
       console.error('Error sending carousel notification:', error);
@@ -374,6 +379,11 @@ console.log('selectedContentType', selectedContentType);
       
       // Call parent callback
       onUploadComplete(successData);
+      
+      // Reset form after successful upload
+      setTimeout(() => {
+        resetForm();
+      }, 1000); // Reset after 2 seconds to allow user to see success message
       
       return { success: true };
     } catch (error) {
@@ -455,6 +465,27 @@ console.log('selectedContentType', selectedContentType);
     setShowPreviewModal(false);
     setWebhookStatus(null);
     setShowPropertyWizard(false); // Reset property wizard state
+  };
+
+  // Reset function to be called after successful upload
+  const resetForm = () => {
+    // Clean up and reset state
+    files.forEach(file => {
+      if (file.preview) URL.revokeObjectURL(file.preview);
+    });
+    
+    setFiles([]);
+    setUploading(false);
+    setUploadProgress({});
+    setErrors({});
+    setUploadedUrls([]);
+    setShowContentTypeOptions(true);
+    setSelectedContentType(null);
+    setUploadSuccess(null);
+    setShowUploadModal(false);
+    setShowPreviewModal(false);
+    setWebhookStatus(null);
+    setShowPropertyWizard(false);
   };
 
   const handleDownload = (url) => {
@@ -739,7 +770,17 @@ console.log('selectedContentType', selectedContentType);
         onClose={() => setShowPropertyWizard(false)}
         onStartAgain={handleStartAgain}
         uploadedMedia={uploadedUrls}
-        onUploadComplete={onUploadComplete}
+        onUploadComplete={(data) => {
+          // Call the parent onUploadComplete
+          onUploadComplete(data);
+          
+          // Reset form after successful upload
+          if (data && data.success) {
+            setTimeout(() => {
+              resetForm();
+            }, 1000); // Reset after 2 seconds to allow user to see success message
+          }
+        }}
         selectedContentType={selectedContentType}
       />
 

@@ -349,47 +349,82 @@ export default function PropertyMatchingPage({ params }) {
             <h2 className="text-xl font-semibold text-gray-900">פרטי הנכס</h2>
           </div>
           <div className="p-6">
-            <div className="flex items-start gap-6">
+            {/* Mobile Layout */}
+            <div className="md:hidden">
+              {/* Image Section */}
               {property.images && property.images.length > 0 && (
-                <div className="flex-shrink-0">
+                <div className="mb-4">
                   <Image
                     src={property.images[0].secure_url}
                     alt={property.title}
-                    width={200}
-                    height={150}
-                    className="rounded-lg object-cover"
+                    width={300}
+                    height={200}
+                    className="w-full rounded-lg object-cover"
                   />
                 </div>
               )}
-              <div className="flex-1">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {/* <div className="flex items-center">
-                    <FaPhone className="w-4 h-4 mx-2 text-gray-400" />
-                    <span className="text-gray-600">{property.phoneNumber || 'לא צוין'}</span>
-                  </div> */}
-                  {/* <div className="flex items-center">
-                    <FaEnvelope className="w-4 h-4 mx-2 text-gray-400" />
-                    <span className="text-gray-600">{property.email || 'לא צוין'}</span>
-                  </div> */}
-                  <div className="flex items-center">
-                    <FaMapMarkerAlt className="w-4 h-4 mx-2 text-gray-400" />
-                    <span className="text-gray-600">{property.location || 'לא צוין'}</span>
+              
+              {/* Property Details Grid */}
+              <div className="grid grid-cols-1 gap-3 text-sm">
+                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                  <FaMapMarkerAlt className="w-4 h-4 mx-2 text-gray-400" />
+                  <span className="text-gray-600 font-medium">{property.location || 'לא צוין'}</span>
+                </div>
+                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                  <FaHome className="w-4 h-4 mx-2 text-gray-400" />
+                  <span className="text-gray-600 font-medium">{property.propertyType || 'לא צוין'}</span>
+                </div>
+                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                  <FaDollarSign className="w-4 h-4 mx-2 text-gray-400" />
+                  <span className="text-gray-600 font-medium">{formatPrice(property.price)}</span>
+                </div>
+                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                  <FaBed className="w-4 h-4 mx-2 text-gray-400" />
+                  <span className="text-gray-600 font-medium">{property.bedrooms || 0} חדרים</span>
+                </div>
+                <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                  <FaExpand className="w-4 h-4 mx-2 text-gray-400" />
+                  <span className="text-gray-600 font-medium">{property.area || 0} מ"ר</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop Layout */}
+            <div className="hidden md:block">
+              <div className="flex items-start gap-6">
+                {property.images && property.images.length > 0 && (
+                  <div className="flex-shrink-0">
+                    <Image
+                      src={property.images[0].secure_url}
+                      alt={property.title}
+                      width={200}
+                      height={150}
+                      className="rounded-lg object-cover"
+                    />
                   </div>
-                  <div className="flex items-center">
-                    <FaHome className="w-4 h-4 mx-2 text-gray-400" />
-                    <span className="text-gray-600">{property.propertyType || 'לא צוין'}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <FaDollarSign className="w-4 h-4 mx-2 text-gray-400" />
-                    <span className="text-gray-600">{formatPrice(property.price)}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <FaBed className="w-4 h-4 mx-2 text-gray-400" />
-                    <span className="text-gray-600">{property.bedrooms || 0} חדרים</span>
-                  </div>
-                  <div className="flex items-center">
-                    <FaExpand className="w-4 h-4 mx-2 text-gray-400" />
-                    <span className="text-gray-600">{property.area || 0} מ"ר</span>
+                )}
+                <div className="flex-1">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center">
+                      <FaMapMarkerAlt className="w-4 h-4 mx-2 text-gray-400" />
+                      <span className="text-gray-600">{property.location || 'לא צוין'}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FaHome className="w-4 h-4 mx-2 text-gray-400" />
+                      <span className="text-gray-600">{property.propertyType || 'לא צוין'}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FaDollarSign className="w-4 h-4 mx-2 text-gray-400" />
+                      <span className="text-gray-600">{formatPrice(property.price)}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FaBed className="w-4 h-4 mx-2 text-gray-400" />
+                      <span className="text-gray-600">{property.bedrooms || 0} חדרים</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FaExpand className="w-4 h-4 mx-2 text-gray-400" />
+                      <span className="text-gray-600">{property.area || 0} מ"ר</span>
+                    </div>
                   </div>
                 </div>
               </div>

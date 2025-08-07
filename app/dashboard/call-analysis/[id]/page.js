@@ -212,10 +212,21 @@ export default function CallDetailPage({ params }) {
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-              <div>
-              <div className="flex items-center gap-4 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{call.clientName}</h1>
+          {/* Mobile Layout */}
+          <div className="md:hidden">
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-2xl font-bold text-gray-900">{call.clientName}</h1>
+                <Link
+                  href="/dashboard/clients"
+                  className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"
+                >
+                  ← חזור
+                </Link>
+              </div>
+              
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2 mb-4">
                 {call.intent && call.intent !== 'unknown' && (
                   <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                     call.intent === 'buyer' ? 'bg-green-100 text-green-800' :
@@ -233,19 +244,132 @@ export default function CallDetailPage({ params }) {
                   </span>
                 )}
               </div>
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                <span>📞 {call.phoneNumber}</span>
-                <span>📅 {formatDate(call.createdAt)}</span>
-                {call.audioDuration && <span>⏱️ {call.audioDuration}</span>}
-                {call.audioFileName && <span>🎵 {call.audioFileName}</span>}
+              
+              {/* Audio Player */}
+              {call.audioFileUrl && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                    <span className="mr-2">🎵</span>
+                    הקלטת השיחה
+                  </h4>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <audio 
+                      controls 
+                      className="w-full"
+                      preload="metadata"
+                    >
+                      <source src={call.audioFileUrl} type="audio/mpeg" />
+                      <source src={call.audioFileUrl} type="audio/wav" />
+                      <source src={call.audioFileUrl} type="audio/ogg" />
+                      הדפדפן שלך לא תומך בנגינת קבצי אודיו.
+                    </audio>
+                  </div>
+                </div>
+              )}
+              
+              {/* Metadata */}
+              <div className="grid grid-cols-1 gap-3 text-sm text-gray-600">
+                
+                <div className="flex items-center">
+                  <span className="mr-2">📅</span>
+                  <span className="truncate">{formatDate(call.createdAt)}</span>
+                </div>
+                {call.audioDuration && (
+                  <div className="flex items-center">
+                    <span className="mr-2">⏱️</span>
+                    <span>{call.audioDuration}</span>
+                  </div>
+                )}
+                {call.audioFileName && (
+                  <div className="flex items-center">
+                    <span className="mr-2">🎵</span>
+                    <span className="truncate">{call.audioFileName}</span>
+                  </div>
+                )}
               </div>
             </div>
-            <Link
-              href="/dashboard/clients"
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-            >
-              ← חזור לדף לקוחות
-            </Link>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden md:block">
+            <div className="bg-white rounded-lg shadow-sm p-8">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-4">
+                    <h1 className="text-3xl font-bold text-gray-900">{call.clientName}</h1>
+                    <div className="flex gap-2">
+                      {call.intent && call.intent !== 'unknown' && (
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                          call.intent === 'buyer' ? 'bg-green-100 text-green-800' :
+                          call.intent === 'seller' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {call.intent === 'buyer' ? 'קונה' :
+                           call.intent === 'seller' ? 'מוכר' :
+                           call.intent === 'both' ? 'קונה ומוכר' : call.intent}
+                        </span>
+                      )}
+                      {call.location && (
+                        <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
+                          📍 {call.location}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Audio Player */}
+                  {call.audioFileUrl && (
+                    <div className="mb-6">
+                      <h4 className="text-lg font-medium text-gray-700 mb-3 flex items-center">
+                        <span className="mr-2">🎵</span>
+                        הקלטת השיחה
+                      </h4>
+                      <div className="bg-gray-50 rounded-lg p-6">
+                        <audio 
+                          controls 
+                          className="w-full max-w-lg"
+                          preload="metadata"
+                        >
+                          <source src={call.audioFileUrl} type="audio/mpeg" />
+                          <source src={call.audioFileUrl} type="audio/wav" />
+                          <source src={call.audioFileUrl} type="audio/ogg" />
+                          הדפדפן שלך לא תומך בנגינת קבצי אודיו.
+                        </audio>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Metadata */}
+                  <div className="flex flex-wrap gap-6 text-sm text-gray-600">
+                    
+                    <div className="flex items-center">
+                      <span className="mr-2">📅</span>
+                      <span>{formatDate(call.createdAt)}</span>
+                    </div>
+                    {call.audioDuration && (
+                      <div className="flex items-center">
+                        <span className="mr-2">⏱️</span>
+                        <span>{call.audioDuration}</span>
+                      </div>
+                    )}
+                    {call.audioFileName && (
+                      <div className="flex items-center">
+                        <span className="mr-2">🎵</span>
+                        <span>{call.audioFileName}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <Link
+                  href="/dashboard/clients"
+                  className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center"
+                >
+                  <span className="mr-2">←</span>
+                  חזור לדף לקוחות
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 

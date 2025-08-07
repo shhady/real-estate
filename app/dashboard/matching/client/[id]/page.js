@@ -240,33 +240,32 @@ export default function ClientMatchingPage({ params }) {
 
     return (
       <div className={`border-2 rounded-lg p-4 ${getPriorityColor(match)}`}>
-        <div className="flex items-start gap-4">
-          {property.images && property.images.length > 0 && (
-            <div className="flex-shrink-0">
-              <Image
-                src={property.images[0].secure_url}
-                alt={property.title}
-                width={120}
-                height={80}
-                className="rounded-lg object-cover"
-              />
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-start mb-2">
-              <h4 className="text-lg font-semibold text-gray-900">{property.title}</h4>
-              <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+        {/* Mobile Layout */}
+        <div className="md:hidden">
+          {/* Image and Title Section */}
+          <div className="flex items-start gap-3 mb-3">
+            {property.images && property.images.length > 0 && (
+              <div className="flex-shrink-0">
+                <Image
+                  src={property.images[0].secure_url}
+                  alt={property.title}
+                  width={80}
+                  height={60}
+                  className="rounded-lg object-cover"
+                />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <h4 className="text-base font-semibold text-gray-900 mb-1">{property.title}</h4>
+              <div className="flex flex-wrap gap-1">
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                   getMatchScoreColor(match.score, match.totalCriteria)
                 }`}>
                   התאמה: {match.score}/{match.totalCriteria}
                 </span>
                 {match.budgetStatus === 'above' && (
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    {match.budgetPercentage ? 
-                      `מעל תקציב ${(match.budgetPercentage - 100).toFixed(1)}% יותר` : 
-                      'מעל תקציב'
-                    }
+                    מעל תקציב
                   </span>
                 )}
                 {match.isExternal && (
@@ -277,45 +276,129 @@ export default function ClientMatchingPage({ params }) {
                 )}
               </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
-              <div className="flex items-center">
-                <FaMapMarkerAlt className="w-4 h-4 mx-1" />
-                {property.location || 'לא צוין'}
-              </div>
-              <div className="flex items-center">
-                <FaDollarSign className="w-4 h-4 mx-1" />
-                {formatPrice(property.price)}
-              </div>
-              <div className="flex items-center">
-                <FaBed className="w-4 h-4 mx-1" />
-                {property.bedrooms || 0} חדרים
-              </div>
-              <div className="flex items-center">
-                <FaExpand className="w-4 h-4 mx-1" />
-                {property.area || 0} מ"ר
-              </div>
+          </div>
+
+          {/* Property Details Grid */}
+          <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-3">
+            <div className="flex items-center">
+              <FaMapMarkerAlt className="w-4 h-4 mx-1" />
+              <span className="truncate">{property.location || 'לא צוין'}</span>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">
-                סוכן: {property.user?.fullName || 'לא ידוע'}
-              </span>
-              <Link
-                href={`/properties/${property._id}`}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-              >
-                צפה בנכס
-              </Link>
+            <div className="flex items-center">
+              <FaDollarSign className="w-4 h-4 mx-1" />
+              <span className="truncate">{formatPrice(property.price)}</span>
             </div>
-            
-            {match.matchDetails && (
-              <MatchDetailsComponent
-                matchDetails={match.matchDetails}
-                isExpanded={isExpanded}
-                onToggle={toggleDetails}
-              />
+            <div className="flex items-center">
+              <FaBed className="w-4 h-4 mx-1" />
+              <span>{property.bedrooms || 0} חדרים</span>
+            </div>
+            <div className="flex items-center">
+              <FaExpand className="w-4 h-4 mx-1" />
+              <span>{property.area || 0} מ"ר</span>
+            </div>
+          </div>
+
+          {/* Agent and Action Section */}
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-xs text-gray-500">
+              סוכן: {property.user?.fullName || 'לא ידוע'}
+            </span>
+            <Link
+              href={`/properties/${property._id}`}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              צפה בנכס
+            </Link>
+          </div>
+          
+          {match.matchDetails && (
+            <MatchDetailsComponent
+              matchDetails={match.matchDetails}
+              isExpanded={isExpanded}
+              onToggle={toggleDetails}
+            />
+          )}
+        </div>
+
+        {/* Desktop Layout */}
+        <div className="hidden md:block">
+          <div className="flex items-start gap-4">
+            {property.images && property.images.length > 0 && (
+              <div className="flex-shrink-0">
+                <Image
+                  src={property.images[0].secure_url}
+                  alt={property.title}
+                  width={120}
+                  height={80}
+                  className="rounded-lg object-cover"
+                />
+              </div>
             )}
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="text-lg font-semibold text-gray-900">{property.title}</h4>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    getMatchScoreColor(match.score, match.totalCriteria)
+                  }`}>
+                    התאמה: {match.score}/{match.totalCriteria}
+                  </span>
+                  {match.budgetStatus === 'above' && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      {match.budgetPercentage ? 
+                        `מעל תקציב ${(match.budgetPercentage - 100).toFixed(1)}% יותר` : 
+                        'מעל תקציב'
+                      }
+                    </span>
+                  )}
+                  {match.isExternal && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <FaExternalLinkAlt className="w-3 h-3 mr-1" />
+                      חיצוני
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
+                <div className="flex items-center">
+                  <FaMapMarkerAlt className="w-4 h-4 mx-1" />
+                  {property.location || 'לא צוין'}
+                </div>
+                <div className="flex items-center">
+                  <FaDollarSign className="w-4 h-4 mx-1" />
+                  {formatPrice(property.price)}
+                </div>
+                <div className="flex items-center">
+                  <FaBed className="w-4 h-4 mx-1" />
+                  {property.bedrooms || 0} חדרים
+                </div>
+                <div className="flex items-center">
+                  <FaExpand className="w-4 h-4 mx-1" />
+                  {property.area || 0} מ"ר
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">
+                  סוכן: {property.user?.fullName || 'לא ידוע'}
+                </span>
+                <Link
+                  href={`/properties/${property._id}`}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  צפה בנכס
+                </Link>
+              </div>
+              
+              {match.matchDetails && (
+                <MatchDetailsComponent
+                  matchDetails={match.matchDetails}
+                  isExpanded={isExpanded}
+                  onToggle={toggleDetails}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
