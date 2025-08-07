@@ -191,8 +191,8 @@ export default function AgentProfile({ agent }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <div className="relative h-64 bg-blue-600">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-800 opacity-90"></div>
+        <div className="relative h-64 bg-[#3a6074]">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#3a6074] to-[#1a3f53] opacity-90"></div>
         <div className="absolute inset-0 bg-[url('/pattern.png')] opacity-20"></div>
       </div>
 
@@ -218,7 +218,7 @@ export default function AgentProfile({ agent }) {
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
                       {agent.fullName}
                     </h1>
-                    <div className="flex items-center justify-center text-blue-600 mb-6 gap-2">
+                    <div className="flex items-center justify-center text-[#2274a0]   mb-6 gap-2">
                       <FaUserTie className="mr-2" />
                       <span className="font-medium">סוכן נדל"ן מוסמך</span>
                     </div>
@@ -247,7 +247,7 @@ export default function AgentProfile({ agent }) {
                     {/* Stats */}
                     <div className="grid grid-cols-1 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">{propertyCounts.all}</div>
+                        <div className="text-2xl font-bold text-[#2274a0]">{propertyCounts.all}</div>
                         <div className="text-sm text-gray-600">נכסים</div>
                       </div>
                       {/* <div className="text-center border-r border-gray-200">
@@ -261,7 +261,7 @@ export default function AgentProfile({ agent }) {
                       {agent.phone && (
                         <button
                           onClick={() => handleContactClick('phone')}
-                          className="flex items-center justify-center w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                          className="flex items-center justify-center w-full px-6 py-3 bg-[#3a6074] text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
                         >
                           <FaPhone className="ml-2" />
                           <span>התקשר עכשיו</span>
@@ -310,7 +310,7 @@ export default function AgentProfile({ agent }) {
                   {/* Bio Section */}
                   <div className="bg-gray-50 rounded-xl p-6 mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                      <FaUserTie className="ml-2 text-blue-600" />
+                      <FaUserTie className="ml-2 text-[#2274a0]" />
                       פרופיל מקצועי
                     </h2>
                     <p className="text-gray-600 leading-relaxed whitespace-pre-line">
@@ -320,11 +320,11 @@ export default function AgentProfile({ agent }) {
                     {/* Additional Info */}
                     <div className="mt-6 grid grid-cols-2 gap-4">
                       <div className="flex items-center text-gray-600">
-                        <FaMapMarkerAlt className="ml-2 text-blue-600" />
+                        <FaMapMarkerAlt className="ml-2 text-[#2274a0]" />
                         <span>אזור פעילות: {agent.activityArea}</span>
                       </div>
                       <div className="flex items-center text-gray-600">
-                        <FaAward className="ml-2 text-blue-600" />
+                        <FaAward className="ml-2 text-[#2274a0]" />
                         <span>רישיון תיווך: {agent.licenseNumber}</span>
                       </div>
                     </div>
@@ -334,7 +334,7 @@ export default function AgentProfile({ agent }) {
                   {(agent.agencyName || agent.logo?.secure_url) && (
                     <div className="bg-gray-50 rounded-xl p-6 mb-8">
                       <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                        <FaUserTie className="ml-2 text-blue-600" />
+                        <FaUserTie className="ml-2 text-[#2274a0]" />
                         פרטי הסוכנות
                       </h2>
                       <div className="flex items-center gap-4">
@@ -364,7 +364,7 @@ export default function AgentProfile({ agent }) {
                         onClick={() => setActiveTab('all')}
                         className={`flex items-center justify-center px-4 py-2 rounded-lg transition-colors duration-200 ${
                           activeTab === 'all'
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-[#3a6074] text-white'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       >
@@ -377,7 +377,7 @@ export default function AgentProfile({ agent }) {
                         onClick={() => setActiveTab('For Sale')}
                         className={`flex items-center justify-center px-4 py-2 rounded-lg transition-colors duration-200 ${
                           activeTab === 'For Sale'
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-[#3a6074] text-white'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       >

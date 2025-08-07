@@ -42,22 +42,22 @@ export default async function Home() {
 
   const features = [
     {
-      icon: <FaHome className="h-8 w-8 text-blue-600" />,
+      icon: <FaHome className="h-8 w-8 text-[#2274a0]" />,
       title: 'מגוון נכסים',
       description: 'עיין במבחר הרחב של נכסי מגורים ומסחר שלנו.'
     },
     {
-      icon: <FaSearch className="h-8 w-8 text-blue-600" />,
+      icon: <FaSearch className="h-8 w-8 text-[#2274a0]" />,
       title: 'חיפוש חכם',
       description: 'מצא את הנכס האידיאלי עם מערכת החיפוש והסינון המתקדמת שלנו.'
     },
     {
-      icon: <FaUserTie className="h-8 w-8 text-blue-600" />,
+      icon: <FaUserTie className="h-8 w-8 text-[#2274a0]" />,
       title: 'סוכנים מומחים',
       description: 'התחבר לסוכני נדל"ן מנוסים שילוו אותך לאורך כל התהליך.'
     },
     {
-      icon: <FaHandshake className="h-8 w-8 text-blue-600" />,
+      icon: <FaHandshake className="h-8 w-8 text-[#2274a0]" />,
       title: 'שירות אמין',
       description: 'אנו מבטיחים שירות שקוף ואמין לאורך כל מסע הנדל"ן שלך.'
     }
@@ -200,7 +200,7 @@ export default async function Home() {
                 key={index}
                 className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
               >
-                <div className="flex justify-center text-[#08171f]">{feature.icon}</div>
+                <div className="flex justify-center text-[#2274a0]">{feature.icon}</div>
                 <h3 className="mt-4 text-lg font-medium text-[#08171f] text-center">
                   {feature.title}
                 </h3>
@@ -231,7 +231,7 @@ export default async function Home() {
             <div className="mt-12 text-center">
               <a
                 href="/properties"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#08171f] hover:bg-[#F6F6F6] hover:text-[#08171f] transition-colors"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#2274a0] hover:bg-[#F6F6F6] hover:text-[#08171f] transition-colors"
               >
                 צפה בכל הנכסים
               </a>
@@ -252,7 +252,7 @@ export default async function Home() {
           <div className="mt-8">
             <a
               href="/properties"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-[#2274a0] bg-white hover:bg-blue-50"
             >
               התחל לחפש
             </a>

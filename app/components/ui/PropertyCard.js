@@ -54,7 +54,7 @@ const PropertyCard = ({ property }) => {
           <div className="absolute inset-0 bg-black bg-opacity-20 transition-opacity duration-300 group-hover:bg-opacity-30" />
           {/* Status badge - always in the same position */}
           <div className="absolute top-4 right-4">
-            <div className="bg-[#183f53] text-[#F6F6F6] px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+            <div className="bg-[#2274a0] text-[#F6F6F6] px-3 py-1 rounded-full text-sm font-medium shadow-lg">
               {status === 'For Sale' ? 'למכירה' : 'להשכרה'}
             </div>
           </div>
