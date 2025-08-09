@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FaHome, FaUsers, FaPhone, FaMapMarkerAlt, FaExpand, FaDollarSign, FaBed, FaCalendarAlt, FaExternalLinkAlt, FaEye, FaSearch } from 'react-icons/fa';
+import { FaHome, FaUsers, FaPhone, FaMapMarkerAlt, FaExpand, FaDollarSign, FaBed, FaCalendarAlt, FaExternalLinkAlt, FaEye, FaSearch, FaTimes } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,24 @@ export default function MatchingPage() {
   const [expandedDetails, setExpandedDetails] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
+
+  const togglePropertyCollaboration = async (propertyId, currentStatus, onLocalUpdate) => {
+    try {
+      const newStatus = !currentStatus;
+      const res = await fetch(`/api/properties/${propertyId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collaboration: newStatus })
+      });
+      if (!res.ok) throw new Error('Failed to update collaboration');
+      if (onLocalUpdate) onLocalUpdate(newStatus);
+      return newStatus;
+    } catch (e) {
+      console.error('Collaboration toggle failed:', e);
+      alert('עדכון סטטוס שיתוף פעולה נכשל');
+      return currentStatus;
+    }
+  };
 
   // Translate property type to Hebrew
   const translatePropertyType = (type) => {
@@ -339,6 +357,13 @@ export default function MatchingPage() {
   const PropertiesToClientsTab = ({ searchTerm }) => {
     const [properties, setProperties] = useState([]);
     const [loadingProperties, setLoadingProperties] = useState(true);
+    const [propertyMatchCounts, setPropertyMatchCounts] = useState({}); // propertyId -> number
+    const [showAgentsModal, setShowAgentsModal] = useState(false);
+    const [selectedProperty, setSelectedProperty] = useState(null);
+    const [matchingAgents, setMatchingAgents] = useState([]);
+    const [selectedAgents, setSelectedAgents] = useState({});
+    const [agentsLoading, setAgentsLoading] = useState(false);
+    const [localError, setLocalError] = useState('');
 
     useEffect(() => {
       fetchProperties();
@@ -352,14 +377,17 @@ export default function MatchingPage() {
         const propertiesResponse = await fetch('/api/properties/my-properties');
         const propertiesData = await propertiesResponse.json();
         
-        console.log('Properties data:', propertiesData);
-        
-        // Properties are returned directly as an array
         const userProperties = Array.isArray(propertiesData) ? propertiesData : [];
-        
-        console.log('User properties:', userProperties);
-        
         setProperties(userProperties);
+
+        // Fetch fast counts for properties
+        try {
+          const countsRes = await fetch('/api/matching?type=properties-to-clients&summary=1');
+          if (countsRes.ok) {
+            const countsData = await countsRes.json();
+            setPropertyMatchCounts(countsData?.counts || {});
+          }
+        } catch {}
       } catch (err) {
         console.error('Error fetching properties:', err);
       } finally {
@@ -367,13 +395,111 @@ export default function MatchingPage() {
       }
     };
 
+    const fetchMatchingAgents = async (property) => {
+      try {
+        setAgentsLoading(true);
+        const res = await fetch(`/api/collaboration-matches?propertyId=${property._id}&minMatch=5`);
+        if (!res.ok) throw new Error('Failed to fetch matching agents');
+        const data = await res.json();
+        const agents = data.agents || [];
+        setMatchingAgents(agents);
+        const defaultSelection = {};
+        agents.forEach((a) => { defaultSelection[a._id] = true; });
+        setSelectedAgents(defaultSelection);
+      } catch (err) {
+        console.error('Error fetching matching agents:', err);
+        setMatchingAgents([]);
+        setSelectedAgents({});
+        setLocalError('שגיאה בטעינת סוכנים מתאימים');
+      } finally {
+        setAgentsLoading(false);
+      }
+    };
+
+    const AgentsModal = () => {
+      if (!showAgentsModal || !selectedProperty) return null;
+      const sendEmails = async () => {
+        const selectedAgentIds = Object.keys(selectedAgents).filter((id) => selectedAgents[id]);
+        if (selectedAgentIds.length === 0) {
+          setLocalError('אנא בחר לפחות סוכן אחד לשליחת מייל');
+          return;
+        }
+        setAgentsLoading(true);
+        try {
+          const response = await fetch('/api/send-collaboration-emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ propertyId: selectedProperty._id, selectedAgentIds })
+          });
+          const data = await response.json();
+          if (data.success) {
+            alert(`מיילים נשלחו בהצלחה ל-${selectedAgentIds.length} סוכנים!`);
+            setShowAgentsModal(false);
+          } else {
+            setLocalError('שגיאה בשליחת המיילים');
+          }
+        } catch (e) {
+          console.error(e);
+          setLocalError('שגיאה בשליחת המיילים');
+        } finally {
+          setAgentsLoading(false);
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto mx-4" dir="rtl">
+            <div className="relative p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">סוכנים עם לקוחות מתאימים - {selectedProperty.title}</h2>
+              <button onClick={() => setShowAgentsModal(false)} className="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+                <FaTimes className="h-6 w-6" />
+              </button>
+              {localError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">{localError}</div>
+              )}
+              {agentsLoading ? (
+                <div className="text-center py-10">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+                  <p className="mt-3 text-gray-600">מחפש סוכנים מתאימים...</p>
+                </div>
+              ) : matchingAgents.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">לא נמצאו סוכנים עם לקוחות מתאימים (מינימום 5/6 התאמה)</div>
+              ) : (
+                <>
+                  <div className="mb-4 text-gray-900">נמצאו {matchingAgents.length} סוכנים עם לקוחות מתאימים</div>
+                  <div className="space-y-3 mb-6">
+                    {matchingAgents.map((agent) => (
+                      <label key={agent._id} className="flex items-start gap-3 p-3 rounded border border-gray-200 bg-gray-50 hover:bg-gray-100">
+                        <input
+                          type="checkbox"
+                          checked={selectedAgents[agent._id] || false}
+                          onChange={() => setSelectedAgents((prev) => ({ ...prev, [agent._id]: !prev[agent._id] }))}
+                          className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">{agent.fullName}</div>
+                          <div className="text-sm text-gray-600">{agent.agencyName}</div>
+                          <div className="text-xs text-gray-500">{agent.email} • {agent.phone}</div>
+                        </div>
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{agent.matchingClients.length} לקוחות מתאימים</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-between">
+                    <button onClick={() => setShowAgentsModal(false)} className="w-full sm:w-auto px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200">סגור</button>
+                    <button onClick={sendEmails} disabled={agentsLoading || Object.values(selectedAgents).filter(Boolean).length===0} className="w-full sm:w-auto px-6 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">שלח מייל ל-{Object.values(selectedAgents).filter(Boolean).length} סוכנים</button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     const handlePropertyClick = (propertyId) => {
       router.push(`/dashboard/matching/property/${propertyId}`);
     };
-
-    const filteredProperties = (properties || []).filter((p) =>
-      (p?.title || '').toLowerCase().includes((searchTerm || '').toLowerCase())
-    );
 
     if (loadingProperties) {
       return (
@@ -382,6 +508,10 @@ export default function MatchingPage() {
         </div>
       );
     }
+
+    const filteredProperties = (properties || []).filter((p) =>
+      (p?.title || '').toLowerCase().includes((searchTerm || '').toLowerCase())
+    );
 
     return (
       <div className="space-y-8">
@@ -414,16 +544,33 @@ export default function MatchingPage() {
                     </div>
                   </div>
                 </div>
+                {/* Collaboration toggle */}
+                <button
+                  onClick={async () => {
+                    const ns = await togglePropertyCollaboration(property._id, property.collaboration, (newStatus)=>{
+                      setProperties(prev=>prev.map(p=>p._id===property._id?{...p, collaboration: newStatus}:p));
+                    });
+                    if (ns) {
+                      setSelectedProperty(property);
+                      await fetchMatchingAgents(property);
+                      setShowAgentsModal(true);
+                    }
+                  }}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${property.collaboration ? 'bg-green-600' : 'bg-gray-200'}`}
+                  title="מוכן לשיתוף פעולה"
+                >
+                  <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${property.collaboration ? 'translate-x-0' : '-translate-x-5'}`} />
+                </button>
               </div>
               <button
                 onClick={() => handlePropertyClick(property._id)}
                 className="mt-3 w-full text-center py-2 px-3 rounded-md text-xs font-medium bg-blue-600 text-white hover:bg-blue-700"
               >
-                הצג התאמות
+                צפה בהתאמות {typeof propertyMatchCounts[property._id] === 'number' ? `(${propertyMatchCounts[property._id]})` : ''}
               </button>
             </div>
           ))}
-          {filteredProperties.length === 0 && (
+          {properties.length === 0 && (
             <div className="text-center py-12">
               <FaHome className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <p className="text-gray-500">אין נכסים להצגה</p>
@@ -451,42 +598,44 @@ export default function MatchingPage() {
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">מחיר</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">חדרים</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">שטח</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">שיתוף פעולה</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">פעולות</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredProperties.map((property) => (
-                  <tr key={property._id} className="hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => handlePropertyClick(property._id)}>
+                  <tr key={property._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <FaHome className="h-5 w-5 text-blue-600" />
-                          </div>
-                        </div>
-                        <div className="mr-4">
-                          <div className="text-sm font-medium text-gray-900">{property.title || 'לא צוין'}</div>
-                          <div className="text-sm text-gray-500">{property.description ? property.description.substring(0, 50) + '...' : ''}</div>
-                        </div>
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{property.title || 'לא צוין'}</div>
+                      <div className="text-sm text-gray-500">{property.description ? property.description.substring(0, 50) + '...' : ''}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center"><FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />{property.location || 'לא צוין'}</div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900">{translatePropertyType(property.propertyType) || 'לא צוין'}</div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900 flex items-center"><FaDollarSign className="h-4 w-4 mr-1 text-gray-400" />{formatPrice(property.price)}</div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900 flex items-center"><FaBed className="h-4 w-4 mx-1 text-gray-400" />{property.bedrooms || 0}</div></td>
+                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900 flex items-center"><FaExpand className="h-4 w-4 mx-1 text-gray-400" />{property.area || 0} מ"ר</div></td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{translatePropertyType(property.propertyType) || 'לא צוין'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center"><FaDollarSign className="h-4 w-4 mr-1 text-gray-400" />{formatPrice(property.price)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center"><FaBed className="h-4 w-4 mx-1 text-gray-400" />{property.bedrooms || 0}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center"><FaExpand className="h-4 w-4 mx-1 text-gray-400" />{property.area || 0} מ"ר</div>
+                      <button
+                        onClick={async () => {
+                          const ns = await togglePropertyCollaboration(property._id, property.collaboration, (newStatus)=>{
+                            setProperties(prev=>prev.map(p=>p._id===property._id?{...p, collaboration: newStatus}:p));
+                          });
+                          if (ns) {
+                            setSelectedProperty(property);
+                            await fetchMatchingAgents(property);
+                            setShowAgentsModal(true);
+                          }
+                        }}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${property.collaboration ? 'bg-green-600' : 'bg-gray-200'}`}
+                        title="מוכן לשיתוף פעולה"
+                      >
+                        <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${property.collaboration ? 'translate-x-0' : '-translate-x-5'}`} />
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={(e) => { e.stopPropagation(); handlePropertyClick(property._id); }} className="text-blue-600 hover:text-blue-900">צפה בהתאמות</button>
+                      <button onClick={() => handlePropertyClick(property._id)} className="text-blue-600 hover:text-blue-900">צפה בהתאמות {typeof propertyMatchCounts[property._id] === 'number' ? `(${propertyMatchCounts[property._id]})` : ''}</button>
                     </td>
                   </tr>
                 ))}
@@ -494,13 +643,16 @@ export default function MatchingPage() {
             </table>
           </div>
 
-          {filteredProperties.length === 0 && (
+          {properties.length === 0 && (
             <div className="text-center py-12">
               <FaHome className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <p className="text-gray-500">אין נכסים להצגה</p>
             </div>
           )}
         </div>
+
+        {/* Agents Modal */}
+        <AgentsModal />
       </div>
     );
   };

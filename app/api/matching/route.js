@@ -373,6 +373,25 @@ export async function GET(request) {
       const clients = await Client.find({ userId: user.userId }).lean();
       const calls = await Call.find({ userId: user.userId }).lean();
 
+      // SUMMARY MODE: return only counts per property (matched clients count)
+      if (summary && !propertyId) {
+        const counts = {};
+        for (const property of propertiesToProcess) {
+          if (!property || !property.title) { continue; }
+          let count = 0;
+          for (const client of clients) {
+            if (!client || !client.clientName) continue;
+            // Quick prefilter by intent/status
+            if (client.intent === 'buyer' && property.status !== 'For Sale') continue;
+            if (client.intent === 'renter' && property.status !== 'For Rent') continue;
+            const res = calculateMatchScore(property, client, { fast: true });
+            if (res.isMatch) count++;
+          }
+          counts[property._id] = count;
+        }
+        return NextResponse.json({ counts });
+      }
+
       const matches = [];
 
       for (const property of propertiesToProcess) {
