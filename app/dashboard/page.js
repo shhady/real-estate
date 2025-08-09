@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { FaEye, FaWhatsapp, FaEnvelope, FaPhone, FaHome, FaPlus, FaUserTie, FaChartBar, FaPhoneAlt, FaUsers, FaExchangeAlt } from 'react-icons/fa';
+import { FaEye, FaWhatsapp, FaEnvelope, FaPhone, FaHome, FaPlus, FaUserTie, FaChartBar, FaPhoneAlt, FaUsers, FaExchangeAlt, FaUserPlus } from 'react-icons/fa';
 import connectDB from '../lib/mongodb';
 import Property from '../models/Property';
 import User from '../models/User';
@@ -142,16 +142,19 @@ export default async function DashboardPage() {
                 <FaPlus className="h-5 w-5 ml-2" />
                 הוספת נכס חדש
               </Link>
-
+              <Link
+                  href="/dashboard/clients/new"
+                  className="inline-flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                >
+                <FaUserPlus className="h-5 w-5 ml-2" />
+                הוסף לקוח
+                </Link>
               <Link href="dashboard/profile" className="inline-flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
                 <FaUserTie className="h-5 w-5 ml-2" />
                 עריכת פרופיל
               </Link>
 
-              <Link href="dashboard/properties" className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                <FaHome className="h-5 w-5 ml-2" />
-                ניהול נכסים
-              </Link>
+             
             </div>
           </div>
         </div>
@@ -161,6 +164,10 @@ export default async function DashboardPage() {
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">ניווט מהיר</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="dashboard/properties" className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <FaHome className="h-5 w-5 ml-2" />
+                ניהול נכסים
+              </Link>
               <Link href="dashboard/call-analysis" className="inline-flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
                 <FaPhone className="h-5 w-5 ml-2" />
                 ניתוח שיחות

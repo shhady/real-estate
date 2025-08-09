@@ -150,6 +150,18 @@ const Navbar = () => {
             {isAuthenticated ? (
               <>
                 <Link
+                  href="/dashboard/clients/new"
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  הוסף לקוח
+                </Link>
+                <Link
+                  href="/dashboard/properties/upload"
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                >
+                  הוסף נכס
+                </Link>
+                <Link
                   href="/dashboard"
                   className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#08171f] bg-[#F6F6F6] hover:bg-[#08171f] hover:text-[#F6F6F6]"
                 >
@@ -237,6 +249,20 @@ const Navbar = () => {
           </Link>
           {isAuthenticated ? (
             <>
+              <Link
+                href="/dashboard/clients/new"
+                onClick={closeMenu}
+                className="block pr-3 pl-4 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md mx-3 my-1"
+              >
+                הוסף לקוח
+              </Link>
+              <Link
+                href="/dashboard/properties/upload"
+                onClick={closeMenu}
+                className="block pr-3 pl-4 py-2 text-base font-medium text-white bg-green-600 hover:bg-green-700 rounded-md mx-3 my-1"
+              >
+                הוסף נכס
+              </Link>
               <Link
                 href="/dashboard"
                 onClick={closeMenu}
