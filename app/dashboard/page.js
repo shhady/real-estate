@@ -98,8 +98,67 @@ export default async function DashboardPage() {
           </div>
         </div>
         
+        <div className="mt-8">
+          {/* Quick Actions */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">פעולות מהירות</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Link href="dashboard/properties/upload" className="inline-flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <FaPlus className="h-5 w-5 ml-2" />
+                הוספת נכס חדש
+              </Link>
+              <Link
+                  href="/dashboard/clients/new"
+                  className="inline-flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                >
+                <FaUserPlus className="h-5 w-5 ml-2" />
+                הוסף לקוח
+                </Link>
+             
+
+             
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Quick Links */}
+        <div className="mt-6">
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">ניווט מהיר</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="dashboard/properties" className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <FaHome className="h-5 w-5 ml-2" />
+                ניהול נכסים
+              </Link>
+              <Link href="dashboard/profile" className="inline-flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <FaUserTie className="h-5 w-5 ml-2" />
+                עריכת פרופיל
+              </Link>
+              <Link href="dashboard/call-analysis" className="inline-flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                <FaPhone className="h-5 w-5 ml-2" />
+                ניתוח שיחות
+              </Link>
+
+              <Link href="dashboard/clients" className="inline-flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                <FaUsers className="h-5 w-5 ml-2" />
+                לקוחות שלי
+              </Link>
+
+              <Link href="dashboard/matching" className="inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+                <FaExchangeAlt className="h-5 w-5 ml-2" />
+                התאמות
+              </Link>
+
+              <Link href="dashboard/analytics" className="inline-flex items-center justify-center px-4 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors">
+                <FaChartBar className="h-5 w-5 ml-2" />
+                אנליטיקס
+              </Link>
+            </div>
+          </div>
+        </div>
+        
         {/* Analytics Cards */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mt-6">
           {stats.map((item) => {
             const cardContent = (
               <div
@@ -133,63 +192,6 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        <div className="mt-8">
-          {/* Quick Actions */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">פעולות מהירות</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Link href="dashboard/properties/upload" className="inline-flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <FaPlus className="h-5 w-5 ml-2" />
-                הוספת נכס חדש
-              </Link>
-              <Link
-                  href="/dashboard/clients/new"
-                  className="inline-flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-                >
-                <FaUserPlus className="h-5 w-5 ml-2" />
-                הוסף לקוח
-                </Link>
-              <Link href="dashboard/profile" className="inline-flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                <FaUserTie className="h-5 w-5 ml-2" />
-                עריכת פרופיל
-              </Link>
-
-             
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Quick Links */}
-        <div className="mt-6">
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">ניווט מהיר</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link href="dashboard/properties" className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                <FaHome className="h-5 w-5 ml-2" />
-                ניהול נכסים
-              </Link>
-              <Link href="dashboard/call-analysis" className="inline-flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-                <FaPhone className="h-5 w-5 ml-2" />
-                ניתוח שיחות
-              </Link>
-
-              <Link href="dashboard/clients" className="inline-flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                <FaUsers className="h-5 w-5 ml-2" />
-                לקוחות שלי
-              </Link>
-
-              <Link href="dashboard/matching" className="inline-flex items-center justify-center px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
-                <FaExchangeAlt className="h-5 w-5 ml-2" />
-                התאמות
-              </Link>
-
-              <Link href="dashboard/analytics" className="inline-flex items-center justify-center px-4 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors">
-                <FaChartBar className="h-5 w-5 ml-2" />
-                אנליטיקס
-              </Link>
-            </div>
-          </div>
-        </div>
       </div>
     );
   } catch (error) {

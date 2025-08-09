@@ -104,7 +104,7 @@ const Navbar = () => {
     <nav ref={navRef} className="bg-[#08171f] shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-24">
-          <div className="flex">
+          <div className="flex order-2 sm:order-none">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0 flex items-center">
                 <Image src="/logo.png" alt="Logo" width={500}  height={500} className="w-28 h-28" />
@@ -193,7 +193,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="sm:hidden flex items-center">
+          <div className="sm:hidden flex items-center order-1 sm:order-none">
             <button
               onClick={toggleMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
