@@ -169,37 +169,27 @@ export default function ClientDetailsPage() {
   };
 
   // Format price range
-  const formatPriceRange = (minPrice, maxPrice) => {
-    if (minPrice && maxPrice) {
-      return `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
-    } else if (minPrice) {
-      return `מינימום ${formatCurrency(minPrice)}`;
-    } else if (maxPrice) {
+  const formatPriceRange = (maxPrice) => {
+    if (maxPrice) {
       return `מקסימום ${formatCurrency(maxPrice)}`;
     }
     return 'לא צוין';
   };
 
   // Format area range
-  const formatAreaRange = (minArea, maxArea) => {
-    if (minArea && maxArea) {
-      return `${minArea} - ${maxArea} מ"ר`;
+  const formatAreaRange = (minArea) => {
+    if (minArea) {
+      return `${minArea} מ"ר`;
     } else if (minArea) {
       return `מינימום ${minArea} מ"ר`;
-    } else if (maxArea) {
-      return `מקסימום ${maxArea} מ"ר`;
     }
     return 'לא צוין';
   };
 
   // Format rooms range
-  const formatRoomsRange = (minRooms, maxRooms) => {
-    if (minRooms && maxRooms) {
-      return `${minRooms} - ${maxRooms} חדרים`;
-    } else if (minRooms) {
+  const formatRoomsRange = (minRooms) => {
+    if (minRooms) {
       return `מינימום ${minRooms} חדרים`;
-    } else if (maxRooms) {
-      return `מקסימום ${maxRooms} חדרים`;
     }
     return 'לא צוין';
   };
@@ -327,22 +317,22 @@ export default function ClientDetailsPage() {
                     <p className="text-gray-900">{translatePropertyType(client.preferredPropertyType)}</p>
                   </div>
                 )}
-                {(client.minRooms || client.maxRooms) && (
+                {client.minRooms && (
                   <div>
                     <span className="text-sm font-medium text-gray-500">מספר חדרים:</span>
-                    <p className="text-gray-900">{formatRoomsRange(client.minRooms, client.maxRooms)}</p>
+                    <p className="text-gray-900">{formatRoomsRange(client.minRooms)}</p>
                   </div>
                 )}
-                {(client.minArea || client.maxArea) && (
+                {client.minArea && (
                   <div>
-                    <span className="text-sm font-medium text-gray-500">שטח:</span>
-                    <p className="text-gray-900">{formatAreaRange(client.minArea, client.maxArea)}</p>
+                    <span className="text-sm font-medium text-gray-500">שטח מינימום:</span>
+                    <p className="text-gray-900">{formatAreaRange(client.minArea)}</p>
                   </div>
                 )}
-                {(client.minPrice || client.maxPrice) && (
+                  {client.maxPrice && (
                   <div>
-                    <span className="text-sm font-medium text-gray-500">תקציב:</span>
-                    <p className="text-gray-900">{formatPriceRange(client.minPrice, client.maxPrice)}</p>
+                    <span className="text-sm font-medium text-gray-500">תקציב מקסימום:</span>
+                    <p className="text-gray-900">{formatPriceRange(client.maxPrice)}</p>
                   </div>
                 )}
                 {client.preferredCondition && (

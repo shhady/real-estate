@@ -56,12 +56,12 @@ function calculateMatchScore(property, client) {
   // Core criteria (location, type, price, rooms, area)
   const locationMatch = normalizeLocation(property.location) === normalizeLocation(client.preferredLocation);
   const typeMatch = normalizePropertyType(property.propertyType) === normalizePropertyType(client.preferredPropertyType);
-  const priceMatch = isWithinRange(property.price, client.minPrice, client.maxPrice, 0.15);
-  const roomsMatch = isWithinRange(property.bedrooms, client.minRooms, client.maxRooms);
-  const areaMatch = isWithinRange(property.area, client.minArea, client.maxArea, 0.2);
+  const priceMatch = isWithinRange(property.price, client.maxPrice, 0.15);
+  const roomsMatch = isWithinRange(property.bedrooms, client.minRooms);
+  const areaMatch = isWithinRange(property.area, client.minArea, 0.2);
   
   if (client.preferredLocation) {
-    totalCriteria++;
+    totalCriteria++;  
     if (locationMatch) {
       score++;
       reasons.push('location');
@@ -76,7 +76,7 @@ function calculateMatchScore(property, client) {
     }
   }
   
-  if (client.minPrice || client.maxPrice) {
+  if (client.maxPrice) {
     totalCriteria++;
     if (priceMatch) {
       score++;
@@ -84,7 +84,7 @@ function calculateMatchScore(property, client) {
     }
   }
   
-  if (client.minRooms || client.maxRooms) {
+  if (client.minRooms) {
     totalCriteria++;
     if (roomsMatch) {
       score++;
@@ -92,7 +92,7 @@ function calculateMatchScore(property, client) {
     }
   }
   
-  if (client.minArea || client.maxArea) {
+  if (client.minArea) {
     totalCriteria++;
     if (areaMatch) {
       score++;

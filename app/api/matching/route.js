@@ -126,11 +126,11 @@ function calculateMatchScore(property, client, options = {}) {
     priceMatch = true;
   }
   
-  // 5. Rooms matching
-  const roomsMatch = isWithinRange(property.bedrooms, client.minRooms, client.maxRooms);
+  // 5. Rooms matching (only minimum rooms is tracked)
+  const roomsMatch = isWithinRange(property.bedrooms, client.minRooms, undefined);
   
-  // 6. Area matching
-  const areaMatch = isWithinRange(property.area, client.minArea, client.maxArea, 0.2);
+  // 6. Area matching (only minimum area is tracked)
+  const areaMatch = isWithinRange(property.area, client.minArea, undefined, 0.2);
   
   // Count criteria and matches
   if (client.preferredLocation) {
@@ -143,18 +143,18 @@ function calculateMatchScore(property, client, options = {}) {
     if (typeMatch) score++;
   }
   
-  if (client.minPrice || client.maxPrice) {
+  if (client.maxPrice) {
     totalCriteria++;
     // Only add score point if price is within budget (not above budget)
     if (priceMatch && budgetStatus !== 'above') score++;
   }
   
-  if (client.minRooms || client.maxRooms) {
+  if (client.minRooms) {
     totalCriteria++;
     if (roomsMatch) score++;
   }
   
-  if (client.minArea || client.maxArea) {
+  if (client.minArea) {
     totalCriteria++;
     if (areaMatch) score++;
   }
@@ -203,7 +203,7 @@ function calculateMatchScore(property, client, options = {}) {
     });
   }
   
-  if (client.minPrice || client.maxPrice) {
+  if (client.maxPrice) {
     let priceDisplay = `₪${property.price ? property.price.toLocaleString() : 'לא צוין'}`;
     if (budgetStatus === 'above' && client.intent === 'renter' && budgetPercentage > 100) {
       const overPercentage = (budgetPercentage - 100).toFixed(1);
@@ -221,23 +221,23 @@ function calculateMatchScore(property, client, options = {}) {
     });
   }
   
-  if (client.minRooms || client.maxRooms) {
+  if (client.minRooms) {
     matchDetails.push({
       criterion: 'rooms',
       label: 'חדרים',
       match: roomsMatch,
       propertyValue: property.bedrooms,
-      clientValue: `${client.minRooms || 0} - ${client.maxRooms || 'ללא מגבלה'}`
+      clientValue: `מינימום ${client.minRooms || 0}`
     });
   }
   
-  if (client.minArea || client.maxArea) {
+  if (client.minArea) {
     matchDetails.push({
       criterion: 'area',
       label: 'שטח',
       match: areaMatch,
       propertyValue: `${property.area} מ"ר`,
-      clientValue: `${client.minArea || 0} - ${client.maxArea || 'ללא מגבלה'} מ"ר`
+      clientValue: `${client.minArea || 0}+ מ"ר`
     });
   }
   
@@ -436,9 +436,8 @@ export async function GET(request) {
             console.log(`Client Intent: ${client.intent}`);
             console.log(`Client Location: ${client.preferredLocation}`);
             console.log(`Client Type: ${client.preferredPropertyType}`);
-            console.log(`Client Price: ${client.minPrice} - ${client.maxPrice}`);
-            console.log(`Client Rooms: ${client.minRooms} - ${client.maxRooms}`);
-            console.log(`Client Area: ${client.minArea} - ${client.maxArea}`);
+            console.log(`Client Price: ${client.maxPrice}`);
+            console.log(`Client Area: ${client.minArea}`);
             
             const matchResult = calculateMatchScore(property, client);
             console.log(`Result: ${client.clientName} - Score: ${matchResult.score}/${matchResult.totalCriteria} - IsMatch: ${matchResult.isMatch} - BudgetStatus: ${matchResult.budgetStatus}`);

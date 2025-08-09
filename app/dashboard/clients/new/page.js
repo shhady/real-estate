@@ -21,10 +21,7 @@ export default function NewClientPage() {
     preferredLocation: '',
     preferredPropertyType: '',
     minRooms: '',
-    maxRooms: '',
     minArea: '',
-    maxArea: '',
-    minPrice: '',
     maxPrice: '',
     preferredCondition: '',
     needsParking: null,
@@ -345,19 +342,7 @@ export default function NewClientPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    מקסימום חדרים
-                  </label>
-                  <input
-                    type="number"
-                    name="maxRooms"
-                    value={formData.maxRooms}
-                    onChange={handleChange}
-                    min="0"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
-                  />
-                </div>
+                
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -374,35 +359,11 @@ export default function NewClientPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    מקסימום שטח (מ"ר)
-                  </label>
-                  <input
-                    type="number"
-                    name="maxArea"
-                    value={formData.maxArea}
-                    onChange={handleChange}
-                    min="0"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
-                  />
-                </div>
+                
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    מינימום מחיר (₪)
-                  </label>
-                  <input
-                    type="number"
-                    name="minPrice"
-                    value={formData.minPrice}
-                    onChange={handleChange}
-                    min="0"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
-                  />
-                </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     מקסימום מחיר (₪)

@@ -122,7 +122,7 @@ function calculateCollaborationMatchScore(property, client) {
       }
     } else {
       // For buyers: use original 15% tolerance
-      const priceMatch = isWithinRange(property.price, client.minPrice, client.maxPrice, 0.15);
+      const priceMatch = isWithinRange(property.price, client.maxPrice, 0.15);
       if (priceMatch) {
         score++;
         matchReasons.push('מחיר');
@@ -134,9 +134,9 @@ function calculateCollaborationMatchScore(property, client) {
   }
   
   // 5. Rooms matching
-  if (client.minRooms || client.maxRooms) {
+  if (client.minRooms) {
     totalCriteria++;
-    const roomsMatch = isWithinRange(property.bedrooms, client.minRooms, client.maxRooms);
+    const roomsMatch = isWithinRange(property.bedrooms, client.minRooms);
     if (roomsMatch) {
       score++;
       matchReasons.push('חדרים');
@@ -144,9 +144,9 @@ function calculateCollaborationMatchScore(property, client) {
   }
   
   // 6. Area matching
-  if (client.minArea || client.maxArea) {
+  if (client.minArea) {
     totalCriteria++;
-    const areaMatch = isWithinRange(property.area, client.minArea, client.maxArea, 0.2);
+    const areaMatch = isWithinRange(property.area, client.minArea, 0.2);
     if (areaMatch) {
       score++;
       matchReasons.push('שטח');
