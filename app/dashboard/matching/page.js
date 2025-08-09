@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FaHome, FaUsers, FaPhone, FaMapMarkerAlt, FaExpand, FaDollarSign, FaBed, FaCalendarAlt, FaExternalLinkAlt, FaEye } from 'react-icons/fa';
+import { FaHome, FaUsers, FaPhone, FaMapMarkerAlt, FaExpand, FaDollarSign, FaBed, FaCalendarAlt, FaExternalLinkAlt, FaEye, FaSearch } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,7 @@ export default function MatchingPage() {
   const [error, setError] = useState('');
   const [matches, setMatches] = useState([]);
   const [expandedDetails, setExpandedDetails] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
 
   // Translate property type to Hebrew
@@ -335,7 +336,7 @@ export default function MatchingPage() {
     </div>
   );
 
-  const PropertiesToClientsTab = () => {
+  const PropertiesToClientsTab = ({ searchTerm }) => {
     const [properties, setProperties] = useState([]);
     const [loadingProperties, setLoadingProperties] = useState(true);
 
@@ -370,6 +371,10 @@ export default function MatchingPage() {
       router.push(`/dashboard/matching/property/${propertyId}`);
     };
 
+    const filteredProperties = (properties || []).filter((p) =>
+      (p?.title || '').toLowerCase().includes((searchTerm || '').toLowerCase())
+    );
+
     if (loadingProperties) {
       return (
         <div className="flex justify-center items-center h-64">
@@ -380,52 +385,78 @@ export default function MatchingPage() {
 
     return (
       <div className="space-y-8">
-        {/* Properties Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        {/* Properties Mobile Cards (mobile only) */}
+        <div className="md:hidden space-y-4">
+          {filteredProperties.map((property) => (
+            <div key={property._id} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FaHome className="w-4 h-4 text-blue-600" />
+                    <h4 className="text-base font-semibold text-gray-900 truncate">{property.title || 'לא צוין'}</h4>
+                  </div>
+                  <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-gray-600">
+                    <div className="flex items-center">
+                      <FaMapMarkerAlt className="w-3.5 h-3.5 mr-1" />
+                      {property.location || 'לא צוין'}
+                    </div>
+                    <div className="flex items-center">
+                      <FaHome className="w-3.5 h-3.5 mr-1" />
+                      {translatePropertyType(property.propertyType) || 'לא צוין'}
+                    </div>
+                    <div className="flex items-center">
+                      <FaDollarSign className="w-3.5 h-3.5 mr-1" />
+                      {formatPrice(property.price)}
+                    </div>
+                    <div className="flex items-center">
+                      <FaBed className="w-3.5 h-3.5 mr-1" />
+                      {property.bedrooms || 0} חדרים
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => handlePropertyClick(property._id)}
+                className="mt-3 w-full text-center py-2 px-3 rounded-md text-xs font-medium bg-blue-600 text-white hover:bg-blue-700"
+              >
+                הצג התאמות
+              </button>
+            </div>
+          ))}
+          {filteredProperties.length === 0 && (
+            <div className="text-center py-12">
+              <FaHome className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500">אין נכסים להצגה</p>
+            </div>
+          )}
+        </div>
+
+        {/* Properties Table (desktop only) */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden hidden md:block">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
               <FaHome className="w-5 h-5 mr-2 text-blue-600" />
               הנכסים שלי ({properties.length})
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              לחץ על נכס כדי לראות לקוחות ושיחות מתאימים
-            </p>
+            <p className="text-sm text-gray-600 mt-1">לחץ על נכס כדי לראות לקוחות ושיחות מתאימים</p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    נכס
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    מיקום
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    סוג נכס
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    מחיר
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    חדרים
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    שטח
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    פעולות
-                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">נכס</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">מיקום</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">סוג נכס</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">מחיר</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">חדרים</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">שטח</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">פעולות</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {properties.map((property) => (
-                  <tr 
-                    key={property._id} 
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => handlePropertyClick(property._id)}
-                  >
+                {filteredProperties.map((property) => (
+                  <tr key={property._id} className="hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => handlePropertyClick(property._id)}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -434,54 +465,28 @@ export default function MatchingPage() {
                           </div>
                         </div>
                         <div className="mr-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {property.title || 'לא צוין'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {property.description ? property.description.substring(0, 50) + '...' : ''}
-                          </div>
+                          <div className="text-sm font-medium text-gray-900">{property.title || 'לא צוין'}</div>
+                          <div className="text-sm text-gray-500">{property.description ? property.description.substring(0, 50) + '...' : ''}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
-                        <FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />
-                        {property.location || 'לא צוין'}
-                      </div>
+                      <div className="text-sm text-gray-900 flex items-center"><FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />{property.location || 'לא צוין'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {translatePropertyType(property.propertyType) || 'לא צוין'}
-                      </div>
+                      <div className="text-sm text-gray-900">{translatePropertyType(property.propertyType) || 'לא צוין'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
-                        <FaDollarSign className="h-4 w-4 mr-1 text-gray-400" />
-                        {formatPrice(property.price)}
-                      </div>
+                      <div className="text-sm text-gray-900 flex items-center"><FaDollarSign className="h-4 w-4 mr-1 text-gray-400" />{formatPrice(property.price)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
-                        <FaBed className="h-4 w-4 mx-1 text-gray-400" />
-                        {property.bedrooms || 0}
-                      </div>
+                      <div className="text-sm text-gray-900 flex items-center"><FaBed className="h-4 w-4 mx-1 text-gray-400" />{property.bedrooms || 0}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
-                        <FaExpand className="h-4 w-4 mx-1 text-gray-400" />
-                        {property.area || 0} מ"ר
-                      </div>
+                      <div className="text-sm text-gray-900 flex items-center"><FaExpand className="h-4 w-4 mx-1 text-gray-400" />{property.area || 0} מ"ר</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePropertyClick(property._id);
-                        }}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        צפה בהתאמות
-                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handlePropertyClick(property._id); }} className="text-blue-600 hover:text-blue-900">צפה בהתאמות</button>
                     </td>
                   </tr>
                 ))}
@@ -489,7 +494,7 @@ export default function MatchingPage() {
             </table>
           </div>
 
-          {properties.length === 0 && (
+          {filteredProperties.length === 0 && (
             <div className="text-center py-12">
               <FaHome className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <p className="text-gray-500">אין נכסים להצגה</p>
@@ -500,14 +505,17 @@ export default function MatchingPage() {
     );
   };
 
-  const ClientsToPropertiesTab = () => {
+  const ClientsToPropertiesTab = ({ searchTerm }) => {
     const [clients, setClients] = useState([]);
     const [calls, setCalls] = useState([]);
     const [loadingClients, setLoadingClients] = useState(true);
+    const [matchCounts, setMatchCounts] = useState({}); // clientId -> number
 
     useEffect(() => {
       fetchClientsAndCalls();
     }, []);
+
+    // Removed per-client fetch; we'll use a single bulk request for counts
 
     const fetchClientsAndCalls = async () => {
       try {
@@ -516,62 +524,49 @@ export default function MatchingPage() {
         let clientsData = [];
         let callsData = [];
         
-        // Fetch clients with error handling
+        // Fetch clients
         try {
           const clientsResponse = await fetch('/api/clients');
           if (clientsResponse.ok) {
             const responseData = await clientsResponse.json();
             clientsData = Array.isArray(responseData) ? responseData : [];
-            console.log('Raw clients data:', clientsData);
-          } else {
-            console.error('Failed to fetch clients:', clientsResponse.status, clientsResponse.statusText);
-            const errorData = await clientsResponse.json().catch(() => ({}));
-            console.error('Clients API error:', errorData);
           }
-        } catch (clientsError) {
-          console.error('Error fetching clients:', clientsError);
-        }
+        } catch {}
         
-        // Fetch calls with error handling
+        // Fetch calls
         try {
           const callsResponse = await fetch('/api/calls');
           if (callsResponse.ok) {
             const responseData = await callsResponse.json();
             callsData = Array.isArray(responseData) ? responseData : [];
-            console.log('Raw calls data:', callsData);
-          } else {
-            console.error('Failed to fetch calls:', callsResponse.status, callsResponse.statusText);
-            const errorData = await callsResponse.json().catch(() => ({}));
-            console.error('Calls API error:', errorData);
           }
-        } catch (callsError) {
-          console.error('Error fetching calls:', callsError);
-        }
+        } catch {}
         
-        // Filter clients to include buyers and renters (exclude sellers-only and landlords-only)
-        const buyerClients = clientsData.filter(client => {
-          if (!client || !client.clientName) return false;
-          console.log('Client intent:', client.clientName, client.intent);
-          return client.intent === 'buyer' || client.intent === 'renter' || client.intent === 'both';
-        });
-        
-        // Filter calls to include those from buyers and renters (exclude sellers-only and landlords-only)
-        const buyerCalls = callsData.filter(call => {
-          if (!call || !call.summary) return false;
-          console.log('Call intent:', call.summary?.substring(0, 30), call.intent);
-          return call.intent === 'buyer' || call.intent === 'renter' || call.intent === 'both';
-        });
-        
-        console.log('Filtered buyer clients:', buyerClients);
-        console.log('Filtered buyer calls:', buyerCalls);
-        
+        const buyerClients = clientsData.filter(c => c && c.clientName && (c.intent === 'buyer' || c.intent === 'renter' || c.intent === 'both'));
+        const buyerCalls = callsData.filter(call => call && call.summary && (call.intent === 'buyer' || call.intent === 'renter' || call.intent === 'both'));
+
+        // Fast summary counts request
+        let countsMap = {};
+        try {
+          const matchesRes = await fetch('/api/matching?type=clients-to-properties&summary=1');
+          if (matchesRes.ok) {
+            const data = await matchesRes.json();
+            countsMap = data?.counts || {};
+          }
+        } catch {}
+
+        const finalizedCounts = buyerClients.reduce((acc, c) => {
+          acc[c._id] = typeof countsMap[c._id] === 'number' ? countsMap[c._id] : 0;
+          return acc;
+        }, {});
+
         setClients(buyerClients);
         setCalls(buyerCalls);
+        setMatchCounts(finalizedCounts);
       } catch (err) {
-        console.error('Error fetching clients and calls:', err);
-        // Set empty arrays as fallback
         setClients([]);
         setCalls([]);
+        setMatchCounts({});
       } finally {
         setLoadingClients(false);
       }
@@ -585,6 +580,10 @@ export default function MatchingPage() {
       router.push(`/dashboard/matching/call/${callId}`);
     };
 
+    const filteredClients = (clients || []).filter((c) =>
+      (c?.clientName || '').toLowerCase().includes((searchTerm || '').toLowerCase())
+    );
+
     if (loadingClients) {
       return (
         <div className="flex justify-center items-center h-64">
@@ -595,49 +594,62 @@ export default function MatchingPage() {
 
     return (
       <div className="space-y-8">
-        {/* Clients Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        {/* Clients Mobile Cards (mobile only) */}
+        <div className="md:hidden space-y-4">
+          {filteredClients.map((client) => (
+            <div key={client._id} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-base font-semibold text-gray-900 truncate">{client.clientName || 'לא צוין'}</h4>
+                  <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-gray-600">
+                    <div className="flex items-center"><FaPhone className="w-3.5 h-3.5 mr-1" />{client.phoneNumber || 'לא צוין'}</div>
+                    <div className="flex items-center"><FaMapMarkerAlt className="w-3.5 h-3.5 mr-1" />{client.preferredLocation || 'לא צוין'}</div>
+                    <div className="flex items-center"><FaHome className="w-3.5 h-3.5 mr-1" />{translatePropertyType(client.preferredPropertyType) || 'לא צוין'}</div>
+                    <div className="flex items-center">{client.maxPrice ? formatPrice(client.maxPrice) : 'לא צוין'}</div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => handleClientClick(client._id)}
+                className="mt-3 w-full text-center py-2 px-3 rounded-md text-xs font-medium bg-blue-600 text-white hover:bg-blue-700"
+              >
+                הצג התאמות {typeof matchCounts[client._id] === 'number' ? `(${matchCounts[client._id]})` : ''}
+              </button>
+            </div>
+          ))}
+          {filteredClients.length === 0 && (
+            <div className="px-6 py-12 text-center">
+              <FaUsers className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">אין לקוחות</h3>
+              <p className="mt-1 text-sm text-gray-500">לא נמצאו לקוחות המעוניינים לקנות נכסים</p>
+            </div>
+          )}
+        </div>
+
+        {/* Clients Table (desktop only) */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden hidden md:block">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <FaUsers className="w-5 h-5 mr-2 text-blue-600" />
-              הלקוחות שלי - קונים ושוכרים ({clients.length})
+              <FaUsers className="w-5 h-5 mr-2 text-blue-600" /> הלקוחות שלי - קונים ושוכרים ({clients.length})
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              לחץ על לקוח כדי לראות נכסים מתאימים
-            </p>
+            <p className="text-sm text-gray-600 mt-1">לחץ על לקוח כדי לראות נכסים מתאימים</p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    שם הלקוח
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    טלפון
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    מיקום מבוקש
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    סוג נכס
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    תקציב
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    פעולות
-                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">שם הלקוח</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">טלפון</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">מיקום מבוקש</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">סוג נכס</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">תקציב</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">פעולות</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {clients.map((client) => (
-                  <tr 
-                    key={client._id} 
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => handleClientClick(client._id)}
-                  >
+                {filteredClients.map((client) => (
+                  <tr key={client._id} className="hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => handleClientClick(client._id)}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -646,48 +658,27 @@ export default function MatchingPage() {
                           </div>
                         </div>
                         <div className="mr-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {client.clientName || 'לא צוין'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {client.email || ''}
-                          </div>
+                          <div className="text-sm font-medium text-gray-900">{client.clientName || 'לא צוין'}</div>
+                          <div className="text-sm text-gray-500">{client.email || ''}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
-                        <FaPhone className="h-4 w-4 mx-1 text-gray-400" />
-                        {client.phoneNumber || 'לא צוין'}
-                      </div>
+                      <div className="text-sm text-gray-900 flex items-center"><FaPhone className="h-4 w-4 mx-1 text-gray-400" />{client.phoneNumber || 'לא צוין'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
-                        <FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />
-                        {client.preferredLocation || 'לא צוין'}
-                      </div>
+                      <div className="text-sm text-gray-900 flex items-center"><FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />{client.preferredLocation || 'לא צוין'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
-                        <FaHome className="h-4 w-4 mx-1 text-gray-400" />
-                        {translatePropertyType(client.preferredPropertyType) || 'לא צוין'}
-                      </div>
+                      <div className="text-sm text-gray-900 flex items-center"><FaHome className="h-4 w-4 mx-1 text-gray-400" />{translatePropertyType(client.preferredPropertyType) || 'לא צוין'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {client.maxPrice ? formatPrice(client.maxPrice) : 'לא צוין'}
-                      </div>
+                      <div className="text-sm text-gray-900">{client.maxPrice ? formatPrice(client.maxPrice) : 'לא צוין'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClientClick(client._id);
-                        }}
-                        className="text-blue-600 hover:text-blue-900 flex items-center"
-                      >
+                      <button onClick={(e) => { e.stopPropagation(); handleClientClick(client._id); }} className="text-blue-600 hover:text-blue-900 flex items-center gap-2">
                         <FaEye className="h-4 w-4 mr-1" />
-                        הצג התאמות
+                        הצג התאמות {typeof matchCounts[client._id] === 'number' ? `(${matchCounts[client._id]})` : ''}
                       </button>
                     </td>
                   </tr>
@@ -696,13 +687,11 @@ export default function MatchingPage() {
             </table>
           </div>
 
-          {clients.length === 0 && (
+          {filteredClients.length === 0 && (
             <div className="px-6 py-12 text-center">
               <FaUsers className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">אין לקוחות</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                לא נמצאו לקוחות המעוניינים לקנות נכסים
-              </p>
+              <p className="mt-1 text-sm text-gray-500">לא נמצאו לקוחות המעוניינים לקנות נכסים</p>
             </div>
           )}
         </div>
@@ -823,30 +812,48 @@ export default function MatchingPage() {
           <p className="text-gray-600">מערכת התאמות אוטומטית בין נכסים, לקוחות ושיחות</p>
         </div>
 
+        {/* Search */}
+        <div className="mb-4">
+          <div className="relative">
+            <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={activeTab === 'clients-to-properties' ? 'חפש לפי שם לקוח...' : 'חפש לפי שם נכס...'}
+              className="w-full rounded-lg border border-gray-300 pr-9 pl-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+            />
+          </div>
+        </div>
+
         {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
+        <div className="mb-6 sticky top-0 z-10 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 py-2">
+          <div className="inline-flex w-full md:w-auto bg-gray-100 rounded-xl p-1 shadow-inner">
             <button
               onClick={() => setActiveTab('properties-to-clients')}
-              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+              aria-selected={activeTab === 'properties-to-clients'}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'properties-to-clients'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'bg-white text-blue-600 shadow'
+                  : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-               התאמת נכסים 
+              <FaHome className={`w-4 h-4 ${activeTab === 'properties-to-clients' ? 'text-blue-600' : 'text-gray-400'}`} />
+              התאמת נכסים
             </button>
             <button
               onClick={() => setActiveTab('clients-to-properties')}
-              className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+              aria-selected={activeTab === 'clients-to-properties'}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === 'clients-to-properties'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'bg-white text-blue-600 shadow'
+                  : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              התאמת לקוחות 
+              <FaUsers className={`w-4 h-4 ${activeTab === 'clients-to-properties' ? 'text-blue-600' : 'text-gray-400'}`} />
+              התאמת לקוחות
             </button>
-          </nav>
+          </div>
         </div>
 
         {/* Content */}
@@ -868,9 +875,9 @@ export default function MatchingPage() {
         ) : (
           <div>
             {activeTab === 'properties-to-clients' ? (
-              <PropertiesToClientsTab />
+              <PropertiesToClientsTab searchTerm={searchTerm} />
             ) : (
-              <ClientsToPropertiesTab />
+              <ClientsToPropertiesTab searchTerm={searchTerm} />
             )}
           </div>
         )}

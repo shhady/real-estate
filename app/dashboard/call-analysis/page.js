@@ -5,6 +5,29 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { validateAudioFile, extractAudioMetadata } from '../../utils/audioProcessing';
 
+// Display helpers (Hebrew labels only for UI)
+const getIntentLabel = (intent) => {
+  switch (intent) {
+    case 'buyer':
+      return 'קונה';
+    case 'seller':
+      return 'מוכר';
+    case 'both':
+      return 'קונה/מוכר';
+    case 'unknown':
+    default:
+      return 'לא ידוע';
+  }
+};
+
+const TAB_LABELS = {
+  Transcription: 'תמלול',
+  Summary: 'סיכום',
+  'Property Details': 'פרטי הנכס',
+  'Follow-ups': 'מעקבים',
+  Issues: 'בעיות',
+};
+
 export default function CallAnalysisPage() {
   const [clientName, setClientName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -137,12 +160,12 @@ export default function CallAnalysisPage() {
 
   // Format date for display
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString('he-IL', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -160,91 +183,99 @@ export default function CallAnalysisPage() {
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-700 mb-2">Intent</h4>
-            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-              result.intent === 'buyer' ? 'bg-green-100 text-green-800' :
-              result.intent === 'seller' ? 'bg-blue-100 text-blue-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {result.intent || 'Unknown'}
+            <h4 className="font-semibold text-gray-700 mb-2">כוונה</h4>
+            <span
+              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                result.intent === 'buyer'
+                  ? 'bg-green-100 text-green-800'
+                  : result.intent === 'seller'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              {getIntentLabel(result.intent)}
             </span>
           </div>
-          
+
           {result.location && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Location</h4>
+              <h4 className="font-semibold text-gray-700 mb-2">מיקום</h4>
               <p className="text-gray-900">{result.location}</p>
             </div>
           )}
-          
+
           {result.propertyType && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Property Type</h4>
+              <h4 className="font-semibold text-gray-700 mb-2">סוג נכס</h4>
               <p className="text-gray-900 capitalize">{result.propertyType}</p>
             </div>
           )}
-          
+
           {result.rooms && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Rooms</h4>
+              <h4 className="font-semibold text-gray-700 mb-2">חדרים</h4>
               <p className="text-gray-900">{result.rooms}</p>
             </div>
           )}
-          
+
           {result.area && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Area</h4>
-              <p className="text-gray-900">{result.area} sqm</p>
+              <h4 className="font-semibold text-gray-700 mb-2">שטח</h4>
+              <p className="text-gray-900">{result.area} מ"ר</p>
             </div>
           )}
-          
+
           {result.price && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Price</h4>
-              <p className="text-gray-900">{result.price.toLocaleString()} ILS</p>
+              <h4 className="font-semibold text-gray-700 mb-2">מחיר</h4>
+              <p className="text-gray-900">₪ {result.price.toLocaleString('he-IL')}</p>
             </div>
           )}
-          
+
           {result.condition && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Condition</h4>
+              <h4 className="font-semibold text-gray-700 mb-2">מצב</h4>
               <p className="text-gray-900 capitalize">{result.condition}</p>
             </div>
           )}
-          
+
           {result.floor !== null && result.floor !== undefined && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Floor</h4>
+              <h4 className="font-semibold text-gray-700 mb-2">קומה</h4>
               <p className="text-gray-900">{result.floor}</p>
             </div>
           )}
-          
+
           {result.parking !== null && result.parking !== undefined && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Parking</h4>
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                result.parking ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {result.parking ? 'Yes' : 'No'}
+              <h4 className="font-semibold text-gray-700 mb-2">חניה</h4>
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                  result.parking ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}
+              >
+                {result.parking ? 'כן' : 'לא'}
               </span>
             </div>
           )}
-          
+
           {result.balcony !== null && result.balcony !== undefined && (
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-700 mb-2">Balcony</h4>
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                result.balcony ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {result.balcony ? 'Yes' : 'No'}
+              <h4 className="font-semibold text-gray-700 mb-2">מרפסת</h4>
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                  result.balcony ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}
+              >
+                {result.balcony ? 'כן' : 'לא'}
               </span>
             </div>
           )}
         </div>
-        
+
         {result.propertyNotes && (
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-700 mb-2">Property Notes</h4>
+            <h4 className="font-semibold text-gray-700 mb-2">הערות על הנכס</h4>
             <p className="text-gray-900 whitespace-pre-wrap">{result.propertyNotes}</p>
           </div>
         )}
@@ -258,12 +289,12 @@ export default function CallAnalysisPage() {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <header className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Call Analysis</h1>
-            <p className="text-lg text-gray-600">Upload a call recording to get AI-powered insights</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">ניתוח שיחה</h1>
+            <p className="text-lg text-gray-600">העלה הקלטת שיחה לקבלת ניתוח חכם</p>
           </header>
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <div className="flex justify-center py-20">
-              <div className="animate-pulse">Loading...</div>
+              <div className="animate-pulse">טוען...</div>
             </div>
           </div>
         </div>
@@ -275,8 +306,8 @@ export default function CallAnalysisPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Call Analysis</h1>
-          <p className="text-lg text-gray-600">Upload a call recording to get AI-powered insights with automatic language detection</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">ניתוח שיחה</h1>
+          <p className="text-lg text-gray-600">העלה הקלטת שיחה לקבלת תובנות חכמות עם זיהוי שפה אוטומטי</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -287,7 +318,7 @@ export default function CallAnalysisPage() {
                 {/* Client Name */}
                 <div>
                   <label htmlFor="clientName" className="block text-sm font-medium text-gray-700 mb-1">
-                    Client Full Name *
+                    שם לקוח מלא *
                   </label>
                   <input
                     type="text"
@@ -295,7 +326,7 @@ export default function CallAnalysisPage() {
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     className="text-black w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter client's full name"
+                    placeholder="הכנס את שם הלקוח"
                     disabled={isLoading}
                   />
                 </div>
@@ -303,7 +334,7 @@ export default function CallAnalysisPage() {
                 {/* Phone Number */}
                 <div>
                   <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number *
+                    מספר טלפון *
                   </label>
                   <input
                     type="text"
@@ -311,7 +342,7 @@ export default function CallAnalysisPage() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="text-black w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter client's phone number"
+                    placeholder="הכנס את מספר הטלפון של הלקוח"
                     disabled={isLoading}
                   />
                 </div>
@@ -319,7 +350,7 @@ export default function CallAnalysisPage() {
                 {/* Audio Upload */}
                 <div>
                   <label htmlFor="audioFile" className="block text-sm font-medium text-gray-700 mb-1">
-                    Call Recording (MP3, WAV, M4A) *
+                    הקלטת שיחה (MP3, WAV, M4A) *
                   </label>
                   <div className="flex gap-2">
                     <label className="flex-1 cursor-pointer">
@@ -328,7 +359,7 @@ export default function CallAnalysisPage() {
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                           </svg>
-                          {audioFileName || 'Choose Audio File'}
+                          {audioFileName || 'בחר קובץ אודיו'}
                         </div>
                       </div>
                       <input
@@ -343,69 +374,68 @@ export default function CallAnalysisPage() {
                     </label>
                   </div>
                   {audioDuration && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      Duration: {audioDuration}
-                    </div>
+                    <div className="mt-2 text-sm text-gray-600">משך: {audioDuration}</div>
                   )}
                   <p className="mt-1 text-xs text-gray-500">
-                    Accepted formats: MP3, WAV, M4A. Maximum file size: 15MB. Automatic language detection included.
+                    פורמטים נתמכים: MP3, WAV, M4A. גודל קובץ מקסימלי: 15MB. כולל זיהוי שפה אוטומטי.
                   </p>
                 </div>
 
                 {/* Error message */}
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-                    {error}
-                  </div>
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">{error}</div>
                 )}
 
                 {/* Submit button */}
-                  <button
-                    type="submit"
+                <button
+                  type="submit"
                   disabled={isLoading || !clientName.trim() || !phoneNumber.trim() || !audioFile}
                   className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isLoading ? (
+                >
+                  {isLoading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                      Processing Audio...
+                      מעבד את האודיו...
                     </div>
-                    ) : (
-                      'Analyze Call'
-                    )}
-                  </button>
+                  ) : (
+                    'נתח שיחה'
+                  )}
+                </button>
               </form>
             ) : (
               /* Results section */
               <div className="space-y-6">
                 <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-                  ✅ Call analysis completed successfully!
+                  ✅ ניתוח השיחה הושלם בהצלחה!
                 </div>
 
                 <div className="space-y-2 text-gray-900">
-                  <p><strong>לקוח:</strong> {clientName}</p>
-                  <p><strong>טלפון:</strong> {phoneNumber}</p>
-                  {audioDuration && <p><strong>משך שיחה:</strong> {audioDuration}</p>}
+                  <p>
+                    <strong>לקוח:</strong> {clientName}
+                  </p>
+                  <p>
+                    <strong>טלפון:</strong> {phoneNumber}
+                  </p>
+                  {audioDuration && (
+                    <p>
+                      <strong>משך שיחה:</strong> {audioDuration}
+                    </p>
+                  )}
                   {result.clientId && (
-                    <p><strong>סטטוס לקוח:</strong> 
+                    <p>
+                      <strong>סטטוס לקוח:</strong>
                       <span className="text-green-600 font-medium">
                         {result.clientName ? ' ✅ נוצר/עודכן אוטומטית' : ' ✅ קושר ללקוח קיים'}
                       </span>
-                      <Link 
-                        href={`/dashboard/clients/${result.clientId}`}
-                        className="text-blue-600 hover:text-blue-800 text-sm mr-2"
-                      >
+                      <Link href={`/dashboard/clients/${result.clientId}`} className="text-blue-600 hover:text-blue-800 text-sm mr-2">
                         (צפה בפרופיל לקוח)
                       </Link>
                     </p>
                   )}
                 </div>
 
-                <button
-                  onClick={handleReset}
-                  className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors"
-                >
-                  Analyze Another Call
+                <button onClick={handleReset} className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors">
+                  נתח שיחה נוספת
                 </button>
               </div>
             )}
@@ -416,49 +446,47 @@ export default function CallAnalysisPage() {
             <div className="bg-white rounded-lg shadow-md">
               {/* Tab navigation */}
               <div className="flex border-b border-gray-200">
-                {['Transcription', 'Summary', 'Property Details', 'Follow-ups', 'Issues'].map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
+                {Object.keys(TAB_LABELS).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
                     className={`flex-1 py-3 px-4 text-sm font-medium text-center border-b-2 transition-colors ${
                       activeTab === tab
                         ? 'border-blue-500 text-blue-600 bg-blue-50'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
-                      >
-                        {tab}
-                      </button>
-                    ))}
-                  </div>
+                  >
+                    {TAB_LABELS[tab]}
+                  </button>
+                ))}
+              </div>
 
               {/* Tab content */}
               <div className="p-6">
                 {activeTab === 'Transcription' && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Enhanced Transcription</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">תמלול משופר</h3>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed">
-                        {result.transcription}
-                      </pre>
+                      <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono leading-relaxed">{result.transcription}</pre>
                     </div>
                   </div>
                 )}
 
                 {activeTab === 'Summary' && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Call Summary</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">סיכום השיחה</h3>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <p className="text-gray-800 whitespace-pre-wrap">{result.summary}</p>
                     </div>
-                    
+
                     {result.positives && result.positives.length > 0 && (
                       <div>
-                        <h4 className="text-md font-semibold text-green-700 mb-2">Positive Aspects</h4>
-                      <ul className="list-disc list-inside space-y-1 text-gray-700">
+                        <h4 className="text-md font-semibold text-green-700 mb-2">נקודות חיוביות</h4>
+                        <ul className="list-disc list-inside space-y-1 text-gray-700">
                           {result.positives.map((positive, index) => (
                             <li key={index}>{positive}</li>
                           ))}
-                      </ul>
+                        </ul>
                       </div>
                     )}
                   </div>
@@ -466,134 +494,229 @@ export default function CallAnalysisPage() {
 
                 {activeTab === 'Property Details' && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Property Information</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">מידע על הנכס</h3>
                     {renderPropertyDetails()}
                   </div>
                 )}
 
                 {activeTab === 'Follow-ups' && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Recommended Follow-ups</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">המלצות למעקב</h3>
                     {result.followUps && result.followUps.length > 0 ? (
                       <ul className="list-disc list-inside space-y-2 text-gray-700">
                         {result.followUps.map((followUp, index) => (
-                          <li key={index} className="bg-blue-50 p-3 rounded-lg">{followUp}</li>
+                          <li key={index} className="bg-blue-50 p-3 rounded-lg">
+                            {followUp}
+                          </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-gray-500 italic">No specific follow-ups identified.</p>
+                      <p className="text-gray-500 italic">לא זוהו המלצות מעקב ספציפיות.</p>
                     )}
                   </div>
                 )}
 
-                    {activeTab === 'Issues' && (
+                {activeTab === 'Issues' && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Areas for Improvement</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">תחומים לשיפור</h3>
                     {result.issues && result.issues.length > 0 ? (
                       <ul className="list-disc list-inside space-y-2 text-gray-700">
                         {result.issues.map((issue, index) => (
-                          <li key={index} className="bg-red-50 p-3 rounded-lg text-red-800">{issue}</li>
+                          <li key={index} className="bg-red-50 p-3 rounded-lg text-red-800">
+                            {issue}
+                          </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-gray-500 italic">No issues identified.</p>
+                      <p className="text-gray-500 italic">לא זוהו בעיות.</p>
                     )}
                   </div>
                 )}
-                </div>
               </div>
-            )}
+            </div>
+          )}
 
           {/* Call History Section */}
           <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Call Analysis</h3>
-            
-            {loadingCalls ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-              </div>
-            ) : calls.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No calls analyzed yet. Upload your first recording above!</p>
-            ) : (
-                <div className="space-y-4">
-                {calls.map((call) => (
-                    <div 
-                      key={call._id} 
-                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">ניתוחי שיחות אחרונים</h3>
+
+              {loadingCalls ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+                </div>
+              ) : calls.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">אין עדיין ניתוחי שיחות. העלה את ההקלטה הראשונה שלך למעלה!</p>
+              ) : (
+                <>
+                  {/* Mobile layout */}
+                  <div className="md:hidden space-y-4">
+                    {calls.map((call) => (
+                      <div key={call._id} className="p-4 border border-gray-200 rounded-xl shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <h4 className="font-semibold text-gray-900">
-                                {call.clientId?.clientName || 'Unknown Client'}
-                              </h4>
-                              {call.clientId && (
-                                <button
-                                  onClick={() => router.push(`/dashboard/clients/${call.clientId._id}`)}
-                                  className="text-blue-600 hover:text-blue-800 text-xs hover:underline"
-                                >
-                                  👤 View Client
-                                </button>
+                              <h4 className="font-semibold text-gray-900 text-base">{call.clientId?.clientName || 'לקוח לא ידוע'}</h4>
+                              {call.intent && call.intent !== 'unknown' && (
+                                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  call.intent === 'buyer'
+                                    ? 'bg-green-100 text-green-800'
+                                    : call.intent === 'seller'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {getIntentLabel(call.intent)}
+                                </span>
                               )}
                             </div>
-                            {call.intent && call.intent !== 'unknown' && (
-                              <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                                call.intent === 'buyer' ? 'bg-green-100 text-green-800' :
-                                call.intent === 'seller' ? 'bg-blue-100 text-blue-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
-                                {call.intent}
-                              </span>
-                            )}
                             {call.location && (
-                              <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                📍 {call.location}
-                              </span>
+                              <div className="mt-1 text-xs text-gray-600">📍 {call.location}</div>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600 mb-1">
-                            {call.clientId?.phoneNumber || 'No phone number'}
-                          </p>
-                          <p className="text-sm text-gray-700">{truncateText(call.summary)}</p>
+                          <div className="text-left text-xs text-gray-500 whitespace-nowrap">
+                            {formatDate(call.createdAt)}
+                          </div>
+                        </div>
+
+                        <div className="mt-2 text-sm text-gray-600">{call.clientId?.phoneNumber || 'אין מספר טלפון'}</div>
+                        {call.summary && (
+                          <p className="mt-2 text-sm text-gray-800">{truncateText(call.summary, 140)}</p>
+                        )}
+
+                        <div className="mt-3 flex flex-wrap gap-2">
                           {call.propertyType && (
-                            <div className="mt-2 flex gap-2">
-                              <span className="inline-block px-2 py-1 rounded text-xs bg-blue-50 text-blue-700">
-                                {call.propertyType}
-                              </span>
-                              {call.rooms && (
-                                <span className="inline-block px-2 py-1 rounded text-xs bg-green-50 text-green-700">
-                                  {call.rooms} rooms
-                                </span>
-                              )}
-                              {call.price && (
-                                <span className="inline-block px-2 py-1 rounded text-xs bg-yellow-50 text-yellow-700">
-                                  {call.price.toLocaleString()} ILS
-                                </span>
-                              )}
-                            </div>
+                            <span className="inline-block px-2 py-1 rounded text-xs bg-blue-50 text-blue-700">{call.propertyType}</span>
                           )}
-                    </div>
-                        <div className="text-right text-sm text-gray-500 flex flex-col gap-2">
-                          <div>{formatDate(call.createdAt)}</div>
-                          {call.audioDuration && (
-                            <div className="text-xs">🎵 {call.audioDuration}</div>
+                          {call.rooms && (
+                            <span className="inline-block px-2 py-1 rounded text-xs bg-green-50 text-green-700">{call.rooms} חדרים</span>
+                          )}
+                          {call.price && (
+                            <span className="inline-block px-2 py-1 rounded text-xs bg-yellow-50 text-yellow-700">₪ {call.price.toLocaleString('he-IL')}</span>
+                          )}
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-2 gap-2">
+                          {call.clientId && (
+                            <button
+                              onClick={() => router.push(`/dashboard/clients/${call.clientId._id}`)}
+                              className="w-full text-center py-2 px-3 rounded-md text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200"
+                            >
+                              👤 פרטי לקוח
+                            </button>
                           )}
                           <button
                             onClick={() => router.push(`/dashboard/call-analysis/${call._id}`)}
-                            className="text-blue-600 hover:text-blue-800 text-xs hover:underline"
+                            className="w-full text-center py-2 px-3 rounded-md text-xs font-medium bg-blue-600 text-white hover:bg-blue-700"
                           >
-                            📞 View Call
+                            📞 כנס  לשיחה
                           </button>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop layout (improved) */}
+                  <div className="hidden md:block">
+                    <div className="space-y-4">
+                      {calls.map((call) => (
+                        <div
+                          key={call._id}
+                          className="p-5 border border-gray-200 rounded-xl bg-white hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-start justify-between gap-6">
+                            {/* Left content */}
+                            <div className="flex-1">
+                              {/* Title row */}
+                              <div className="flex items-center gap-3 mb-2">
+                                <h4 className="font-semibold text-gray-900 text-lg">
+                                  {call.clientId?.clientName || 'לקוח לא ידוע'}
+                                </h4>
+                                {call.intent && call.intent !== 'unknown' && (
+                                  <span
+                                    className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                      call.intent === 'buyer'
+                                        ? 'bg-green-100 text-green-800'
+                                        : call.intent === 'seller'
+                                        ? 'bg-blue-100 text-blue-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                    }`}
+                                  >
+                                    {getIntentLabel(call.intent)}
+                                  </span>
+                                )}
+                                {call.location && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                    📍 {call.location}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Sub meta */}
+                              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                                <span>{call.clientId?.phoneNumber || 'אין מספר טלפון'}</span>
+                                <span className="text-gray-400">•</span>
+                                <span className="text-gray-500">{formatDate(call.createdAt)}</span>
+                                {call.audioDuration && (
+                                  <>
+                                    <span className="text-gray-400">•</span>
+                                    <span className="text-gray-500">🎵 {call.audioDuration}</span>
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Summary */}
+                              {call.summary && (
+                                <p className="text-sm text-gray-800 mb-2">
+                                  {truncateText(call.summary, 180)}
+                                </p>
+                              )}
+
+                              {/* Badges row */}
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {call.propertyType && (
+                                  <span className="inline-block px-2.5 py-1 rounded text-xs bg-blue-50 text-blue-700">
+                                    {call.propertyType}
+                                  </span>
+                                )}
+                                {call.rooms && (
+                                  <span className="inline-block px-2.5 py-1 rounded text-xs bg-green-50 text-green-700">
+                                    {call.rooms} חדרים
+                                  </span>
+                                )}
+                                {call.price && (
+                                  <span className="inline-block px-2.5 py-1 rounded text-xs bg-yellow-50 text-yellow-700">
+                                    ₪ {call.price.toLocaleString('he-IL')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex flex-col items-end gap-2">
+                              {call.clientId && (
+                                <button
+                                  onClick={() => router.push(`/dashboard/clients/${call.clientId._id}`)}
+                                  className="px-3 py-2 rounded-md text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200"
+                                >
+                                  👤 צפה בלקוח
+                                </button>
+                              )}
+                              <button
+                                onClick={() => router.push(`/dashboard/call-analysis/${call._id}`)}
+                                className="px-3 py-2 rounded-md text-xs font-medium bg-blue-600 text-white hover:bg-blue-700"
+                              >
+                                📞 כנס לשיחה
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

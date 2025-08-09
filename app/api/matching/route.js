@@ -5,6 +5,8 @@ import Client from '../../models/Client';
 import Call from '../../models/Call';
 import { getUser } from '../../lib/auth';
 
+const DEBUG_MATCHING = process.env.DEBUG_MATCHING === '1';
+
 // Helper function to normalize location strings
 function normalizeLocation(location) {
   if (!location) return '';
@@ -51,10 +53,12 @@ function isWithinRange(value, min, max, tolerance = 0) {
 }
 
 // Helper function to calculate match score
-function calculateMatchScore(property, client) {
+function calculateMatchScore(property, client, options = {}) {
+  const fast = options.fast === true;
   let score = 0;
   let totalCriteria = 0;
   let budgetStatus = 'within'; // 'within', 'above', 'way_above'
+  let budgetPercentage = 0;
   
   // 1. Intent/Status matching - NEW 6th criterion
   let intentMatch = false;
@@ -90,12 +94,11 @@ function calculateMatchScore(property, client) {
   
   // 4. Price matching - Updated for renters with 110% budget
   let priceMatch = false;
-  let budgetPercentage = 0;
   
   if (client.maxPrice) {
     const maxBudget = Number(client.maxPrice);
     const propertyPrice = Number(property.price || 0);
-    budgetPercentage = (propertyPrice / maxBudget) * 100;
+    budgetPercentage = maxBudget > 0 ? (propertyPrice / maxBudget) * 100 : 0;
     
     if (client.intent === 'renter') {
       // For renters: allow up to 110% of budget
@@ -156,10 +159,16 @@ function calculateMatchScore(property, client) {
     if (areaMatch) score++;
   }
   
-  // Add match details
+  // Early return in fast/summary mode: only need isMatch and basic meta
+  const minMatchesRequired = 4;
+  const isMatch = score >= minMatchesRequired;
+  if (fast) {
+    return { score, totalCriteria, isMatch };
+  }
+  
+  // Detailed matchDetails only when not in fast mode
   const matchDetails = [];
   
-  // Intent/Status details
   if (client.intent) {
     const statusText = property.status === 'For Sale' ? 'למכירה' : 'להשכרה';
     const intentText = client.intent === 'buyer' ? 'קונה' : 
@@ -231,18 +240,6 @@ function calculateMatchScore(property, client) {
       clientValue: `${client.minArea || 0} - ${client.maxArea || 'ללא מגבלה'} מ"ר`
     });
   }
-  
-  // For renters: don't show properties above 110% budget at all
-  if (client.intent === 'renter' && budgetStatus === 'way_above') {
-    console.log(`❌ Filtering out property (above 110% budget): ${property.title} - Budget: ${budgetPercentage.toFixed(1)}%`);
-    return { score: 0, totalCriteria, matchDetails, isMatch: false, budgetStatus, budgetPercentage };
-  }
-  
-  // Show properties with 4+ matches out of available criteria
-  const minMatchesRequired = 4;
-  const isMatch = score >= minMatchesRequired;
-  
-  console.log(`🔍 Property: ${property.title} - Score: ${score}/${totalCriteria} - MinRequired: ${minMatchesRequired} - IsMatch: ${isMatch} - BudgetStatus: ${budgetStatus}`);
   
   return { score, totalCriteria, matchDetails, isMatch, budgetStatus, budgetPercentage };
 }
@@ -334,9 +331,10 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type'); // 'properties-to-clients' or 'clients-to-properties'
-    const clientId = searchParams.get('clientId'); // Optional: for individual client matching
-    const callId = searchParams.get('callId'); // Optional: for individual call matching
-    const propertyId = searchParams.get('propertyId'); // Optional: for individual property matching
+    const clientId = searchParams.get('clientId'); // Optional
+    const callId = searchParams.get('callId'); // Optional
+    const propertyId = searchParams.get('propertyId'); // Optional
+    const summary = searchParams.get('summary') === '1'; // Fast counts-only mode
 
     await connectDB();
 
@@ -542,308 +540,79 @@ export async function GET(request) {
         console.log(`Processing ${clientsToProcess.length} clients for user ${user.userId}`);
       }
       
+      // Fetch properties ONCE for this request
+      const userProperties = await Property.find({ user: user.userId }).populate('user', 'fullName email phone').lean();
+      const externalProperties = await Property.find({ user: { $ne: user.userId } }).populate('user', 'fullName email phone').lean();
+      const allProps = [...userProperties, ...externalProperties];
+
+      // SUMMARY MODE: return only counts per client
+      if (summary && !clientId) {
+        const counts = {};
+        for (const client of clientsToProcess) {
+          if (!client || !client.clientName) { continue; }
+          let count = 0;
+          for (const prop of allProps) {
+            // Quick pre-filter by intent/status to skip irrelevant properties
+            if (client.intent === 'buyer' && prop.status !== 'For Sale') continue;
+            if (client.intent === 'renter' && prop.status !== 'For Rent') continue;
+            const res = calculateMatchScore(prop, client, { fast: true });
+            if (res.isMatch) count++;
+          }
+          counts[client._id] = count;
+        }
+        return NextResponse.json({ counts });
+      }
+
       const matches = [];
 
       for (const client of clientsToProcess) {
-        // Skip if client is invalid
-        if (!client || !client.clientName) {
-          console.warn('Skipping invalid client:', client);
-          continue;
+        if (!client || !client.clientName) continue;
+        const clientMatches = { client, matchedProperties: [] };
+
+        // Individual client matching: ALL matches sorted by priority
+        const allPossibleMatches = [];
+        // Priority 1: 5/5 from user properties
+        for (const property of userProperties) {
+          if (!property || !property.title) continue;
+          const matchResult = calculateMatchScore(property, client);
+          if (matchResult.isMatch && matchResult.score === matchResult.totalCriteria) {
+            allPossibleMatches.push({ property, score: matchResult.score, totalCriteria: matchResult.totalCriteria, matchDetails: matchResult.matchDetails, budgetStatus: matchResult.budgetStatus, budgetPercentage: matchResult.budgetPercentage, isExternal: false, priority: 1 });
+          }
         }
-        
-        const clientMatches = {
-          client: client,
-          matchedProperties: []
-        };
-
-        // Step 1: Get user's own properties
-        const userProperties = await Property.find({ user: user.userId })
-          .populate('user', 'fullName email phone')
-          .lean();
-
-        // Step 2: Get external properties
-        const externalProperties = await Property.find({ 
-          user: { $ne: user.userId } 
-        })
-          .populate('user', 'fullName email phone')
-          .lean();
-
-        // Step 3: Get ALL properties for debugging
-        const allProperties = await Property.find({})
-          .populate('user', 'fullName email phone')
-          .lean();
-
-        console.log(`\n=== DATABASE STATE DEBUG ===`);
-        console.log(`Total properties in database: ${allProperties.length}`);
-        console.log(`User properties (${user.userId}): ${userProperties.length}`);
-        console.log(`External properties: ${externalProperties.length}`);
-        
-        // Log all properties with basic info
-        console.log(`\n=== ALL PROPERTIES LIST ===`);
-        allProperties.forEach((prop, index) => {
-          console.log(`${index + 1}. ${prop.title} | Location: ${prop.location} | Type: ${prop.propertyType} | Price: ${prop.price} | Rooms: ${prop.bedrooms} | Area: ${prop.area} | User: ${prop.user?.fullName || 'Unknown'}`);
-        });
-        
-        console.log(`\n=== USER PROPERTIES LIST ===`);
-        userProperties.forEach((prop, index) => {
-          console.log(`${index + 1}. ${prop.title} | Location: ${prop.location} | Type: ${prop.propertyType} | Price: ${prop.price} | Rooms: ${prop.bedrooms} | Area: ${prop.area}`);
-        });
-        
-        console.log(`\n=== EXTERNAL PROPERTIES LIST ===`);
-        externalProperties.forEach((prop, index) => {
-          console.log(`${index + 1}. ${prop.title} | Location: ${prop.location} | Type: ${prop.propertyType} | Price: ${prop.price} | Rooms: ${prop.bedrooms} | Area: ${prop.area} | User: ${prop.user?.fullName || 'Unknown'}`);
-        });
-
-        console.log(`Found ${externalProperties.length} external properties for user ${user.userId}`);
-        
-        // Quick check: list all users who have properties
-        const allPropertiesWithUsers = await Property.find({}).populate('user', 'fullName email').lean();
-        const userPropertyCounts = {};
-        allPropertiesWithUsers.forEach(prop => {
-          if (prop.user) {
-            const userId = prop.user._id.toString();
-            userPropertyCounts[userId] = (userPropertyCounts[userId] || 0) + 1;
+        // Priority 2: 5/5 external
+        for (const property of externalProperties) {
+          if (!property || !property.title) continue;
+          const matchResult = calculateMatchScore(property, client);
+          if (matchResult.isMatch && matchResult.score === matchResult.totalCriteria) {
+            allPossibleMatches.push({ property, score: matchResult.score, totalCriteria: matchResult.totalCriteria, matchDetails: matchResult.matchDetails, budgetStatus: matchResult.budgetStatus, budgetPercentage: matchResult.budgetPercentage, isExternal: true, priority: 2 });
           }
-        });
-        console.log(`Property counts by user:`, userPropertyCounts);
-        console.log(`Current user ID: ${user.userId}`);
-
-        if (clientId) {
-          // Individual client matching: return ALL matches sorted by priority
-          console.log(`\n=== INDIVIDUAL CLIENT MATCHING DEBUG ===`);
-          console.log(`Client ID: ${clientId}`);
-          console.log(`Client Name: ${client.clientName}`);
-          console.log(`Client Location: ${client.preferredLocation}`);
-          console.log(`Client Property Type: ${client.preferredPropertyType}`);
-          console.log(`Client Price Range: ${client.minPrice} - ${client.maxPrice}`);
-          console.log(`Client Rooms Range: ${client.minRooms} - ${client.maxRooms}`);
-          console.log(`Client Area Range: ${client.minArea} - ${client.maxArea}`);
-          console.log(`User Properties Count: ${userProperties.length}`);
-          console.log(`External Properties Count: ${externalProperties.length}`);
-          
-          const allPossibleMatches = [];
-
-          // Priority 1: 5/5 matches from signed-in user's properties
-          console.log(`\n=== CHECKING PRIORITY 1: 5/5 FROM USER PROPERTIES ===`);
-          for (const property of userProperties) {
-            if (!property || !property.title) continue;
-            
-            const matchResult = calculateMatchScore(property, client);
-            console.log(`Property: ${property.title} - Score: ${matchResult.score}/${matchResult.totalCriteria} - IsMatch: ${matchResult.isMatch} - Perfect: ${matchResult.score === matchResult.totalCriteria}`);
-            
-            if (matchResult.isMatch && matchResult.score === matchResult.totalCriteria) {
-              allPossibleMatches.push({
-                property: property,
-                score: matchResult.score,
-                totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails,
-                budgetStatus: matchResult.budgetStatus,
-                budgetPercentage: matchResult.budgetPercentage,
-                isExternal: false,
-                priority: 1
-              });
-            }
+        }
+        // Priority 3: 4/5 user
+        for (const property of userProperties) {
+          if (!property || !property.title) continue;
+          const matchResult = calculateMatchScore(property, client);
+          if (matchResult.isMatch && matchResult.score < matchResult.totalCriteria) {
+            allPossibleMatches.push({ property, score: matchResult.score, totalCriteria: matchResult.totalCriteria, matchDetails: matchResult.matchDetails, budgetStatus: matchResult.budgetStatus, budgetPercentage: matchResult.budgetPercentage, isExternal: false, priority: 3 });
           }
-
-          // Priority 2: 5/5 matches from other users' properties
-          console.log(`\n=== CHECKING PRIORITY 2: 5/5 FROM EXTERNAL PROPERTIES ===`);
-          for (const property of externalProperties) {
-            if (!property || !property.title) continue;
-            
-            const matchResult = calculateMatchScore(property, client);
-            console.log(`Property: ${property.title} - Score: ${matchResult.score}/${matchResult.totalCriteria} - IsMatch: ${matchResult.isMatch} - Perfect: ${matchResult.score === matchResult.totalCriteria}`);
-            
-            if (matchResult.isMatch && matchResult.score === matchResult.totalCriteria) {
-              allPossibleMatches.push({
-                property: property,
-                score: matchResult.score,
-                totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails,
-                budgetStatus: matchResult.budgetStatus,
-                budgetPercentage: matchResult.budgetPercentage,
-                isExternal: true,
-                priority: 2
-              });
-            }
+        }
+        // Priority 4: 4/5 external
+        for (const property of externalProperties) {
+          if (!property || !property.title) continue;
+          const matchResult = calculateMatchScore(property, client);
+          if (matchResult.isMatch && matchResult.score < matchResult.totalCriteria) {
+            allPossibleMatches.push({ property, score: matchResult.score, totalCriteria: matchResult.totalCriteria, matchDetails: matchResult.matchDetails, budgetStatus: matchResult.budgetStatus, budgetPercentage: matchResult.budgetPercentage, isExternal: true, priority: 4 });
           }
+        }
 
-          // Priority 3: 4/5 matches from signed-in user's properties
-          console.log(`\n=== CHECKING PRIORITY 3: PARTIAL FROM USER PROPERTIES ===`);
-          for (const property of userProperties) {
-            if (!property || !property.title) continue;
-            
-            const matchResult = calculateMatchScore(property, client);
-            console.log(`Property: ${property.title} - Score: ${matchResult.score}/${matchResult.totalCriteria} - IsMatch: ${matchResult.isMatch} - Partial: ${matchResult.score < matchResult.totalCriteria}`);
-            
-            if (matchResult.isMatch && matchResult.score < matchResult.totalCriteria) {
-              allPossibleMatches.push({
-                property: property,
-                score: matchResult.score,
-                totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails,
-                budgetStatus: matchResult.budgetStatus,
-                budgetPercentage: matchResult.budgetPercentage,
-                isExternal: false,
-                priority: 3
-              });
-            }
-          }
+        // Sort
+        allPossibleMatches.sort((a, b) => (a.priority !== b.priority ? a.priority - b.priority : b.score - a.score));
+        clientMatches.matchedProperties = allPossibleMatches;
 
-          // Priority 4: 4/5 matches from other users' properties
-          console.log(`\n=== CHECKING PRIORITY 4: PARTIAL FROM EXTERNAL PROPERTIES ===`);
-          for (const property of externalProperties) {
-            if (!property || !property.title) continue;
-            
-            const matchResult = calculateMatchScore(property, client);
-            console.log(`Property: ${property.title} - Score: ${matchResult.score}/${matchResult.totalCriteria} - IsMatch: ${matchResult.isMatch} - Partial: ${matchResult.score < matchResult.totalCriteria}`);
-            
-            if (matchResult.isMatch && matchResult.score < matchResult.totalCriteria) {
-              allPossibleMatches.push({
-                property: property,
-                score: matchResult.score,
-                totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails,
-                budgetStatus: matchResult.budgetStatus,
-                budgetPercentage: matchResult.budgetPercentage,
-                isExternal: true,
-                priority: 4
-              });
-            }
-          }
-
-          // Sort all matches by priority, then by score
-          allPossibleMatches.sort((a, b) => {
-            if (a.priority !== b.priority) {
-              return a.priority - b.priority; // Priority 1 first, then 2, 3, 4
-            }
-            return b.score - a.score; // Within same priority, higher score first
-          });
-
-          clientMatches.matchedProperties = allPossibleMatches;
-
-          console.log(`\n=== ALL MATCHING RESULTS FOR: ${client.clientName} ===`);
-          console.log(`Priority 1 (5/5 own): ${allPossibleMatches.filter(m => m.priority === 1).length} matches`);
-          console.log(`Priority 2 (5/5 external): ${allPossibleMatches.filter(m => m.priority === 2).length} matches`);
-          console.log(`Priority 3 (4/5 own): ${allPossibleMatches.filter(m => m.priority === 3).length} matches`);
-          console.log(`Priority 4 (4/5 external): ${allPossibleMatches.filter(m => m.priority === 4).length} matches`);
-          console.log(`Total matches: ${allPossibleMatches.length}`);
-          console.log(`All matches:`, allPossibleMatches.map(m => `Priority ${m.priority}: ${m.property.title} (${m.score}/${m.totalCriteria}${m.isExternal ? ' - External' : ' - Own'})`));
-          console.log(`================================================\n`);
-          
-          // Always include the client in the response, even if no matches
+        if (clientId || clientMatches.matchedProperties.length > 0) {
           matches.push(clientMatches);
-          
-          console.log(`\n=== FINAL RESPONSE DEBUG ===`);
-          console.log(`Matches array length: ${matches.length}`);
-          console.log(`Client matches length: ${clientMatches.matchedProperties.length}`);
-          console.log(`Returning client:`, {
-            id: client._id,
-            name: client.clientName,
-            matchCount: clientMatches.matchedProperties.length
-          });
-          console.log(`============================\n`);
-          
-          // Return immediately for individual client matching
-          return NextResponse.json({ matches });
-          
-        } else {
-          // Bulk client matching: return ALL matches sorted by priority (no limit)
-          const allPossibleMatches = [];
-
-          // Priority 1: 5/5 matches from signed-in user's properties
-          for (const property of userProperties) {
-            if (!property || !property.title) continue;
-            
-            const matchResult = calculateMatchScore(property, client);
-            if (matchResult.isMatch && matchResult.score === matchResult.totalCriteria) {
-              allPossibleMatches.push({
-                property: property,
-                score: matchResult.score,
-                totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails,
-                budgetStatus: matchResult.budgetStatus,
-                budgetPercentage: matchResult.budgetPercentage,
-                isExternal: false,
-                priority: 1
-              });
-            }
-          }
-
-          // Priority 2: 5/5 matches from other users' properties
-          for (const property of externalProperties) {
-            if (!property || !property.title) continue;
-            
-            const matchResult = calculateMatchScore(property, client);
-            if (matchResult.isMatch && matchResult.score === matchResult.totalCriteria) {
-              allPossibleMatches.push({
-                property: property,
-                score: matchResult.score,
-                totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails,
-                budgetStatus: matchResult.budgetStatus,
-                budgetPercentage: matchResult.budgetPercentage,
-                isExternal: true,
-                priority: 2
-              });
-            }
-          }
-
-          // Priority 3: 4/5 matches from signed-in user's properties
-          for (const property of userProperties) {
-            if (!property || !property.title) continue;
-            
-            const matchResult = calculateMatchScore(property, client);
-            if (matchResult.isMatch && matchResult.score < matchResult.totalCriteria) {
-              allPossibleMatches.push({
-                property: property,
-                score: matchResult.score,
-                totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails,
-                budgetStatus: matchResult.budgetStatus,
-                budgetPercentage: matchResult.budgetPercentage,
-                isExternal: false,
-                priority: 3
-              });
-            }
-          }
-
-          // Priority 4: 4/5 matches from other users' properties
-          for (const property of externalProperties) {
-            if (!property || !property.title) continue;
-            
-            const matchResult = calculateMatchScore(property, client);
-            if (matchResult.isMatch && matchResult.score < matchResult.totalCriteria) {
-              allPossibleMatches.push({
-                property: property,
-                score: matchResult.score,
-                totalCriteria: matchResult.totalCriteria,
-                matchDetails: matchResult.matchDetails,
-                budgetStatus: matchResult.budgetStatus,
-                budgetPercentage: matchResult.budgetPercentage,
-                isExternal: true,
-                priority: 4
-              });
-            }
-          }
-
-          // Sort all matches by priority, then by score
-          allPossibleMatches.sort((a, b) => {
-            if (a.priority !== b.priority) {
-              return a.priority - b.priority; // Priority 1 first, then 2, 3, 4
-            }
-            return b.score - a.score; // Within same priority, higher score first
-          });
-
-          clientMatches.matchedProperties = allPossibleMatches;
-
-          // For bulk matching, only include clients with matches
-          if (clientMatches.matchedProperties.length > 0) {
-            matches.push(clientMatches);
-          }
         }
       }
 
-      // Return the matches for bulk client matching
       return NextResponse.json({ matches });
 
     } else if (type === 'calls-to-properties') {

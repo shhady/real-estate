@@ -218,7 +218,7 @@ export default function CallDetailPage({ params }) {
               <div className="flex items-center justify-between mb-4">
                 <h1 className="text-2xl font-bold text-gray-900">{call.clientName}</h1>
                 <Link
-                  href="/dashboard/clients"
+                  href="/dashboard/call-analysis"
                   className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"
                 >
                   ← חזור
@@ -362,11 +362,11 @@ export default function CallDetailPage({ params }) {
                 </div>
                 
                 <Link
-                  href="/dashboard/clients"
+                  href="/dashboard/call-analysis"
                   className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center"
                 >
                   <span className="mr-2">←</span>
-                  חזור לדף לקוחות
+                  חזור לדף שיחות
                 </Link>
               </div>
             </div>
