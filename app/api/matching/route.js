@@ -146,34 +146,26 @@ function calculateMatchScore(property, client, options = {}) {
     ? normalizedClientTypes.includes(normalizedPropType)
     : true;
   
-  // 4. Price matching - Updated for renters with 110% budget
+  // 4. Price matching - Unified rule
   let priceMatch = false;
   
   if (client.maxPrice) {
     const maxBudget = Number(client.maxPrice);
     const propertyPrice = Number(property.price || 0);
+    const cap = maxBudget > 0 ? maxBudget * 1.15 : 0;
     budgetPercentage = maxBudget > 0 ? (propertyPrice / maxBudget) * 100 : 0;
-    
-    if (client.intent === 'renter') {
-      // For renters: allow up to 110% of budget
-      const maxAllowed = maxBudget * 1.1;
-      
-      if (propertyPrice <= maxBudget) {
-        priceMatch = true;
-        budgetStatus = 'within';
-      } else if (propertyPrice <= maxAllowed) {
-        priceMatch = true;
-        budgetStatus = 'above'; // 100-110% of budget
-      } else {
-        priceMatch = false;
-        budgetStatus = 'way_above'; // Above 110%
-      }
+    if (!maxBudget) {
+      priceMatch = true;
+      budgetStatus = 'within';
+    } else if (propertyPrice <= maxBudget) {
+      priceMatch = true;
+      budgetStatus = 'within';
+    } else if (propertyPrice <= cap) {
+      priceMatch = true;
+      budgetStatus = 'above';
     } else {
-      // For buyers: use original 15% tolerance
-      priceMatch = isWithinRange(property.price, client.minPrice, client.maxPrice, 0.15);
-      if (propertyPrice > maxBudget) {
-        budgetStatus = 'above';
-      }
+      priceMatch = false;
+      budgetStatus = 'way_above';
     }
   } else {
     // No price limit set
