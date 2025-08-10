@@ -15,6 +15,9 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   const [error, setError] = useState(null);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [citySearchTerm, setCitySearchTerm] = useState('');
+  // Country dropdown state
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState('');
   
   // Generated video URL and public ID from video generation
   const [videoUrl, setVideoUrl] = useState('');
@@ -39,6 +42,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       number: '',
       neighborhood: ''
     },
+    country: 'ישראל',
     area: '',
     price: '',
     rooms: '',
@@ -78,6 +82,57 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
 
   const filteredCities = cityOptions.filter(city =>
     city.label.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
+  const countryOptions = [
+    { value: 'ישראל', label: 'ישראל' },
+    { value: 'ארצות הברית', label: 'ארצות הברית' },
+    { value: 'קנדה', label: 'קנדה' },
+    { value: 'מקסיקו', label: 'מקסיקו' },
+    { value: 'בריטניה', label: 'בריטניה' },
+    { value: 'אירלנד', label: 'אירלנד' },
+    { value: 'צרפת', label: 'צרפת' },
+    { value: 'גרמניה', label: 'גרמניה' },
+    { value: 'איטליה', label: 'איטליה' },
+    { value: 'ספרד', label: 'ספרד' },
+    { value: 'פורטוגל', label: 'פורטוגל' },
+    { value: 'יוון', label: 'יוון' },
+    { value: 'קפריסין', label: 'קפריסין' },
+    { value: 'טורקיה', label: 'טורקיה' },
+    { value: 'רומניה', label: 'רומניה' },
+    { value: 'בולגריה', label: 'בולגריה' },
+    { value: 'הונגריה', label: 'הונגריה' },
+    { value: 'פולין', label: 'פולין' },
+    { value: 'צ׳כיה', label: 'צ׳כיה' },
+    { value: 'סלובקיה', label: 'סלובקיה' },
+    { value: 'אוקראינה', label: 'אוקראינה' },
+    { value: 'גיאורגיה', label: 'גיאורגיה' },
+    { value: 'קרואטיה', label: 'קרואטיה' },
+    { value: 'סרביה', label: 'סרביה' },
+    { value: 'מונטנגרו', label: 'מונטנגרו' },
+    { value: 'הולנד', label: 'הולנד' },
+    { value: 'בלגיה', label: 'בלגיה' },
+    { value: 'שווייץ', label: 'שווייץ' },
+    { value: 'אוסטריה', label: 'אוסטריה' },
+    { value: 'דנמרק', label: 'דנמרק' },
+    { value: 'שוודיה', label: 'שוודיה' },
+    { value: 'נורווגיה', label: 'נורווגיה' },
+    { value: 'פינלנד', label: 'פינלנד' },
+    { value: 'איחוד האמירויות', label: 'איחוד האמירויות' },
+    { value: 'סעודיה', label: 'סעודיה' },
+    { value: 'ירדן', label: 'ירדן' },
+    { value: 'מצרים', label: 'מצרים' },
+    { value: 'מרוקו', label: 'מרוקו' },
+    { value: 'תוניסיה', label: 'תוניסיה' },
+    { value: 'דרום אפריקה', label: 'דרום אפריקה' },
+    { value: 'אוסטרליה', label: 'אוסטרליה' },
+    { value: 'ניו זילנד', label: 'ניו זילנד' },
+    { value: 'יפן', label: 'יפן' },
+    { value: 'סין', label: 'סין' },
+    { value: 'הודו', label: 'הודו' },
+    { value: 'סינגפור', label: 'סינגפור' }
+  ];
+  const filteredCountries = countryOptions.filter(c =>
+    c.label.toLowerCase().includes(countrySearchTerm.toLowerCase())
   );
 
   // Fetch user data for agent name, phone, agency name, and profile image
@@ -124,6 +179,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
           number: '',
           neighborhood: ''
         },
+        country: 'ישראל',
         area: '',
         price: '',
         rooms: '',
@@ -169,8 +225,12 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   const handleLocationInputChange = (e) => {
     const value = e.target.value;
     setPropertyData(prev => ({ ...prev, location: value }));
-    setCitySearchTerm(value);
-    setShowCityDropdown(true);
+    if (propertyData.country === 'ישראל') {
+      setCitySearchTerm(value);
+      setShowCityDropdown(true);
+    } else {
+      setShowCityDropdown(false);
+    }
   };
 
   const handleLocationInputBlur = () => {
@@ -181,8 +241,30 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
   };
 
   const handleLocationInputFocus = () => {
-    setShowCityDropdown(true);
-    setCitySearchTerm(propertyData.location);
+    if (propertyData.country === 'ישראל') {
+      setShowCityDropdown(true);
+      setCitySearchTerm(propertyData.location);
+    }
+  };
+
+  // Country handlers
+  const handleCountrySelect = (countryValue) => {
+    setPropertyData(prev => ({ ...prev, country: countryValue }));
+    setShowCountryDropdown(false);
+    setCountrySearchTerm('');
+  };
+  const handleCountryInputChange = (e) => {
+    const value = e.target.value;
+    setPropertyData(prev => ({ ...prev, country: value }));
+    setCountrySearchTerm(value);
+    setShowCountryDropdown(true);
+  };
+  const handleCountryInputFocus = () => {
+    setShowCountryDropdown(true);
+    setCountrySearchTerm(propertyData.country || '');
+  };
+  const handleCountryInputBlur = () => {
+    setTimeout(() => setShowCountryDropdown(false), 200);
   };
 
   const handleAddressChange = (field, value) => {
@@ -725,13 +807,17 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
-                  <option value="apartment">דירה</option>
-                  <option value="house">בית</option>
-                  <option value="villa">וילה</option>
-                  <option value="office">משרד</option>
-                  <option value="store">חנות</option>
-                  <option value="land">קרקע</option>
-                  <option value="warehouse">מחסן</option>
+                  <option value="house">בית פרטי</option>
+                <option value="apartment">דירה</option>
+                <option value="condo">דירת גן</option>
+                <option value="villa">וילה</option>
+                <option value="land">מגרש</option>
+                <option value="commercial">מסחרי</option>
+                <option value="office">משרד</option>
+                <option value="warehouse">מחסן</option>
+                <option value="other">אחר</option>
+                <option value="cottage">קוטג'/קיר משותף</option>
+                <option value="duplex">דופלקס</option>
                 </select>
               </div>
               
@@ -752,6 +838,38 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                 </select>
               </div>
               
+              {/* Country */}
+              <div className="space-y-2 relative">
+                <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+                  מדינה
+                </label>
+                <input
+                  type="text"
+                  id="country"
+                  name="country"
+                  value={propertyData.country}
+                  onChange={handleCountryInputChange}
+                  onFocus={handleCountryInputFocus}
+                  onBlur={handleCountryInputBlur}
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="בחר או הקלד מדינה"
+                />
+                {showCountryDropdown && filteredCountries.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredCountries.map((c) => (
+                      <div
+                        key={c.value}
+                        className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                        onClick={() => handleCountrySelect(c.value)}
+                      >
+                        {c.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* City / Location */}
               <div className="space-y-2 relative">
                 <label htmlFor="location" className="block text-sm font-medium text-gray-700">
                   מיקום <span className="text-red-500">*</span>
@@ -765,10 +883,10 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   onFocus={handleLocationInputFocus}
                   onBlur={handleLocationInputBlur}
                   className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="עיר, שכונה או כתובת מלאה"
+                  placeholder={propertyData.country === 'ישראל' ? 'עיר, שכונה או כתובת מלאה' : 'עיר/כתובת (כתיבה חופשית)'}
                   required
                 />
-                {showCityDropdown && filteredCities.length > 0 && (
+                {propertyData.country === 'ישראל' && showCityDropdown && filteredCities.length > 0 && (
                   <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {filteredCities.map((city) => (
                       <div

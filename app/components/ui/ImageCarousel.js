@@ -1,11 +1,15 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight, FaVideo } from 'react-icons/fa';
 
 export default function ImageCarousel({ images }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const isVideoUrl = (url) => {
+    if (!url) return false;
+    return /\.(mp4|webm|ogg)$/i.test(url) || url.includes('/video/upload');
+  };
 
   // Check if we're on mobile
   useEffect(() => {
@@ -34,27 +38,39 @@ export default function ImageCarousel({ images }) {
     setCurrentIndex(index);
   };
 
-  // Auto-advance slides every 5 seconds
+  // Auto-advance slides every 5 seconds (disabled if any video exists)
   useEffect(() => {
+    const hasVideo = images?.some((m) => isVideoUrl(m?.secure_url));
+    if (hasVideo) return; // do not auto-advance when videos are present
     const timer = setInterval(goToNext, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [images]);
 
   return (
     <div className="relative w-full">
       {/* Main Image Container */}
-      <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] rounded-lg overflow-hidden">
-        <Image
-          src={images[currentIndex]?.secure_url}
-          alt={`תמונה ${currentIndex + 1}`}
-          fill
-          className="object-contain"
-          priority={currentIndex === 0}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-        />
+      <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] rounded-lg overflow-hidden bg-black">
+        {isVideoUrl(images[currentIndex]?.secure_url) ? (
+          <video
+            key={images[currentIndex]?.secure_url}
+            className="w-full h-full object-contain"
+            controls
+            playsInline
+          >
+            <source src={images[currentIndex]?.secure_url} type="video/mp4" />
+          </video>
+        ) : (
+          <Image
+            src={images[currentIndex]?.secure_url}
+            alt={`מדיה ${currentIndex + 1}`}
+            fill
+            className="object-contain"
+            priority={currentIndex === 0}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+          />
+        )}
         {/* Gradient overlays for better text/button contrast */}
-        <div className="absolute inset-0 " />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent pointer-events-none" />
       </div>
 
       {/* Navigation Arrows - Hidden on mobile */}
@@ -106,13 +122,19 @@ export default function ImageCarousel({ images }) {
                   : 'opacity-60 hover:opacity-100'
               }`}
             >
-              <Image
-                src={image.secure_url}
-                alt={`תמונה ממוזערת ${index + 1}`}
-                fill
-                className="object-cover"
-                sizes="80px"
-              />
+              {isVideoUrl(image.secure_url) ? (
+                <div className="w-full h-full bg-black flex items-center justify-center text-white">
+                  <FaVideo />
+                </div>
+              ) : (
+                <Image
+                  src={image.secure_url}
+                  alt={`תמונה ממוזערת ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="80px"
+                />
+              )}
             </button>
           ))}
         </div>

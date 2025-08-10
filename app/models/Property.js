@@ -34,6 +34,11 @@ const propertySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  country: {
+    type: String,
+    required: false,
+    default: 'ישראל',
+  },
   address: {
     street: {
       type: String,

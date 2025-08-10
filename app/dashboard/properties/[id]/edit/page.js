@@ -5,6 +5,7 @@ import { FaCloudUploadAlt, FaTimes } from 'react-icons/fa';
 import Button from '../../../../components/ui/Button';
 import { getUserLogoOverlayId } from '../../../../utils/userLogo';
 import axios from 'axios';
+import { cityOptions } from '../../../../utils/cityOptions';
 
 export default function EditPropertyPage({ params }) {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function EditPropertyPage({ params }) {
     description: '',
     price: '0',
     location: '',
+    country: 'ישראל',
     propertyType: '',
     status: '',
     bedrooms: '0',
@@ -42,6 +44,66 @@ export default function EditPropertyPage({ params }) {
       arabic: ''
     }
   });
+  // Country/City dropdown state
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState('');
+
+  const filteredCities = cityOptions.filter(city =>
+    city.label.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
+  const countryOptions = [
+    { value: 'ישראל', label: 'ישראל' },
+    { value: 'ארצות הברית', label: 'ארצות הברית' },
+    { value: 'קנדה', label: 'קנדה' },
+    { value: 'מקסיקו', label: 'מקסיקו' },
+    { value: 'בריטניה', label: 'בריטניה' },
+    { value: 'אירלנד', label: 'אירלנד' },
+    { value: 'צרפת', label: 'צרפת' },
+    { value: 'גרמניה', label: 'גרמניה' },
+    { value: 'איטליה', label: 'איטליה' },
+    { value: 'ספרד', label: 'ספרד' },
+    { value: 'פורטוגל', label: 'פורטוגל' },
+    { value: 'יוון', label: 'יוון' },
+    { value: 'קפריסין', label: 'קפריסין' },
+    { value: 'טורקיה', label: 'טורקיה' },
+    { value: 'רומניה', label: 'רומניה' },
+    { value: 'בולגריה', label: 'בולגריה' },
+    { value: 'הונגריה', label: 'הונגריה' },
+    { value: 'פולין', label: 'פולין' },
+    { value: 'צ׳כיה', label: 'צ׳כיה' },
+    { value: 'סלובקיה', label: 'סלובקיה' },
+    { value: 'אוקראינה', label: 'אוקראינה' },
+    { value: 'גיאורגיה', label: 'גיאורגיה' },
+    { value: 'קרואטיה', label: 'קרואטיה' },
+    { value: 'סרביה', label: 'סרביה' },
+    { value: 'מונטנגרו', label: 'מונטנגרו' },
+    { value: 'הולנד', label: 'הולנד' },
+    { value: 'בלגיה', label: 'בלגיה' },
+    { value: 'שווייץ', label: 'שווייץ' },
+    { value: 'אוסטריה', label: 'אוסטריה' },
+    { value: 'דנמרק', label: 'דנמרק' },
+    { value: 'שוודיה', label: 'שוודיה' },
+    { value: 'נורווגיה', label: 'נורווגיה' },
+    { value: 'פינלנד', label: 'פינלנד' },
+    { value: 'איחוד האמירויות', label: 'איחוד האמירויות' },
+    { value: 'סעודיה', label: 'סעודיה' },
+    { value: 'ירדן', label: 'ירדן' },
+    { value: 'מצרים', label: 'מצרים' },
+    { value: 'מרוקו', label: 'מרוקו' },
+    { value: 'תוניסיה', label: 'תוניסיה' },
+    { value: 'דרום אפריקה', label: 'דרום אפריקה' },
+    { value: 'אוסטרליה', label: 'אוסטרליה' },
+    { value: 'ניו זילנד', label: 'ניו זילנד' },
+    { value: 'יפן', label: 'יפן' },
+    { value: 'סין', label: 'סין' },
+    { value: 'הודו', label: 'הודו' },
+    { value: 'סינגפור', label: 'סינגפור' }
+  ];
+  const filteredCountries = countryOptions.filter(c =>
+    c.label.toLowerCase().includes(countrySearchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     if (propertyId) {
@@ -102,6 +164,7 @@ export default function EditPropertyPage({ params }) {
         description: property.description || '',
         price: property.price || '0',
         location: property.location || '',
+        country: property.country || 'ישראל',
         propertyType: property.propertyType || '',
         status: property.status || '',
         bedrooms: property.bedrooms || '0',
@@ -152,6 +215,50 @@ export default function EditPropertyPage({ params }) {
     } else {
     setFormData(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  // Country/City handlers
+  const handleCountryInputChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, country: value }));
+    setCountrySearchTerm(value);
+    setShowCountryDropdown(true);
+  };
+  const handleCountryInputFocus = () => {
+    setShowCountryDropdown(true);
+    setCountrySearchTerm(formData.country || '');
+  };
+  const handleCountryInputBlur = () => {
+    setTimeout(() => setShowCountryDropdown(false), 200);
+  };
+  const handleCountrySelect = (countryValue) => {
+    setFormData(prev => ({ ...prev, country: countryValue }));
+    setShowCountryDropdown(false);
+    setCountrySearchTerm('');
+  };
+  const handleLocationInputChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, location: value }));
+    if (formData.country === 'ישראל') {
+      setCitySearchTerm(value);
+      setShowCityDropdown(true);
+    } else {
+      setShowCityDropdown(false);
+    }
+  };
+  const handleLocationInputFocus = () => {
+    if (formData.country === 'ישראל') {
+      setShowCityDropdown(true);
+      setCitySearchTerm(formData.location);
+    }
+  };
+  const handleLocationInputBlur = () => {
+    setTimeout(() => setShowCityDropdown(false), 200);
+  };
+  const handleCitySelect = (cityValue) => {
+    setFormData(prev => ({ ...prev, location: cityValue }));
+    setShowCityDropdown(false);
+    setCitySearchTerm('');
   };
 
   const handleImageUpload = async (e) => {
@@ -568,6 +675,7 @@ export default function EditPropertyPage({ params }) {
                 <option value="other">אחר</option>
                 <option value="cottage">קוטג'/קיר משותף</option>
                 <option value="duplex">דופלקס</option>
+                
               </select>
             </div>
 
@@ -588,18 +696,61 @@ export default function EditPropertyPage({ params }) {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                מיקום
-              </label>
+            {/* Country */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700">מדינה</label>
+              <input
+                type="text"
+                name="country"
+                value={formData.country}
+                onChange={handleCountryInputChange}
+                onFocus={handleCountryInputFocus}
+                onBlur={handleCountryInputBlur}
+                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                placeholder="בחר או הקלד מדינה"
+              />
+              {showCountryDropdown && filteredCountries.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {filteredCountries.map((c) => (
+                    <div
+                      key={c.value}
+                      className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                      onClick={() => handleCountrySelect(c.value)}
+                    >
+                      {c.label}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Location / City */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700">מיקום</label>
               <input
                 type="text"
                 name="location"
                 value={formData.location}
-                onChange={handleChange}
+                onChange={handleLocationInputChange}
+                onFocus={handleLocationInputFocus}
+                onBlur={handleLocationInputBlur}
                 required
                 className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                placeholder={formData.country === 'ישראל' ? 'עיר, שכונה או כתובת מלאה' : 'עיר/כתובת (כתיבה חופשית)'}
               />
+              {formData.country === 'ישראל' && showCityDropdown && filteredCities.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {filteredCities.map((city) => (
+                    <div
+                      key={city.value}
+                      className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                      onClick={() => handleCitySelect(city.value)}
+                    >
+                      {city.label}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>
