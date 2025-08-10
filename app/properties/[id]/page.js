@@ -413,6 +413,12 @@ export default async function PropertyPage({ params }) {
                         </span>
                       </div>
                     )}
+                    {property.propertyCategory && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">קטגוריית נכס:</span>
+                        <span className="text-gray-800">{property.propertyCategory === 'residential' ? 'מגורים' : 'מסחרי'}</span>
+                      </div>
+                    )}
                     
                     {property.inquiries && (
                       <div className="md:col-span-2 pt-2 border-t border-gray-200">

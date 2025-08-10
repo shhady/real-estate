@@ -17,32 +17,41 @@ export default function ClientMatchingPage({ params }) {
   // Unwrap params Promise for Next.js 15 compatibility
   const resolvedParams = use(params);
 
-  // Translate property type to Hebrew
-  const translatePropertyType = (type) => {
-    const translations = {
-      apartment: 'דירה',
-      house: 'בית',
-      villa: 'וילה',
-      penthouse: 'פנטהאוז',
-      duplex: 'דופלקס',
-      triplex: 'טריפלקס',
-      studio: 'סטודיו',
-      loft: 'לופט',
-      cottage: 'צימר',
-      townhouse: 'בית עירוני',
-      land: 'קרקע',
-      commercial: 'מסחרי',
-      office: 'משרד',
-      warehouse: 'מחסן',
-      garage: 'חניה/מוסך',
-      basement: 'מרתף',
-      roof: 'גג',
-      garden: 'גינה',
-      balcony: 'מרפסת',
-      terrace: 'טרסה',
-      condo: 'דירה'
-    };
-    return translations[type] || type;
+  // Property type mapping and formatters (Hebrew + array support)
+  const hebrewTypeMap = {
+    apartment: 'דירה',
+    house: 'בית פרטי',
+    condo: 'דירת גן',
+    villa: 'וילה',
+    cottage: "קוטג'",
+    duplex: 'דופלקס',
+    land: 'קרקע',
+    commercial: 'מסחרי',
+    office: 'משרד',
+    warehouse: 'מחסן',
+    penthouse: 'פנטהאוז',
+    triplex: 'טריפלקס',
+    studio: 'סטודיו',
+    loft: 'לופט',
+    townhouse: 'בית עירוני',
+    garage: 'חניה/מוסך',
+    basement: 'מרתף',
+    roof: 'גג',
+    garden: 'גינה',
+    balcony: 'מרפסת',
+    terrace: 'טרסה',
+    other: 'אחר'
+  };
+  const toHebrewType = (val) => {
+    if (!val || typeof val !== 'string') return val || '';
+    const key = val.toLowerCase();
+    return hebrewTypeMap[key] || val;
+  };
+  const formatTypeValue = (val) => {
+    if (Array.isArray(val)) {
+      return val.map((v) => toHebrewType(v)).join(', ');
+    }
+    return toHebrewType(val);
   };
 
   // Translate property condition to Hebrew
@@ -62,37 +71,25 @@ export default function ClientMatchingPage({ params }) {
   };
 
   // Format price range
-  const formatPriceRange = (minPrice, maxPrice) => {
-    if (minPrice && maxPrice) {
-      return `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`;
-    } else if (minPrice) {
-      return `מינימום ${formatPrice(minPrice)}`;
-    } else if (maxPrice) {
+  const formatPriceRange = (maxPrice) => {
+    if (maxPrice) {
       return `מקסימום ${formatPrice(maxPrice)}`;
     }
     return 'לא צוין';
   };
 
   // Format area range
-  const formatAreaRange = (minArea, maxArea) => {
-    if (minArea && maxArea) {
-      return `${minArea} - ${maxArea} מ"ר`;
-    } else if (minArea) {
-      return `מינימום ${minArea} מ"ר`;
-    } else if (maxArea) {
-      return `מקסימום ${maxArea} מ"ר`;
+  const formatAreaRange = (minArea) => {
+    if (minArea) {
+      return `${minArea} מ"ר`;
     }
     return 'לא צוין';
   };
 
   // Format rooms range
-  const formatRoomsRange = (minRooms, maxRooms) => {
-    if (minRooms && maxRooms) {
-      return `${minRooms} - ${maxRooms} חדרים`;
-    } else if (minRooms) {
+    const formatRoomsRange = (minRooms) => {
+    if (minRooms) {
       return `מינימום ${minRooms} חדרים`;
-    } else if (maxRooms) {
-      return `מקסימום ${maxRooms} חדרים`;
     }
     return 'לא צוין';
   };
@@ -185,33 +182,30 @@ export default function ClientMatchingPage({ params }) {
           <div className="mt-2 p-3 bg-gray-50 rounded-lg">
             <h5 className="text-sm font-medium text-gray-900 mb-2">פרטי התאמה:</h5>
             <div className="space-y-1">
-              {matchDetails.map((detail, index) => (
-                <div key={index} className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-gray-600">{detail.label}:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600">{detail.propertyValue}</span>
-                    <span className="text-gray-400">vs</span>
-                    <span className="text-gray-600">{detail.clientValue}</span>
-                    <div className="flex items-center gap-1">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        detail.match 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {detail.match ? '✓' : '✗'}
-                      </span>
-                      {/* {detail.budgetStatus === 'above' && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          {detail.budgetPercentage ? 
-                            `מעל תקציב ${(detail.budgetPercentage - 100).toFixed(1)}% יותר` : 
-                            'מעל תקציב'
-                          }
+              {matchDetails.map((detail, index) => {
+                const isType = detail.criterion === 'propertyType';
+                const propertyVal = isType ? toHebrewType(detail.propertyValue) : detail.propertyValue;
+                const clientVal = isType ? formatTypeValue(detail.clientValue) : detail.clientValue;
+                return (
+                  <div key={index} className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-gray-600">{detail.label}:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">{propertyVal}</span>
+                      <span className="text-gray-400">vs</span>
+                      <span className="text-gray-600">{clientVal}</span>
+                      <div className="flex items-center gap-1">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          detail.match 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {detail.match ? '✓' : '✗'}
                         </span>
-                      )} */}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -481,19 +475,21 @@ export default function ClientMatchingPage({ params }) {
             </div>
             <div className="flex items-center text-sm text-gray-600">
               <FaHome className="w-4 h-4 mx-2" />
-              {client.preferredPropertyType ? translatePropertyType(client.preferredPropertyType) : 'לא צוין'}
+              {client.preferredPropertyType && client.preferredPropertyType.length > 0
+                ? formatTypeValue(client.preferredPropertyType)
+                : 'לא צוין'}
             </div>
             <div className="flex items-center text-sm text-gray-600">
               <FaDollarSign className="w-4 h-4 mx-2" />
-              {formatPriceRange(client.minPrice, client.maxPrice)}
+              {formatPriceRange(client.maxPrice)}
             </div>
             <div className="flex items-center text-sm text-gray-600">
               <FaExpand className="w-4 h-4 mx-2" />
-              {formatAreaRange(client.minArea, client.maxArea)}
+              {formatAreaRange(client.minArea)}
             </div>
             <div className="flex items-center text-sm text-gray-600">
               <FaBed className="w-4 h-4 mx-2" />
-              {formatRoomsRange(client.minRooms, client.maxRooms)}
+              {formatRoomsRange(client.minRooms)}
             </div>
             {client.preferredCondition && (
               <div className="flex items-center text-sm text-gray-600">
@@ -503,8 +499,11 @@ export default function ClientMatchingPage({ params }) {
             )}
             {client.preApproval && (
               <div className="flex items-center text-sm text-gray-600">
-                <span className="w-4 h-4 mx-2">✅</span>
-                יש אישור עקרוני
+                <span className="w-4 h-4 mx-2">{client.preApproval === 'יש אישור עקרוני' ? '✅' :
+                client.preApproval === 'אין אישור עקרוני' ? '❌' :
+                client.preApproval === 'אינו צריך אישור עקרוני' ? '🏠' :
+                '❓'}</span>
+               {client.preApproval}
               </div>
             )}
           </div>

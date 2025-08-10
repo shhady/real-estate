@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { cityOptions } from '../../../utils/cityOptions';
+import { countryOptions } from '../../../utils/countryOptions';
 
 export default function NewClientPage() {
   const router = useRouter();
@@ -11,6 +12,8 @@ export default function NewClientPage() {
   const [error, setError] = useState(null);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [citySearchTerm, setCitySearchTerm] = useState('');
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState('');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -19,16 +22,18 @@ export default function NewClientPage() {
     email: '',
     intent: 'unknown',
     preferredLocation: '',
-    preferredPropertyType: '',
+    preferredCountry: 'ישראל',
+    propertyCategory: 'residential',
+    preferredPropertyType: [],
     minRooms: '',
     minArea: '',
     maxPrice: '',
     preferredCondition: '',
     needsParking: null,
     needsBalcony: null,
-    preApproval: null,
+    preApproval: 'אינו צריך אישור עקרוני',
     notes: '',
-    status: 'prospect',
+    status: 'active',
     priority: 'medium',
     preferredContact: 'phone',
     transcription: '',
@@ -38,6 +43,9 @@ export default function NewClientPage() {
 
   const filteredCities = cityOptions.filter(city =>
     city.label.toLowerCase().includes(citySearchTerm.toLowerCase())
+  );
+  const filteredCountries = countryOptions.filter(c =>
+    c.label.toLowerCase().includes(countrySearchTerm.toLowerCase())
   );
 
   const handleCitySelect = (cityValue) => {
@@ -65,6 +73,26 @@ export default function NewClientPage() {
     setCitySearchTerm(formData.preferredLocation);
   };
 
+  // Country handlers
+  const handleCountrySelect = (countryValue) => {
+    setFormData(prev => ({ ...prev, preferredCountry: countryValue }));
+    setShowCountryDropdown(false);
+    setCountrySearchTerm('');
+  };
+  const handleCountryInputChange = (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, preferredCountry: value }));
+    setCountrySearchTerm(value);
+    setShowCountryDropdown(true);
+  };
+  const handleCountryInputFocus = () => {
+    setShowCountryDropdown(true);
+    setCountrySearchTerm(formData.preferredCountry);
+  };
+  const handleCountryInputBlur = () => {
+    setTimeout(() => setShowCountryDropdown(false), 200);
+  };
+
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     
@@ -84,6 +112,34 @@ export default function NewClientPage() {
         [name]: value
       }));
     }
+  };
+
+  // Property category + multi-select options
+  const RESIDENTIAL_OPTIONS = [
+    { value: 'house', label: 'בית פרטי' },
+    { value: 'apartment', label: 'דירה' },
+    { value: 'condo', label: 'דירת גן' },
+    { value: 'villa', label: 'וילה' },
+    { value: 'cottage', label: "קוטג'/קיר משותף" },
+    { value: 'duplex', label: 'דופלקס' },
+  ];
+  const COMMERCIAL_OPTIONS = [
+    { value: 'office', label: 'משרד' },
+    { value: 'commercial', label: 'מסחרי' },
+    { value: 'warehouse', label: 'מחסן' },
+    { value: 'land', label: 'קרקע' },
+  ];
+
+  const togglePreferredType = (val) => {
+    setFormData(prev => {
+      const exists = prev.preferredPropertyType.includes(val);
+      return {
+        ...prev,
+        preferredPropertyType: exists
+          ? prev.preferredPropertyType.filter(v => v !== val)
+          : [...prev.preferredPropertyType, val]
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -174,7 +230,7 @@ export default function NewClientPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  כתובת אימייל
+                  כתובת אימייל (אופציונלי)
                 </label>
                 <input
                   type="email"
@@ -238,7 +294,6 @@ export default function NewClientPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
-                  <option value="prospect">פרוספקט</option>
                   <option value="active">פעיל</option>
                   <option value="inactive">לא פעיל</option>
                   <option value="closed">סגור</option>
@@ -261,16 +316,19 @@ export default function NewClientPage() {
                 </select>
               </div>
             </div>
-            <label className="flex items-center mt-4">
-                    <input
-                      type="checkbox"
-                      name="preApproval"
-                      checked={formData.preApproval === true}
-                      onChange={(e) => setFormData(prev => ({ ...prev, preApproval: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="mr-2 text-sm text-gray-900">אישור עקרוני</span>
-                  </label>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">אישור עקרוני</label>
+              <select
+                name="preApproval"
+                value={formData.preApproval}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
+              >
+                <option value="יש אישור עקרוני">יש אישור עקרוני</option>
+                <option value="אין אישור עקרוני">אין אישור עקרוני</option>
+                <option value="אינו צריך אישור עקרוני">אינו צריך אישור עקרוני</option>
+              </select>
+            </div>
           </div>
 
           {/* Property Preferences */}
@@ -278,6 +336,35 @@ export default function NewClientPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">העדפות נכס</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  מדינה מועדפת
+                </label>
+                <input
+                  type="text"
+                  name="preferredCountry"
+                  value={formData.preferredCountry}
+                  onChange={handleCountryInputChange}
+                  onFocus={handleCountryInputFocus}
+                  onBlur={handleCountryInputBlur}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
+                  placeholder="בחר או הקלד מדינה..."
+                />
+                {showCountryDropdown && filteredCountries.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-1 z-10 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {filteredCountries.map((c) => (
+                      <div
+                        key={c.value}
+                        className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                        onClick={() => handleCountrySelect(c.value)}
+                      >
+                        {c.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   איזור מועדף
@@ -293,7 +380,7 @@ export default function NewClientPage() {
                   placeholder="בחר עיר או כתוב איזור מועדף..."
                 />
                 {showCityDropdown && filteredCities.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute left-0 right-0 top-full mt-1 z-10 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {filteredCities.map((city) => (
                       <div
                         key={city.value}
@@ -307,25 +394,37 @@ export default function NewClientPage() {
                 )}
               </div>
 
+              {/* Property category */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  סוג נכס מועדף
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">קטגוריית נכס</label>
                 <select
-                  name="preferredPropertyType"
-                  value={formData.preferredPropertyType}
+                  name="propertyCategory"
+                  value={formData.propertyCategory}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
-                  <option value="">בחר סוג נכס</option>
-                  <option value="apartment">דירה</option>
-                  <option value="house">בית</option>
+                  <option value="residential">מגורים</option>
                   <option value="commercial">מסחרי</option>
-                  <option value="office">משרד</option>
-                  <option value="warehouse">מחסן</option>
-                  <option value="land">קרקע</option>
-                  <option value="other">אחר</option>
                 </select>
+              </div>
+
+              {/* Preferred property types (multi-select via checkboxes) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">סוגי נכס מועדפים</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(formData.propertyCategory === 'commercial' ? COMMERCIAL_OPTIONS : RESIDENTIAL_OPTIONS).map(opt => (
+                    <label key={opt.value} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.preferredPropertyType.includes(opt.value)}
+                        onChange={() => togglePreferredType(opt.value)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="mr-2 text-sm text-gray-900">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">באפשרותך לבחור יותר מסוג נכס אחד</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -447,7 +546,7 @@ export default function NewClientPage() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   תמליל שיחה (אופציונלי)
                 </label>
@@ -462,7 +561,7 @@ export default function NewClientPage() {
                 <p className="mt-1 text-sm text-gray-500">
                   ניתן להוסיף תמליל של שיחה או פגישה עם הלקוח לתיעוד מפורט
                 </p>
-              </div>
+              </div> */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

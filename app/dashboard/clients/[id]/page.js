@@ -76,17 +76,15 @@ export default function ClientDetailsPage() {
   const getStatusBadge = (status) => {
     const colors = {
       active: 'bg-green-100 text-green-800',
-      prospect: 'bg-blue-100 text-blue-800',
       inactive: 'bg-gray-100 text-gray-800',
       closed: 'bg-red-100 text-red-800'
     };
     const labels = {
       active: 'פעיל',
-      prospect: 'פרוספקט',
       inactive: 'לא פעיל',
       closed: 'סגור'
     };
-    return { color: colors[status] || colors.prospect, label: labels[status] || status };
+    return { color: colors[status] || colors.active, label: labels[status] || status };
   };
 
   // Get priority badge
@@ -227,22 +225,32 @@ export default function ClientDetailsPage() {
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="w-full md:w-auto">
               <Link
                 href="/dashboard/clients"
                 className="text-blue-600 hover:text-blue-800 mb-2 inline-block"
               >
                  חזור לרשימת הלקוחות
               </Link>
-              <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold text-gray-900">{client.clientName}</h1>
-              {client.preApproval && (
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">יש אישור עקרוני </span>
-                        )}
-                        </div>
+              <div className="flex items-center justify-center md:justify-start">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 text-center md:text-left">{client.clientName}</h1>
+              </div>
 
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex flex-wrap md:flex-row items-center justify-center md:justify-start gap-2 mt-2">
+              {client.preApproval !== 'לא ידוע' && (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              client.preApproval === 'יש אישור עקרוני' ? 'bg-green-100 text-green-800' :
+                              client.preApproval === 'אין אישור עקרוני' ? 'bg-red-100 text-red-800' :
+                              client.preApproval === 'אינו צריך אישור עקרוני' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {client.preApproval === 'יש אישור עקרוני' ? ' ✅ יש אישור עקרוני' :
+                              client.preApproval === 'אין אישור עקרוני' ? '❌ אין אישור עקרוני' :
+                              client.preApproval === 'אינו צריך אישור עקרוני' ? '🏠 אינו צריך אישור עקרוני' :
+                              '❓'}
+                            </span>
+                        )}
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadge.color}`}>
                   {statusBadge.label}
                 </span>
@@ -254,7 +262,7 @@ export default function ClientDetailsPage() {
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="w-full md:w-auto flex flex-wrap items-center justify-center md:justify-end gap-2 md:gap-3">
               <Link
                 href={`/dashboard/clients/${client._id}/edit`}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -305,16 +313,28 @@ export default function ClientDetailsPage() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">העדפות נכס</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {client.preferredCountry && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">מדינה מועדפת:</span>
+                    <p className="text-gray-900">{client.preferredCountry}</p>
+                  </div>
+                )}
                 {client.preferredLocation && (
                   <div>
                     <span className="text-sm font-medium text-gray-500">איזור מועדף:</span>
                     <p className="text-gray-900">{client.preferredLocation}</p>
                   </div>
                 )}
-                {client.preferredPropertyType && (
+                {client.propertyCategory && (
                   <div>
-                    <span className="text-sm font-medium text-gray-500">סוג נכס:</span>
-                    <p className="text-gray-900">{translatePropertyType(client.preferredPropertyType)}</p>
+                    <span className="text-sm font-medium text-gray-500">קטגוריה נכס:</span>
+                    <p className="text-gray-900">{client.propertyCategory === 'residential' ? 'מגורים' : 'מסחרי'}</p>
+                  </div>
+                )}
+                {client.preferredPropertyType && client.preferredPropertyType.length > 0 && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">סוגי נכסים מועדפים:</span>
+                    <p className="text-gray-900">{client.preferredPropertyType.map(type => translatePropertyType(type)).join(', ')}</p>
                   </div>
                 )}
                 {client.minRooms && (
@@ -343,16 +363,22 @@ export default function ClientDetailsPage() {
                 )}
                 {(client.needsParking || client.needsBalcony || !client.preApproval) && (
                   <div className="md:col-span-2">
-                    <span className="text-sm font-medium text-gray-500">דרישות נוספות:</span>
-                    <div className="flex gap-4 mt-1">
+                    <span className="text-sm font-medium text-gray-500 block md:inline">דרישות נוספות:</span>
+                    <div className="flex flex-wrap gap-2 md:gap-4 mt-2 md:mt-1">
                       {client.needsParking && (
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">חניה</span>
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs md:text-sm">חניה</span>
                       )}
                       {client.needsBalcony && (
-                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">מרפסת</span>
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs md:text-sm">מרפסת</span>
                       )}
-                      {!client.preApproval && (
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">צריך אישור עקרוני</span>
+                      {client.preApproval === 'אינו צריך אישור עקרוני' && (
+                        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs md:text-sm">אינו צריך אישור עקרוני</span>
+                      )}
+                      {client.preApproval === 'אין אישור עקרוני' && (
+                        <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs md:text-sm">אין אישור עקרוני</span>
+                      )}
+                      {client.preApproval === 'יש אישור עקרוני' && (
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs md:text-sm">יש אישור עקרוני</span>
                       )}
                     </div>
                   </div>

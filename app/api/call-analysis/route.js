@@ -231,6 +231,12 @@ export async function POST(request) {
              if (analysis.preApproval !== null && existingClient.preApproval === null) {
                existingClient.preApproval = analysis.preApproval;
              }
+             if (analysis.country && !existingClient.preferredCountry) {
+               existingClient.preferredCountry = analysis.country;
+             }
+             if (analysis.propertyCategory && !existingClient.propertyCategory) {
+               existingClient.propertyCategory = analysis.propertyCategory;
+             }
              
              await existingClient.save();
              logger.info(`✅ Updated existing client: ${existingClient.clientName}`);
@@ -250,6 +256,8 @@ export async function POST(request) {
                needsParking: analysis.parking,
                needsBalcony: analysis.balcony,
                preApproval: analysis.preApproval,
+               propertyCategory: analysis.propertyCategory || undefined,
+               preferredCountry: analysis.country || undefined,
                transcription: analysis.transcription || transcription,
                lastCallSummary: analysis.summary,
                lastCallDate: new Date(),

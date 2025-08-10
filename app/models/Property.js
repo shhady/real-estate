@@ -43,6 +43,12 @@ const propertySchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  propertyCategory: {
+    type: String,
+    required: false,
+    enum: ['residential', 'commercial'],
+    default: 'residential',
+  },
   gardenArea: {
     type: Number,
     required: false,

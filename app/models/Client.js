@@ -9,21 +9,22 @@ const ClientSchema = new mongoose.Schema({
   // Property preferences and history
   intent: { type: String, enum: ['buyer', 'seller', 'both', 'unknown', 'renter', 'landlord'], default: 'unknown' },
   preferredLocation: { type: String },
-  preferredPropertyType: { type: String },
+  preferredCountry: { type: String },
+  preferredPropertyType: { type: Array },
   minRooms: { type: Number },
   minArea: { type: Number },
   maxPrice: { type: Number },
   preferredCondition: { type: String },
   needsParking: { type: Boolean },
   needsBalcony: { type: Boolean },
-  preApproval: { type: Boolean }, // NEW: אישור עקרוני/אישור משכנתא
-  
+  preApproval: { type: String, enum: ['יש אישור עקרוני', 'אין אישור עקרוני', 'אינו צריך אישור עקרוני'], default: 'לא ידוע' }, // NEW: אישור עקרוני/אישור משכנתא
+  propertyCategory: { type: String, enum: ['residential', 'commercial', 'both'], default: 'residential' },
   // Client information
   notes: { type: String }, // General notes about the client
   status: { 
     type: String, 
-    enum: ['active', 'inactive', 'closed', 'prospect'], 
-    default: 'prospect' 
+    enum: ['active', 'inactive', 'closed'], 
+    default: 'active' 
   },
   priority: { 
     type: String, 

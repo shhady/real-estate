@@ -75,6 +75,31 @@ export default function PropertyMatchingPage({ params }) {
     return 'text-red-600 bg-red-100';
   };
 
+  const hebrewTypeMap = {
+    apartment: 'דירה',
+    house: 'בית פרטי',
+    condo: 'דירת גן',
+    villa: 'וילה',
+    cottage: "קוטג'",
+    duplex: 'דופלקס',
+    land: 'קרקע',
+    commercial: 'מסחרי',
+    office: 'משרד',
+    warehouse: 'מחסן',
+    other: 'אחר'
+  };
+  const toHebrewType = (val) => {
+    if (!val || typeof val !== 'string') return val || '';
+    const key = val.toLowerCase();
+    return hebrewTypeMap[key] || val;
+  };
+  const formatTypeValue = (val) => {
+    if (Array.isArray(val)) {
+      return val.map((v) => toHebrewType(v)).join(', ');
+    }
+    return toHebrewType(val);
+  };
+
   const MatchDetailsComponent = ({ matchDetails, isExpanded, onToggle }) => {
     if (!matchDetails || matchDetails.length === 0) return null;
 
@@ -95,23 +120,28 @@ export default function PropertyMatchingPage({ params }) {
           <div className="mt-2 p-3 bg-gray-50 rounded-lg">
             <h5 className="text-sm font-medium text-gray-900 mb-2">פרטי התאמה:</h5>
             <div className="space-y-1">
-              {matchDetails.map((detail, index) => (
-                <div key={index} className="flex items-center justify-between text-xs">
-                  <span className="font-medium">{detail.label}:</span>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-600">{detail.propertyValue}</span>
-                    <span className="text-gray-400">vs</span>
-                    <span className="text-gray-600">{detail.clientValue}</span>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      detail.match 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {detail.match ? '✓' : '✗'}
-                    </span>
+              {matchDetails.map((detail, index) => {
+                const isType = detail.criterion === 'propertyType';
+                const propertyVal = isType ? toHebrewType(detail.propertyValue) : detail.propertyValue;
+                const clientVal = isType ? formatTypeValue(detail.clientValue) : detail.clientValue;
+                return (
+                  <div key={index} className="flex items-center justify-between text-xs">
+                    <span className="font-medium">{detail.label}:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">{propertyVal}</span>
+                      <span className="text-gray-400">vs</span>
+                      <span className="text-gray-600">{clientVal}</span>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        detail.match 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {detail.match ? '✓' : '✗'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -171,7 +201,7 @@ export default function PropertyMatchingPage({ params }) {
           </div>
           <div className="flex items-center">
             <FaHome className="w-4 h-4 mr-1" />
-            {client.preferredPropertyType || 'לא צוין'}
+            {formatTypeValue(client.preferredPropertyType) || 'לא צוין'}
           </div>
         </div>
         
@@ -372,7 +402,7 @@ export default function PropertyMatchingPage({ params }) {
                 </div>
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <FaHome className="w-4 h-4 mx-2 text-gray-400" />
-                  <span className="text-gray-600 font-medium">{property.propertyType || 'לא צוין'}</span>
+                  <span className="text-gray-600 font-medium">{toHebrewType(property.propertyType) || 'לא צוין'}</span>
                 </div>
                 <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <FaDollarSign className="w-4 h-4 mx-2 text-gray-400" />
@@ -411,7 +441,7 @@ export default function PropertyMatchingPage({ params }) {
                     </div>
                     <div className="flex items-center">
                       <FaHome className="w-4 h-4 mx-2 text-gray-400" />
-                      <span className="text-gray-600">{property.propertyType || 'לא צוין'}</span>
+                      <span className="text-gray-600">{toHebrewType(property.propertyType) || 'לא צוין'}</span>
                     </div>
                     <div className="flex items-center">
                       <FaDollarSign className="w-4 h-4 mx-2 text-gray-400" />

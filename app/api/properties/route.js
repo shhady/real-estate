@@ -231,6 +231,7 @@ export async function POST(request) {
         number: listing.address?.number || data.address?.number || '',
         neighborhood: listing.address?.neighborhood || data.address?.neighborhood || ''
       },
+      propertyCategory: listing.propertyCategory || data.propertyCategory || 'residential',
       country: listing.country || data.country || 'ישראל',
       landArea: listing.landArea || data.landArea || '',
       gardenArea: listing.gardenArea || data.gardenArea || '',

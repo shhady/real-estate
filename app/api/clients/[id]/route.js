@@ -4,6 +4,14 @@ import Client from '../../../models/Client';
 import Call from '../../../models/Call';
 import { getUser } from '../../../lib/auth';
 
+// Map Client.preApproval (string enum) to Call.preApproval (boolean)
+function mapPreApprovalToCall(preApproval) {
+  if (preApproval === 'יש אישור עקרוני') return true;
+  if (preApproval === 'אין אישור עקרוני') return false;
+  // 'אינו צריך אישור עקרוני' or any other value → unset on calls
+  return undefined;
+}
+
 // GET - Fetch specific client by ID
 export async function GET(request, { params }) {
   try {
@@ -88,10 +96,18 @@ export async function PUT(request, { params }) {
     // If preApproval is being updated, update all associated calls too
     if (body.preApproval !== undefined && updatedClient.calls && updatedClient.calls.length > 0) {
       try {
-        await Call.updateMany(
-          { clientId: id, userId: user.userId },
-          { preApproval: body.preApproval }
-        );
+        const mapped = mapPreApprovalToCall(body.preApproval);
+        if (mapped === undefined) {
+          await Call.updateMany(
+            { clientId: id, userId: user.userId },
+            { $unset: { preApproval: 1 } }
+          );
+        } else {
+          await Call.updateMany(
+            { clientId: id, userId: user.userId },
+            { preApproval: mapped }
+          );
+        }
         console.log(`Updated ${updatedClient.calls.length} calls for client ${id} with preApproval status: ${body.preApproval}`);
       } catch (callUpdateError) {
         console.warn('Failed to update calls preApproval:', callUpdateError.message);

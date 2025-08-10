@@ -33,32 +33,41 @@ export default function MatchingPage() {
     }
   };
 
-  // Translate property type to Hebrew
-  const translatePropertyType = (type) => {
-    const translations = {
-      apartment: 'דירה',
-      house: 'בית',
-      villa: 'וילה',
-      penthouse: 'פנטהאוז',
-      duplex: 'דופלקס',
-      triplex: 'טריפלקס',
-      studio: 'סטודיו',
-      loft: 'לופט',
-      cottage: 'צימר',
-      townhouse: 'בית עירוני',
-      land: 'קרקע',
-      commercial: 'מסחרי',
-      office: 'משרד',
-      warehouse: 'מחסן',
-      garage: 'חניה/מוסך',
-      basement: 'מרתף',
-      roof: 'גג',
-      garden: 'גינה',
-      balcony: 'מרפסת',
-      terrace: 'טרסה',
-      condo: 'דירה'
-    };
-    return translations[type] || type;
+  // Property type mapping and formatters (Hebrew + array support)
+  const hebrewTypeMap = {
+    apartment: 'דירה',
+    house: 'בית פרטי',
+    condo: 'דירת גן',
+    villa: 'וילה',
+    cottage: "קוטג'",
+    duplex: 'דופלקס',
+    land: 'קרקע',
+    commercial: 'מסחרי',
+    office: 'משרד',
+    warehouse: 'מחסן',
+    penthouse: 'פנטהאוז',
+    triplex: 'טריפלקס',
+    studio: 'סטודיו',
+    loft: 'לופט',
+    townhouse: 'בית עירוני',
+    garage: 'חניה/מוסך',
+    basement: 'מרתף',
+    roof: 'גג',
+    garden: 'גינה',
+    balcony: 'מרפסת',
+    terrace: 'טרסה',
+    other: 'אחר'
+  };
+  const toHebrewType = (val) => {
+    if (!val || typeof val !== 'string') return val || '';
+    const key = val.toLowerCase();
+    return hebrewTypeMap[key] || val;
+  };
+  const formatTypeValue = (val) => {
+    if (Array.isArray(val)) {
+      return val.map((v) => toHebrewType(v)).join(', ');
+    }
+    return toHebrewType(val);
   };
 
   useEffect(() => {
@@ -287,9 +296,9 @@ export default function MatchingPage() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-500">
-            סטטוס: {client.status === 'prospect' ? 'פוטנציאלי' : 
+            סטטוס: { 
                      client.status === 'active' ? 'פעיל' : 
-                     client.status === 'inactive' ? 'לא פעיל' : client.status}
+                     client.status === 'inactive' ? 'לא פעיל' : 'סגור'}
           </span>
           <Link
             href={`/dashboard/clients/${client._id}`}
@@ -532,7 +541,7 @@ export default function MatchingPage() {
                     </div>
                     <div className="flex items-center">
                       <FaHome className="w-3.5 h-3.5 mr-1" />
-                      {translatePropertyType(property.propertyType) || 'לא צוין'}
+                      {toHebrewType(property.propertyType) || 'לא צוין'}
                     </div>
                     <div className="flex items-center">
                       <FaDollarSign className="w-3.5 h-3.5 mr-1" />
@@ -612,7 +621,7 @@ export default function MatchingPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center"><FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />{property.location || 'לא צוין'}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900">{translatePropertyType(property.propertyType) || 'לא צוין'}</div></td>
+                     <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900">{toHebrewType(property.propertyType) || 'לא צוין'}</div></td>
                     <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900 flex items-center"><FaDollarSign className="h-4 w-4 mr-1 text-gray-400" />{formatPrice(property.price)}</div></td>
                     <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900 flex items-center"><FaBed className="h-4 w-4 mx-1 text-gray-400" />{property.bedrooms || 0}</div></td>
                     <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm text-gray-900 flex items-center"><FaExpand className="h-4 w-4 mx-1 text-gray-400" />{property.area || 0} מ"ר</div></td>
@@ -756,7 +765,7 @@ export default function MatchingPage() {
                   <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div className="flex items-center"><FaPhone className="w-3.5 h-3.5 mr-1" />{client.phoneNumber || 'לא צוין'}</div>
                     <div className="flex items-center"><FaMapMarkerAlt className="w-3.5 h-3.5 mr-1" />{client.preferredLocation || 'לא צוין'}</div>
-                    <div className="flex items-center"><FaHome className="w-3.5 h-3.5 mr-1" />{translatePropertyType(client.preferredPropertyType) || 'לא צוין'}</div>
+                    <div className="flex items-center"><FaHome className="w-3.5 h-3.5 mr-1" />{formatTypeValue(client.preferredPropertyType) || 'לא צוין'}</div>
                     <div className="flex items-center">{client.maxPrice ? formatPrice(client.maxPrice) : 'לא צוין'}</div>
                   </div>
                 </div>
@@ -822,7 +831,7 @@ export default function MatchingPage() {
                       <div className="text-sm text-gray-900 flex items-center"><FaMapMarkerAlt className="h-4 w-4 mx-1 text-gray-400" />{client.preferredLocation || 'לא צוין'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center"><FaHome className="h-4 w-4 mx-1 text-gray-400" />{translatePropertyType(client.preferredPropertyType) || 'לא צוין'}</div>
+                      <div className="text-sm text-gray-900 flex items-center"><FaHome className="h-4 w-4 mx-1 text-gray-400" />{formatTypeValue(client.preferredPropertyType) || 'לא צוין'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{client.maxPrice ? formatPrice(client.maxPrice) : 'לא צוין'}</div>

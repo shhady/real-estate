@@ -72,11 +72,10 @@ export default function ClientsPage() {
   const getStatusBadge = (status) => {
     const colors = {
       active: 'bg-green-100 text-green-800',
-      prospect: 'bg-blue-100 text-blue-800',
       inactive: 'bg-gray-100 text-gray-800',
       closed: 'bg-red-100 text-red-800'
     };
-    return colors[status] || colors.prospect;
+    return colors[status] || colors.active;
   };
 
   // Get priority badge color
@@ -153,7 +152,6 @@ export default function ClientsPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
             >
               <option value="">כל הסטטוסים</option>
-              <option value="prospect">פרוספקט</option>
               <option value="active">פעיל</option>
               <option value="inactive">לא פעיל</option>
               <option value="closed">סגור</option>
@@ -244,7 +242,10 @@ export default function ClientsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{client.clientName}</div>
-                          {client.preferredLocation && (
+                          {client.preferredLocation && client.preferredCountry && (
+                            <div className="text-sm text-gray-500">📍 {client.preferredLocation}, {client.preferredCountry}</div>
+                          )}
+                          {client.preferredLocation && !client.preferredCountry && (
                             <div className="text-sm text-gray-500">📍 {client.preferredLocation}</div>
                           )}
                         </div>
@@ -267,7 +268,6 @@ export default function ClientsPage() {
                         <div className="space-y-1">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(client.status)}`}>
                             {client.status === 'active' ? 'פעיל' :
-                             client.status === 'prospect' ? 'פרוספקט' :
                              client.status === 'inactive' ? 'לא פעיל' : 'סגור'}
                           </span>
                           <div>
@@ -281,9 +281,12 @@ export default function ClientsPage() {
                           </div>
                           <div>
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              client.preApproval ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              client.preApproval === 'יש אישור עקרוני' ? 'bg-green-100 text-green-800' :
+                              client.preApproval === 'אין אישור עקרוני' ? 'bg-red-100 text-red-800' :
+                              client.preApproval === 'אינו צריך אישור עקרוני' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
                             }`}>
-                              {client.preApproval ? 'יש אישור עקרוני' : 'אין אישור עקרוני'}
+                              {client.preApproval}
                             </span>
                           </div>
                         </div>

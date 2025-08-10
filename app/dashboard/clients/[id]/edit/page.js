@@ -18,16 +18,18 @@ export default function EditClientPage() {
     email: '',
     intent: 'unknown',
     preferredLocation: '',
-    preferredPropertyType: '',
+    preferredCountry: 'ישראל',
+    propertyCategory: 'residential',
+    preferredPropertyType: [],
     minRooms: '',
     minArea: '',
     maxPrice: '',
     preferredCondition: '',
     needsParking: null,
     needsBalcony: null,
-    preApproval: null,
+    preApproval: 'אינו צריך אישור עקרוני',
     notes: '',
-    status: 'prospect',
+    status: 'active',
     priority: 'medium',
     preferredContact: 'phone',
     transcription: '',
@@ -48,16 +50,20 @@ export default function EditClientPage() {
             email: client.email || '',
             intent: client.intent || 'unknown',
             preferredLocation: client.preferredLocation || '',
-            preferredPropertyType: client.preferredPropertyType || '',
+            preferredCountry: client.preferredCountry || 'ישראל',
+            propertyCategory: client.propertyCategory || 'residential',
+            preferredPropertyType: Array.isArray(client.preferredPropertyType)
+              ? client.preferredPropertyType
+              : (client.preferredPropertyType ? [client.preferredPropertyType] : []),
             minRooms: client.minRooms || '',
             minArea: client.minArea || '',
             maxPrice: client.maxPrice || '',
             preferredCondition: client.preferredCondition || '',
             needsParking: client.needsParking,
             needsBalcony: client.needsBalcony,
-            preApproval: client.preApproval,
+            preApproval: client.preApproval || 'אינו צריך אישור עקרוני',
             notes: client.notes || '',
-            status: client.status || 'prospect',
+            status: client.status || 'active',
             priority: client.priority || 'medium',
             preferredContact: client.preferredContact || 'phone',
             transcription: client.transcription || '',
@@ -98,6 +104,34 @@ export default function EditClientPage() {
         [name]: value
       }));
     }
+  };
+
+  // Property category + multi-select options
+  const RESIDENTIAL_OPTIONS = [
+    { value: 'house', label: 'בית פרטי' },
+    { value: 'apartment', label: 'דירה' },
+    { value: 'condo', label: 'דירת גן' },
+    { value: 'villa', label: 'וילה' },
+    { value: 'cottage', label: "קוטג'/קיר משותף" },
+    { value: 'duplex', label: 'דופלקס' },
+  ];
+  const COMMERCIAL_OPTIONS = [
+    { value: 'office', label: 'משרד' },
+    { value: 'commercial', label: 'מסחרי' },
+    { value: 'warehouse', label: 'מחסן' },
+    { value: 'land', label: 'קרקע' },
+  ];
+
+  const togglePreferredType = (val) => {
+    setFormData(prev => {
+      const exists = prev.preferredPropertyType.includes(val);
+      return {
+        ...prev,
+        preferredPropertyType: exists
+          ? prev.preferredPropertyType.filter(v => v !== val)
+          : [...prev.preferredPropertyType, val]
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -264,13 +298,11 @@ export default function EditClientPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
-                  <option value="prospect">פרוספקט</option>
                   <option value="active">פעיל</option>
                   <option value="inactive">לא פעיל</option>
                   <option value="closed">סגור</option>
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   דחיפות
@@ -287,16 +319,19 @@ export default function EditClientPage() {
                 </select>
               </div>
             </div>
-            <label className="flex items-center mt-4">
-                    <input
-                      type="checkbox"
-                      name="preApproval"
-                      checked={formData.preApproval === true}
-                      onChange={(e) => setFormData(prev => ({ ...prev, preApproval: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="mr-2 text-sm text-gray-900">אישור עקרוני</span>
-                  </label>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">אישור עקרוני</label>
+              <select
+                name="preApproval"
+                value={formData.preApproval}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
+              >
+                <option value="יש אישור עקרוני">יש אישור עקרוני</option>
+                <option value="אין אישור עקרוני">אין אישור עקרוני</option>
+                <option value="אינו צריך אישור עקרוני">אינו צריך אישור עקרוני</option>
+              </select>
+            </div>
           </div>
 
           {/* Property Preferences */}
@@ -304,6 +339,20 @@ export default function EditClientPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">העדפות נכס</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  מדינה מועדפת
+                </label>
+                <input
+                  type="text"
+                  name="preferredCountry"
+                  value={formData.preferredCountry}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
+                  placeholder="ישראל, ספרד, יוון..."
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   איזור מועדף
@@ -318,25 +367,37 @@ export default function EditClientPage() {
                 />
               </div>
 
+              {/* Property category */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  סוג נכס מועדף
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">קטגוריית נכס</label>
                 <select
-                  name="preferredPropertyType"
-                  value={formData.preferredPropertyType}
+                  name="propertyCategory"
+                  value={formData.propertyCategory}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
-                  <option value="">בחר סוג נכס</option>
-                  <option value="apartment">דירה</option>
-                  <option value="house">בית</option>
+                  <option value="residential">מגורים</option>
                   <option value="commercial">מסחרי</option>
-                  <option value="office">משרד</option>
-                  <option value="warehouse">מחסן</option>
-                  <option value="land">קרקע</option>
-                  <option value="other">אחר</option>
                 </select>
+              </div>
+
+              {/* Preferred property types (multi-select via checkboxes) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">סוגי נכס מועדפים</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(formData.propertyCategory === 'commercial' ? COMMERCIAL_OPTIONS : RESIDENTIAL_OPTIONS).map(opt => (
+                    <label key={opt.value} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.preferredPropertyType.includes(opt.value)}
+                        onChange={() => togglePreferredType(opt.value)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="mr-2 text-sm text-gray-900">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">באפשרותך לבחור יותר מסוג נכס אחד</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -459,7 +520,7 @@ export default function EditClientPage() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   תמליל שיחה (אופציונלי)
                 </label>
@@ -474,7 +535,7 @@ export default function EditClientPage() {
                 <p className="mt-1 text-sm text-gray-500">
                   ניתן להוסיף תמליל של שיחה או פגישה עם הלקוח לתיעוד מפורט
                 </p>
-              </div>
+              </div> */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

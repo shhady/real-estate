@@ -22,6 +22,12 @@ function normalizeLocation(location) {
 // Helper function to normalize property type
 function normalizePropertyType(type) {
   if (!type) return '';
+  if (Array.isArray(type)) {
+    // Return first normalized item if array accidentally passed
+    const first = type[0] || '';
+    return normalizePropertyType(first);
+  }
+  if (typeof type !== 'string') return '';
   return type.toLowerCase()
     .replace(/דירה|شقة|apartment/gi, 'apartment')
     .replace(/בית|بيت|house/gi, 'house')
@@ -31,6 +37,14 @@ function normalizePropertyType(type) {
     .replace(/מחסן|مخزن|warehouse/gi, 'warehouse')
     .replace(/אחר|أخر|other/gi, 'other')
     .trim();
+}
+
+function normalizeTypeList(types) {
+  if (!types) return [];
+  const arr = Array.isArray(types) ? types : [types];
+  return arr
+    .map((t) => normalizePropertyType(t))
+    .filter((t) => t && typeof t === 'string');
 }
 
 // Helper function to check if values match within a range
@@ -59,6 +73,42 @@ function calculateMatchScore(property, client, options = {}) {
   let totalCriteria = 0;
   let budgetStatus = 'within'; // 'within', 'above', 'way_above'
   let budgetPercentage = 0;
+
+  // STRICT GATES (must be 100% match when provided)
+  const propCountry = (property.country || '').trim();
+  const clientCountry = (client.preferredCountry || '').trim();
+  if (clientCountry && propCountry && propCountry !== clientCountry) {
+    return fast ? { score: 0, totalCriteria: 0, isMatch: false } : { score: 0, totalCriteria: 0, matchDetails: [], isMatch: false, budgetStatus: 'within' };
+  }
+
+  const propCategory = (property.propertyCategory || '').trim();
+  const clientCategory = (client.propertyCategory || '').trim();
+  if (propCategory && clientCategory && propCategory !== clientCategory) {
+    return fast ? { score: 0, totalCriteria: 0, isMatch: false } : { score: 0, totalCriteria: 0, matchDetails: [], isMatch: false, budgetStatus: 'within' };
+  }
+
+  if (client.preferredLocation && property.location) {
+    const locProp = normalizeLocation(property.location);
+    const locClient = normalizeLocation(client.preferredLocation);
+    if (locProp !== locClient) {
+      return fast ? { score: 0, totalCriteria: 0, isMatch: false } : { score: 0, totalCriteria: 0, matchDetails: [], isMatch: false, budgetStatus: 'within' };
+    }
+  }
+
+  const normalizedPropType = normalizePropertyType(property.propertyType);
+  const normalizedClientTypes = normalizeTypeList(client.preferredPropertyType);
+  if (normalizedClientTypes.length > 0 && !normalizedClientTypes.includes(normalizedPropType)) {
+    return fast ? { score: 0, totalCriteria: 0, isMatch: false } : { score: 0, totalCriteria: 0, matchDetails: [], isMatch: false, budgetStatus: 'within' };
+  }
+
+  // STRICT GATE: Price may not exceed client's maxPrice by more than 15%
+  if (client.maxPrice && property.price) {
+    const maxBudget = Number(client.maxPrice);
+    const propertyPrice = Number(property.price);
+    if (maxBudget > 0 && propertyPrice > maxBudget * 1.15) {
+      return fast ? { score: 0, totalCriteria: 0, isMatch: false } : { score: 0, totalCriteria: 0, matchDetails: [], isMatch: false, budgetStatus: 'way_above' };
+    }
+  }
   
   // 1. Intent/Status matching - NEW 6th criterion
   let intentMatch = false;
@@ -86,11 +136,15 @@ function calculateMatchScore(property, client, options = {}) {
     return { score: 0, totalCriteria: 1, matchDetails: [], isMatch: false, budgetStatus: 'within' };
   }
   
-  // 2. Location matching
-  const locationMatch = normalizeLocation(property.location) === normalizeLocation(client.preferredLocation);
+  // 2. Location matching (for scoring only; strict gate already applied if provided)
+  const locationMatch = client.preferredLocation
+    ? normalizeLocation(property.location) === normalizeLocation(client.preferredLocation)
+    : true;
   
-  // 3. Property type matching
-  const typeMatch = normalizePropertyType(property.propertyType) === normalizePropertyType(client.preferredPropertyType);
+  // 3. Property type matching (array-aware)
+  const typeMatch = normalizedClientTypes.length > 0
+    ? normalizedClientTypes.includes(normalizedPropType)
+    : true;
   
   // 4. Price matching - Updated for renters with 110% budget
   let priceMatch = false;
@@ -138,7 +192,7 @@ function calculateMatchScore(property, client, options = {}) {
     if (locationMatch) score++;
   }
   
-  if (client.preferredPropertyType) {
+  if (normalizedClientTypes.length > 0) {
     totalCriteria++;
     if (typeMatch) score++;
   }

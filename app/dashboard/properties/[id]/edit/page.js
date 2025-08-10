@@ -24,6 +24,7 @@ export default function EditPropertyPage({ params }) {
     price: '0',
     location: '',
     country: 'ישראל',
+    propertyCategory: 'residential',
     propertyType: '',
     status: '',
     bedrooms: '0',
@@ -671,6 +672,21 @@ export default function EditPropertyPage({ params }) {
                 required
                 className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                קטגוריה נכס
+              </label>
+              <select
+                name="propertyCategory"
+                value={formData.propertyCategory}
+                onChange={handleChange}
+                required
+                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+              >
+                <option value="residential">מגורים</option>
+                <option value="commercial">מסחרי</option>
+              </select>
             </div>
 
             <div>

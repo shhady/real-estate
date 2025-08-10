@@ -43,6 +43,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       neighborhood: ''
     },
     country: 'ישראל',
+    propertyCategory: 'residential',
     area: '',
     landArea: '',
     parkingLots: '',
@@ -183,6 +184,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
           neighborhood: ''
         },
         country: 'ישראל',
+        propertyCategory: 'residential',
         area: '',
         landArea: '',
         parkingLots: '',
@@ -814,6 +816,23 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                 />
               </div>
               
+              <div className="space-y-2">
+                <label htmlFor="propertyCategory" className="block text-sm font-medium text-gray-700">
+                  קטגוריה נכס <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="propertyCategory"
+                  name="propertyCategory"
+                  value={propertyData.propertyCategory}
+                  onChange={handleInputChange}
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="residential">מגורים</option>
+                  <option value="commercial">מסחרי</option>
+                </select>
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="type" className="block text-sm font-medium text-gray-700">
                   סוג נכס <span className="text-red-500">*</span>
