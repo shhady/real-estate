@@ -29,6 +29,9 @@ export default function EditPropertyPage({ params }) {
     bedrooms: '0',
     bathrooms: '0',
     area: '0',
+    landArea: '',
+    parkingLots: '',
+    gardenArea: '',
     features: [],
     contentType: 'single-image',
     floor: '',
@@ -137,6 +140,18 @@ export default function EditPropertyPage({ params }) {
     console.log('Form data updated:', formData);
   }, [formData]);
 
+  // Auto-calc landArea for garden apartment (דירת גן => 'condo')
+  useEffect(() => {
+    if (formData.propertyType === 'condo') {
+      const base = Number(formData.area || 0);
+      const garden = Number(formData.gardenArea || 0);
+      const computed = base + garden;
+      if (String(formData.landArea || '') !== String(computed)) {
+        setFormData(prev => ({ ...prev, landArea: String(computed) }));
+      }
+    }
+  }, [formData.propertyType, formData.area, formData.gardenArea]);
+
   // Function to determine content type based on number of images
   const determineContentType = (imageCount) => {
     if (imageCount === 0) return 'single-image';
@@ -170,6 +185,9 @@ export default function EditPropertyPage({ params }) {
         bedrooms: property.bedrooms || '0',
         bathrooms: property.bathrooms || '',
         area: property.area || '0',
+        landArea: property.landArea || '',
+        parkingLots: property.parkingLots || '',
+        gardenArea: property.gardenArea || '',
         features: property.features || [],
         contentType: property.contentType || determineContentType(propertyImages.length),
         floor: property.floor || '',
@@ -436,6 +454,9 @@ export default function EditPropertyPage({ params }) {
         bedrooms: Number(formData.bedrooms),
         bathrooms: formData.bathrooms ? Number(formData.bathrooms) : undefined,
         area: Number(formData.area),
+        landArea: formData.landArea !== '' ? Number(formData.landArea) : undefined,
+        parkingLots: formData.parkingLots !== '' ? Number(formData.parkingLots) : undefined,
+        gardenArea: formData.gardenArea !== '' ? Number(formData.gardenArea) : undefined,
         images,
         contentType: determineContentType(images.length), // Ensure contentType matches image count
         descriptions: formData.descriptions,
@@ -767,6 +788,34 @@ export default function EditPropertyPage({ params }) {
               />
             </div>
 
+            {/* Land area for house/villa/cottage */}
+            {(formData.propertyType === 'house' || formData.propertyType === 'villa' || formData.propertyType === 'cottage') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">שטח מגרש (מ"ר)</label>
+                <input
+                  type="number"
+                  name="landArea"
+                  value={formData.landArea}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                />
+              </div>
+            )}
+
+            {/* Garden area for garden apartment */}
+            {formData.propertyType === 'condo' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">שטח גינה (מ"ר)</label>
+                <input
+                  type="number"
+                  name="gardenArea"
+                  value={formData.gardenArea}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 חדרי שינה
@@ -777,6 +826,18 @@ export default function EditPropertyPage({ params }) {
                 value={formData.bedrooms}
                 onChange={handleChange}
                 required
+                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+              />
+            </div>
+
+            {/* Parking lots */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">חניות</label>
+              <input
+                type="number"
+                name="parkingLots"
+                value={formData.parkingLots}
+                onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
             </div>

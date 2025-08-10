@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar, FaBuilding, FaHome, FaVideo, FaImages, FaLanguage, FaFacebook, FaInstagram, FaStickyNote, FaClock } from 'react-icons/fa';
+import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar, FaBuilding, FaHome, FaVideo, FaImages, FaLanguage, FaFacebook, FaInstagram, FaStickyNote, FaClock, FaParking } from 'react-icons/fa';
 import { notFound } from 'next/navigation';
 import connectDB from '../../lib/mongodb';
 import Property from '../../models/Property';
@@ -206,7 +206,10 @@ export default async function PropertyPage({ params }) {
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">{property.title}</h1>
                     <div className="flex items-center text-gray-600">
                       <FaMapMarkerAlt className="ml-2 text-blue-600" />
-                      <span>{property.location}</span>
+                      <span>
+                        {property.location}
+                        {property.country ? `, ${property.country}` : ''}
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-3">
@@ -241,6 +244,13 @@ export default async function PropertyPage({ params }) {
                       <FaBuilding className="h-6 w-6 text-[#08171f] mb-2" />
                       <span className="text-lg text-black font-semibold">{property.floor}</span>
                       <span className="text-sm text-gray-600">קומה</span>
+                    </div>
+                  )}
+                  {property.parkingLots && property.parkingLots > 0 && (
+                    <div className="flex flex-col items-center">
+                      <FaParking className="h-6 w-6 text-[#08171f] mb-2" />
+                      <span className="text-lg text-black font-semibold">{property.parkingLots}</span>
+                      <span className="text-sm text-gray-600">{property.parkingLots === 1 ? 'חנייה' : 'חניות'}</span>
                     </div>
                   )}
                 </div>
@@ -370,6 +380,36 @@ export default async function PropertyPage({ params }) {
                           {property.contentType === 'video' ? 'סרטון' :
                            property.contentType === 'video-from-images' ? 'סרטון מתמונות' :
                            property.contentType === 'carousel' ? 'גלריה' : 'תמונה יחידה'}
+                        </span>
+                      </div>
+                    )}
+
+                    {property.country && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">מדינה:</span>
+                        <span className="text-gray-800">{property.country}</span>
+                      </div>
+                    )}
+
+                    {property.landArea && Number(property.landArea) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">שטח מגרש:</span>
+                        <span className="text-gray-800">{property.landArea} מ"ר</span>
+                      </div>
+                    )}
+
+                    {property.gardenArea && Number(property.gardenArea) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">שטח גינה:</span>
+                        <span className="text-gray-800">{property.gardenArea} מ"ר</span>
+                      </div>
+                    )}
+
+                    {property.parkingLots && Number(property.parkingLots) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">חניה:</span>
+                        <span className="text-gray-800">
+                          {property.parkingLots === 1 ? 'חנייה בטאבו' : `${property.parkingLots} חניות בטאבו`}
                         </span>
                       </div>
                     )}

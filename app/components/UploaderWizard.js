@@ -44,6 +44,9 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     },
     country: 'ישראל',
     area: '',
+    landArea: '',
+    parkingLots: '',
+    gardenArea: '',
     price: '',
     rooms: '',
     bathrooms: '',
@@ -181,6 +184,9 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         },
         country: 'ישראל',
         area: '',
+        landArea: '',
+        parkingLots: '',
+        gardenArea: '',
         price: '',
         rooms: '',
         bathrooms: '',
@@ -215,6 +221,19 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
       [name]: value
     }));
   };
+
+  // Auto-calc landArea for garden apartment (דירת גן => 'condo')
+  useEffect(() => {
+    if (propertyData.type === 'condo') {
+      const base = Number(propertyData.area || 0);
+      const garden = Number(propertyData.gardenArea || 0);
+      const computed = base + garden;
+      // Keep as string to avoid controlled/uncontrolled warnings
+      if (String(propertyData.landArea || '') !== String(computed)) {
+        setPropertyData(prev => ({ ...prev, landArea: String(computed) }));
+      }
+    }
+  }, [propertyData.type, propertyData.area, propertyData.gardenArea]);
 
   const handleCitySelect = (cityValue) => {
     setPropertyData(prev => ({ ...prev, location: cityValue }));
@@ -965,6 +984,44 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   required
                 />
               </div>
+
+              {/* Land area for house/villa/cottage */}
+              {(propertyData.type === 'house' || propertyData.type === 'villa' || propertyData.type === "cottage") && (
+                <div className="space-y-2">
+                  <label htmlFor="landArea" className="block text-sm font-medium text-gray-700">
+                    שטח מגרש (מ"ר)
+                  </label>
+                  <input
+                    type="number"
+                    id="landArea"
+                    name="landArea"
+                    value={propertyData.landArea}
+                    onChange={handleInputChange}
+                    className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="400"
+                    min="0"
+                  />
+                </div>
+              )}
+
+              {/* Garden area for garden apartment (condo) */}
+              {propertyData.type === 'condo' && (
+                <div className="space-y-2">
+                  <label htmlFor="gardenArea" className="block text-sm font-medium text-gray-700">
+                    שטח גינה (מ"ר)
+                  </label>
+                  <input
+                    type="number"
+                    id="gardenArea"
+                    name="gardenArea"
+                    value={propertyData.gardenArea}
+                    onChange={handleInputChange}
+                    className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="60"
+                    min="0"
+                  />
+                </div>
+              )}
               
               <div className="space-y-2">
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700">
@@ -994,6 +1051,23 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   onChange={handleInputChange}
                   className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="4"
+                  min="0"
+                />
+              </div>
+
+              {/* Parking lots */}
+              <div className="space-y-2">
+                <label htmlFor="parkingLots" className="block text-sm font-medium text-gray-700">
+                  חניות
+                </label>
+                <input
+                  type="number"
+                  id="parkingLots"
+                  name="parkingLots"
+                  value={propertyData.parkingLots}
+                  onChange={handleInputChange}
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="2"
                   min="0"
                 />
               </div>

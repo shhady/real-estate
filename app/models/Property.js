@@ -39,6 +39,19 @@ const propertySchema = new mongoose.Schema({
     required: false,
     default: 'ישראל',
   },
+  landArea: {
+    type: Number,
+    required: false,
+  },
+  gardenArea: {
+    type: Number,
+    required: false,
+  },
+  parkingLots: {
+    type: Number,
+    required: false,
+  },
+
   address: {
     street: {
       type: String,

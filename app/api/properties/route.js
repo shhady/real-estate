@@ -232,6 +232,9 @@ export async function POST(request) {
         neighborhood: listing.address?.neighborhood || data.address?.neighborhood || ''
       },
       country: listing.country || data.country || 'ישראל',
+      landArea: listing.landArea || data.landArea || '',
+      gardenArea: listing.gardenArea || data.gardenArea || '',
+      parkingLots: listing.parkingLots || data.parkingLots || '',
       propertyType: listing.type || data.propertyType || 'apartment',
       status: listing.status || data.status || 'For Sale',
       bedrooms: parseInt(listing.rooms || data.bedrooms || 0),
