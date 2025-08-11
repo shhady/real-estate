@@ -24,17 +24,35 @@ const PropertyCard = ({ property }) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  // Determine if this property should show video
-  const isVideoProperty = (contentType === 'video' || contentType === 'video-from-images') && video?.secure_url;
+  // Helper to detect video URLs (Cloudinary/video files)
+  const isVideoUrl = (url) => {
+    if (!url || typeof url !== 'string') return false;
+    return /\.(mp4|webm|ogg)$/i.test(url) || url.includes('/video/upload');
+  };
+
+  // Prepare preview media logic:
+  // - video, video-from-images: use video.secure_url
+  // - carousel: if any item is a video, use the first video; otherwise use first image
+  // - otherwise: first image
+  const carouselVideos = Array.isArray(images) ? images.filter(m => isVideoUrl(m?.secure_url)) : [];
+  const firstCarouselVideo = carouselVideos.length > 0 ? carouselVideos[0]?.secure_url : null;
+  const firstImage = Array.isArray(images) ? (images.find(m => !isVideoUrl(m?.secure_url))?.secure_url || images[0]?.secure_url) : null;
+
+  const previewIsVideo = (contentType === 'video' || contentType === 'video-from-images')
+    || (contentType === 'carousel' && !!firstCarouselVideo);
+  const previewVideoSrc = (contentType === 'video' || contentType === 'video-from-images')
+    ? (video?.secure_url || firstCarouselVideo)
+    : (contentType === 'carousel' ? firstCarouselVideo : null);
+  const previewImageSrc = firstImage || '/logo-original.jpeg';
 
   return (
     <Link href={`/properties/${_id}`}>
       <div className="group bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
         <div className="relative h-56 w-full">
-          {isVideoProperty ? (
+          {previewIsVideo ? (
             // Show autoplay muted video for video-only properties
             <video
-              src={video.secure_url}
+              src={previewVideoSrc || '/logo-original.jpeg'}
               autoPlay
               muted
               loop
@@ -44,7 +62,7 @@ const PropertyCard = ({ property }) => {
           ) : (
             // Show image for image properties (keep current behavior)
             <Image
-              src={images[0]?.secure_url || '/placeholder-property.jpg'}
+              src={previewImageSrc}
               alt={title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
