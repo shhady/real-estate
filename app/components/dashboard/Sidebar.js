@@ -1,11 +1,28 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { FaHome, FaBuilding, FaUser, FaChartBar, FaCog, FaEdit, FaPhone, FaUsers, FaSignOutAlt, FaEnvelope, FaGlobe, FaExchangeAlt, FaTimes } from 'react-icons/fa';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
   const router = useRouter();
+
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/users/profile');
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) setUserId(data?.slug || null);
+        }
+      } catch {}
+    })();
+    return () => { isMounted = false; };
+  }, []);
 
   const dashboardItems = [
     {
@@ -39,10 +56,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     //   href: '/dashboard/blog',
     // },
     {
-      title: 'פרופיל',
+      title: 'עריכת פרופיל',
       icon: <FaUser className="w-5 h-5" />,
       href: '/dashboard/profile',
     },
+    {
+      title: 'פרופיל',
+      icon: <FaUser className="w-5 h-5" />,
+      href: userId ? `/agents/${userId}` : '/agents',
+    },
+
   ];
 
   const navigationItems = [

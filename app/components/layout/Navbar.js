@@ -162,6 +162,12 @@ const Navbar = () => {
                   הוסף נכס
                 </Link>
                 <Link
+                  href="/dashboard/profile"
+                  className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700"
+                >
+                 פרופיל
+                </Link>
+                <Link
                   href="/dashboard"
                   className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#08171f] bg-[#F6F6F6] hover:bg-[#08171f] hover:text-[#F6F6F6]"
                 >
@@ -262,6 +268,13 @@ const Navbar = () => {
                 className="block pr-3 pl-4 py-2 text-base font-medium text-white bg-green-600 hover:bg-green-700 rounded-md mx-3 my-1"
               >
                 הוסף נכס
+              </Link>
+              <Link
+                href="/dashboard/profile"
+                onClick={closeMenu}
+                className="block pr-3 pl-4 py-2 text-base font-medium bg-gray-600 text-white hover:bg-gray-700 rounded-md mx-3 my-1"
+              >
+                פרופיל
               </Link>
               <Link
                 href="/dashboard"

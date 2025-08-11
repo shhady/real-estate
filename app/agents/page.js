@@ -55,7 +55,7 @@ function AgentCard({ agent }) {
             {agent.properties?.length || 0} נכסים
           </div>
           <Link
-            href={`/agents/${agent._id}`}
+            href={`/agents/${agent.slug}`}
             className="text-blue-600 hover:text-blue-500 text-sm font-medium"
           >
             צפה בפרופיל

@@ -118,7 +118,7 @@ export default async function PropertyPage({ params }) {
       .populate({
         path: 'user',
         model: User,
-        select: 'fullName email phone whatsapp bio profileImage calendlyLink agencyName socialMedia'
+        select: 'fullName email phone whatsapp bio profileImage calendlyLink agencyName socialMedia slug'
       })
       .lean();
 
@@ -602,7 +602,7 @@ export default async function PropertyPage({ params }) {
                 <h3 className="text-lg font-semibold mb-2 text-black">אודות הסוכן</h3>
                 <p className="text-gray-600 text-sm">{property.user.bio}</p>
                 <Link
-                  href={`/agents/${property.user._id}`}
+                  href={`/agents/${property.user.slug}`}
                   className="inline-block mt-4 text-blue-600 hover:text-blue-800"
                 >
                   צפה בפרופיל המלא
