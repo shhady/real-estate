@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-
+import User from './User';
+import Call from './Call';
 // Clear existing model to avoid schema conflicts during HMR/dev
 if (mongoose.models.Client) {
   delete mongoose.models.Client;
