@@ -280,7 +280,10 @@ function AgreementPreview({ agent, client, selectedProps, form, extra }) {
         <div>ת.ז.: <span className="inline-block min-w-40 border-b border-gray-400"></span></div>
         <div>כתובת: <span className="inline-block min-w-64 border-b border-gray-400"></span></div>
         <div>תאריך: <span className="inline-block min-w-40 border-b border-gray-400"></span></div>
-        <div className="flex items-end gap-2">חתימה: <span className="inline-block min-w-64 border-b border-gray-400"></span>
+        <div className="flex items-end gap-2">חתימה לקוח: <span className="inline-block min-w-64 border-b border-gray-400"></span>
+          {extra?.agentSignatureDataUrl && (<img src={extra.agentSignatureDataUrl} alt="agent signature" className="h-10 object-contain" />)}
+        </div>
+        <div className="flex items-end gap-2">חתימת מתווך: <span className="inline-block min-w-64 border-b border-gray-400"></span>
           {extra?.agentSignatureDataUrl && (<img src={extra.agentSignatureDataUrl} alt="agent signature" className="h-10 object-contain" />)}
         </div>
       </div>

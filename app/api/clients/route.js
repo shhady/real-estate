@@ -145,7 +145,7 @@ export async function POST(request) {
         minArea: minArea || undefined,
       maxPrice: maxPrice || undefined,
       preferredCondition: preferredCondition || undefined,
-      propertyCategory: propertyCategory || 'residential',
+      propertyCategory: propertyCategory || 'residential',  
       needsParking,
       needsBalcony,
       preApproval,

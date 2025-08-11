@@ -121,7 +121,12 @@ export default function EditClientPage() {
     { value: 'warehouse', label: 'מחסן' },
     { value: 'land', label: 'קרקע' },
   ];
-
+  const LAND_OPTIONS = [
+    { value: 'agriculturalLand', label: 'קרקע חקלאית' },
+    { value: 'residentialLand', label: 'קרקע לבנייה (מגורים)' },
+    { value: 'industrialLand', label: 'קרקע תעשייה' },
+    { value: 'commercialLand', label: 'קרקע מסחרית' },
+  ];
   const togglePreferredType = (val) => {
     setFormData(prev => {
       const exists = prev.preferredPropertyType.includes(val);
@@ -378,6 +383,7 @@ export default function EditClientPage() {
                 >
                   <option value="residential">מגורים</option>
                   <option value="commercial">מסחרי</option>
+                  <option value="land">קרקע</option>
                 </select>
               </div>
 
@@ -385,7 +391,7 @@ export default function EditClientPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">סוגי נכס מועדפים</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {(formData.propertyCategory === 'commercial' ? COMMERCIAL_OPTIONS : RESIDENTIAL_OPTIONS).map(opt => (
+                  {(formData.propertyCategory === 'commercial' ? COMMERCIAL_OPTIONS : formData.propertyCategory === 'land' ? LAND_OPTIONS : RESIDENTIAL_OPTIONS).map(opt => (
                     <label key={opt.value} className="flex items-center">
                       <input
                         type="checkbox"

@@ -50,6 +50,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       icon: <FaBuilding className="w-5 h-5" />,
       href: '/dashboard/properties',
     },
+    {
+      title: 'חתימות דיגיטליות',
+      icon: <FaBuilding className="w-5 h-5" />,
+      href: '/dashboard/signatures ',
+    },
     // {
     //   title: 'בלוג שלי',
     //   icon: <FaEdit className="w-5 h-5" />,

@@ -48,8 +48,8 @@ export default function NewClientPage() {
     c.label.toLowerCase().includes(countrySearchTerm.toLowerCase())
   );
 
-  const handleCitySelect = (cityValue) => {
-    setFormData(prev => ({ ...prev, preferredLocation: cityValue }));
+  const handleCitySelect = (cityDisplay) => {
+    setFormData(prev => ({ ...prev, preferredLocation: cityDisplay }));
     setShowCityDropdown(false);
     setCitySearchTerm('');
   };
@@ -128,6 +128,12 @@ export default function NewClientPage() {
     { value: 'commercial', label: 'מסחרי' },
     { value: 'warehouse', label: 'מחסן' },
     { value: 'land', label: 'קרקע' },
+  ];
+  const LAND_OPTIONS = [
+    { value: 'agriculturalLand', label: 'קרקע חקלאית' },
+    { value: 'residentialLand', label: 'קרקע לבנייה (מגורים)' },
+    { value: 'industrialLand', label: 'קרקע תעשייה' },
+    { value: 'commercialLand', label: 'קרקע מסחרית' },
   ];
 
   const togglePreferredType = (val) => {
@@ -385,7 +391,7 @@ export default function NewClientPage() {
                       <div
                         key={city.value}
                         className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
-                        onClick={() => handleCitySelect(city.value)}
+                        onMouseDown={(e) => { e.preventDefault(); handleCitySelect(city.label); }}
                       >
                         {city.label}
                       </div>
@@ -405,6 +411,7 @@ export default function NewClientPage() {
                 >
                   <option value="residential">מגורים</option>
                   <option value="commercial">מסחרי</option>
+                  <option value="land">קרקע</option>
                 </select>
               </div>
 
@@ -412,7 +419,7 @@ export default function NewClientPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">סוגי נכס מועדפים</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {(formData.propertyCategory === 'commercial' ? COMMERCIAL_OPTIONS : RESIDENTIAL_OPTIONS).map(opt => (
+                  {(formData.propertyCategory === 'commercial' ? COMMERCIAL_OPTIONS : formData.propertyCategory === 'land' ? LAND_OPTIONS : RESIDENTIAL_OPTIONS).map(opt => (
                     <label key={opt.value} className="flex items-center">
                       <input
                         type="checkbox"

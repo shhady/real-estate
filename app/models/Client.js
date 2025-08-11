@@ -1,5 +1,10 @@
 import mongoose from 'mongoose';
 
+// Clear existing model to avoid schema conflicts during HMR/dev
+if (mongoose.models.Client) {
+  delete mongoose.models.Client;
+}
+
 const ClientSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   clientName: { type: String, required: true },
@@ -18,7 +23,7 @@ const ClientSchema = new mongoose.Schema({
   needsParking: { type: Boolean },
   needsBalcony: { type: Boolean },
   preApproval: { type: String, enum: ['יש אישור עקרוני', 'אין אישור עקרוני', 'אינו צריך אישור עקרוני'], default: 'לא ידוע' }, // NEW: אישור עקרוני/אישור משכנתא
-  propertyCategory: { type: String, enum: ['residential', 'commercial', 'both'], default: 'residential' },
+  propertyCategory: { type: String, enum: ['residential', 'commercial', 'land'], default: 'residential' },
   // Client information
   notes: { type: String }, // General notes about the client
   status: { 
