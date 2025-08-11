@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar, FaBuilding, FaHome, FaVideo, FaImages, FaLanguage, FaFacebook, FaInstagram, FaStickyNote, FaClock, FaParking, FaShieldAlt, FaAccessibleIcon } from 'react-icons/fa';
+import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar, FaBuilding, FaHome, FaVideo, FaImages, FaLanguage, FaFacebook, FaInstagram, FaStickyNote, FaClock, FaParking, FaShieldAlt, FaAccessibleIcon, FaWarehouse } from 'react-icons/fa';
 import { notFound } from 'next/navigation';
 import connectDB from '../../lib/mongodb';
 import Property from '../../models/Property';
@@ -294,6 +294,13 @@ export default async function PropertyPage({ params }) {
                       <FaShieldAlt className="h-6 w-6 text-[#08171f] mb-2" />
                       <span className="text-lg text-black font-semibold">ממ"ד</span>
                       <span className="text-sm text-gray-600">ממ"ד</span>
+                    </div>
+                  )}
+                  {property.storageRoom && (
+                    <div className="flex flex-col items-center">
+                      <FaWarehouse className="h-6 w-6 text-[#08171f] mb-2" />
+                      <span className="text-lg text-black font-semibold">מחסן</span>
+                      <span className="text-sm text-gray-600">מחסן</span>
                     </div>
                   )}
                   {property.accessibleEntrance && (

@@ -50,6 +50,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     gardenArea: '',
     elevator: false,
     secureRoom: false,
+    storageRoom: false,
     accessibleEntrance: false,
     airConditioning: false,
     terrace: false,
@@ -192,6 +193,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         propertyCategory: 'residential',
         elevator: false,
         secureRoom: false,
+        storageRoom: false,
         accessibleEntrance: false,
         airConditioning: false,
         terrace: false,
@@ -1171,7 +1173,17 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                     />
                     חדר ממ"ד
                   </label>
-                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      name="storageRoom"
+                      checked={!!propertyData.storageRoom}
+                      onChange={handleCheckboxChange}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    מחסן
+                    </label>
+                    <label className="inline-flex items-center gap-2 text-sm text-gray-700">
                     <input
                       type="checkbox"
                       name="accessibleEntrance"

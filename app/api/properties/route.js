@@ -71,6 +71,7 @@ export async function GET(request) {
     const location = searchParams.get('location');
     const type = searchParams.get('type');
     const status = searchParams.get('status');
+    const country = searchParams.get('country');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
     const bedrooms = searchParams.get('bedrooms');
@@ -81,6 +82,7 @@ export async function GET(request) {
     if (location) query.location = { $regex: location, $options: 'i' };
     if (type) query.propertyType = { $regex: `^${type}$`, $options: 'i' };
     if (status) query.status = status;
+    if (country) query.country = country;
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = parseInt(minPrice);
@@ -236,6 +238,7 @@ export async function POST(request) {
       country: listing.country || data.country || 'ישראל',
       elevator: listing.elevator || data.elevator || false,
       secureRoom: listing.secureRoom || data.secureRoom || false,
+      storageRoom: listing.storageRoom || data.storageRoom || false,
       accessibleEntrance: listing.accessibleEntrance || data.accessibleEntrance || false,
       terrace: listing.terrace || data.terrace || false,
       airConditioning: listing.airConditioning || data.airConditioning || false,

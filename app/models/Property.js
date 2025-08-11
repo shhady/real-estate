@@ -65,6 +65,10 @@ secureRoom:{
   type: Boolean,
   required: false,
 },
+storageRoom:{
+  type: Boolean,
+  required: false,
+},
 accessibleEntrance:{
   type: Boolean,
   required: false,

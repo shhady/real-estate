@@ -2,16 +2,50 @@
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { FaSearch } from 'react-icons/fa';
+// import { FaSearch } from 'react-icons/fa';
 import { cityOptions } from '../../utils/cityOptions';
+// Dynamic countries will be fetched from API based on existing properties
 
 const Hero = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState({
+    country: searchParams?.get('country') || '',
     location: searchParams?.get('location') || '',
     propertyType: searchParams?.get('type') || ''
   });
+  const [countries, setCountries] = useState([]);
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/properties/countries');
+        const data = await res.json();
+        if (isMounted && Array.isArray(data.countries)) {
+          setCountries(data.countries);
+        }
+      } catch {}
+    })();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Load locations based on selected country (or all if not selected)
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const qs = filters.country ? `?country=${encodeURIComponent(filters.country)}` : '';
+        const res = await fetch(`/api/properties/locations${qs}`);
+        const data = await res.json();
+        if (isMounted && Array.isArray(data.locations)) {
+          setLocations(data.locations);
+        }
+      } catch {}
+    })();
+    return () => { isMounted = false; };
+  }, [filters.country]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [citySearchTerm, setCitySearchTerm] = useState('');
 
@@ -57,6 +91,7 @@ const Hero = () => {
     
     // Build query string from filters
     const queryParams = new URLSearchParams();
+    if (filters.country) queryParams.set('country', filters.country);
     if (filters.location) queryParams.set('location', filters.location);
     if (filters.propertyType) queryParams.set('type', filters.propertyType);
     
@@ -90,31 +125,31 @@ const Hero = () => {
         {/* Search Form */}
         <div className="max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <input
-                type="text"
+            <div className="sm:w-48">
+              <select
+                name="country"
+                value={filters.country}
+                onChange={handleChange}
+                className="h-12 w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">מדינה</option>
+                {countries.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1">
+              <select
                 name="location"
                 value={filters.location}
-                onChange={handleLocationInputChange}
-                onFocus={handleLocationInputFocus}
-                onBlur={handleLocationInputBlur}
-                placeholder="איזור"
-                className="h-12 w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              {showCityDropdown && filteredCities.length > 0 && (
-                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                  {filteredCities.map((city) => (
-                    <div
-                      key={city.value}
-                      className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
-                      onClick={() => handleCitySelect(city.value)}
-                    >
-                      {city.label}
-                    </div>
-                  ))}
-                </div>
-              )}
+                onChange={handleChange}
+                className="h-12 w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">אזור</option>
+                {locations.map((loc) => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
             </div>
             <div className="sm:w-48">
               <select

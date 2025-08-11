@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaSearch } from 'react-icons/fa';
+import { countryOptions } from '../../utils/countryOptions';
 
 const propertyTypes = [
   { value: 'house', label: 'בית פרטי' },
@@ -35,6 +36,8 @@ export default function PropertyFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
+  const [countries, setCountries] = useState([]);
+  const [locations, setLocations] = useState([]);
   
   // Get the initial type from URL
   const initialType = searchParams?.get('type')?.toLowerCase() || '';
@@ -43,9 +46,9 @@ export default function PropertyFilters() {
     location: searchParams?.get('location') || '',
     type: initialType,
     status: searchParams?.get('status') || '',
-    minPrice: searchParams?.get('minPrice') || '',
     maxPrice: searchParams?.get('maxPrice') || '',
-    bedrooms: searchParams?.get('bedrooms') || ''
+    bedrooms: searchParams?.get('bedrooms') || '',
+    country: searchParams?.get('country') || ''
   });
 
   // Update filters when URL changes
@@ -56,6 +59,37 @@ export default function PropertyFilters() {
       type: type
     }));
   }, [searchParams]);
+
+  // Load countries once
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/properties/countries');
+        const data = await res.json();
+        if (isMounted && Array.isArray(data.countries)) {
+          setCountries(data.countries);
+        }
+      } catch {}
+    })();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Load locations based on selected country (or all if not selected)
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const qs = filters.country ? `?country=${encodeURIComponent(filters.country)}` : '';
+        const res = await fetch(`/api/properties/locations${qs}`);
+        const data = await res.json();
+        if (isMounted && Array.isArray(data.locations)) {
+          setLocations(data.locations);
+        }
+      } catch {}
+    })();
+    return () => { isMounted = false; };
+  }, [filters.country]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -84,9 +118,9 @@ export default function PropertyFilters() {
       location: '',
       type: '',
       status: '',
-      minPrice: '',
       maxPrice: '',
-      bedrooms: ''
+      bedrooms: '',
+      country: ''
     });
     router.push('/properties');
     setIsOpen(false);
@@ -106,21 +140,43 @@ export default function PropertyFilters() {
       </div>
 
       <form onSubmit={handleSubmit} className={`${isOpen ? 'block' : 'hidden'} lg:block`}>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+           {/* Country */}
+           <div>
+            <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+              מדינה
+            </label>
+            <select
+              id="country"
+              name="country"
+              value={filters.country}
+              onChange={handleInputChange}
+              className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">הכל</option>
+              {countries.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
           {/* Location */}
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
               מיקום
             </label>
-            <input
-              type="text"
+            <select
               id="location"
               name="location"
               value={filters.location}
               onChange={handleInputChange}
               className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              placeholder="הזן מיקום"
-            />
+            >
+              <option value="">הכל</option>
+              {locations.map((loc) => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
           </div>
 
           {/* Property Type */}
@@ -168,21 +224,7 @@ export default function PropertyFilters() {
             </select>
           </div>
 
-          {/* Min Price */}
-          <div>
-            <label htmlFor="minPrice" className="block text-sm font-medium text-gray-700 mb-1">
-              מחיר מינימלי
-            </label>
-            <input
-              type="number"
-              id="minPrice"
-              name="minPrice"
-              value={filters.minPrice}
-              onChange={handleInputChange}
-              className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              placeholder="מחיר מינימלי"
-            />
-          </div>
+         
 
           {/* Max Price */}
           <div>
