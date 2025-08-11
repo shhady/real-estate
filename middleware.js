@@ -21,6 +21,7 @@ export async function middleware(request) {
     '/blog/(.*)',
     '/contact',
     '/api/properties',
+    '/api/properties/(.*)',
     '/api/agents',
     '/api/auth/login',
     '/api/auth/register',
