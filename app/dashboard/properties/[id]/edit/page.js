@@ -32,6 +32,11 @@ export default function EditPropertyPage({ params }) {
     area: '0',
     landArea: '',
     parkingLots: '',
+    elevator: false,
+    secureRoom: false,
+    accessibleEntrance: false,
+    airConditioning: false,
+    terrace: false,
     gardenArea: '',
     features: [],
     contentType: 'single-image',
@@ -189,6 +194,11 @@ export default function EditPropertyPage({ params }) {
         landArea: property.landArea || '',
         parkingLots: property.parkingLots || '',
         gardenArea: property.gardenArea || '',
+        elevator: property.elevator || false,
+        secureRoom: property.secureRoom || false,
+        accessibleEntrance: property.accessibleEntrance || false,
+        airConditioning: property.airConditioning || false,
+        terrace: property.terrace || false,
         features: property.features || [],
         contentType: property.contentType || determineContentType(propertyImages.length),
         floor: property.floor || '',
@@ -458,6 +468,11 @@ export default function EditPropertyPage({ params }) {
         landArea: formData.landArea !== '' ? Number(formData.landArea) : undefined,
         parkingLots: formData.parkingLots !== '' ? Number(formData.parkingLots) : undefined,
         gardenArea: formData.gardenArea !== '' ? Number(formData.gardenArea) : undefined,
+        elevator: !!formData.elevator,
+        secureRoom: !!formData.secureRoom,
+        accessibleEntrance: !!formData.accessibleEntrance,
+        airConditioning: !!formData.airConditioning,
+        terrace: !!formData.terrace,
         images,
         contentType: determineContentType(images.length), // Ensure contentType matches image count
         descriptions: formData.descriptions,
@@ -686,6 +701,7 @@ export default function EditPropertyPage({ params }) {
               >
                 <option value="residential">מגורים</option>
                 <option value="commercial">מסחרי</option>
+                <option value="land">קרקע</option>
               </select>
             </div>
 
@@ -712,7 +728,10 @@ export default function EditPropertyPage({ params }) {
                 <option value="other">אחר</option>
                 <option value="cottage">קוטג'/קיר משותף</option>
                 <option value="duplex">דופלקס</option>
-                
+                <option value="agriculturalLand">קרקע חקלאית</option>
+                <option value="residentialLand">קרקע בניה (מגורים)</option>
+                <option value="industrialLand">קרקע תעשייה</option>
+                <option value="commercialLand">קרקע מסחרית</option>
               </select>
             </div>
 
@@ -845,7 +864,19 @@ export default function EditPropertyPage({ params }) {
                 className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
               />
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                קומה
+              </label>
+              <input
+                type="text"
+                name="floor"
+                value={formData.floor || ''}
+                onChange={handleChange}
+                placeholder="למשל: 3, קרקע, מרתף"
+                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
+              />
+            </div>
             {/* Parking lots */}
             <div>
               <label className="block text-sm font-medium text-gray-700">חניות</label>
@@ -871,19 +902,64 @@ export default function EditPropertyPage({ params }) {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                קומה
-              </label>
-              <input
-                type="text"
-                name="floor"
-                value={formData.floor || ''}
-                onChange={handleChange}
-                placeholder="למשל: 3, קרקע, מרתף"
-                className="mt-1 block w-full rounded-md border-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 placeholder-gray-600"
-              />
+            {/* Features (checkboxes) */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">תכונות</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm text-gray-700">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="elevator"
+                    checked={!!formData.elevator}
+                    onChange={(e)=> setFormData(prev=>({ ...prev, elevator: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  מעלית
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="secureRoom"
+                    checked={!!formData.secureRoom}
+                    onChange={(e)=> setFormData(prev=>({ ...prev, secureRoom: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  חדר ממ"ד
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="accessibleEntrance"
+                    checked={!!formData.accessibleEntrance}
+                    onChange={(e)=> setFormData(prev=>({ ...prev, accessibleEntrance: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  כניסה נגישה
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="airConditioning"
+                    checked={!!formData.airConditioning}
+                    onChange={(e)=> setFormData(prev=>({ ...prev, airConditioning: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  מיזוג אוויר
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="terrace"
+                    checked={!!formData.terrace}
+                    onChange={(e)=> setFormData(prev=>({ ...prev, terrace: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  מרפסת/טרסה
+                </label>
+              </div>
             </div>
+
+            
 
             <div>
               <label className="block text-sm font-medium text-gray-700">

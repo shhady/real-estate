@@ -48,6 +48,11 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     landArea: '',
     parkingLots: '',
     gardenArea: '',
+    elevator: false,
+    secureRoom: false,
+    accessibleEntrance: false,
+    airConditioning: false,
+    terrace: false,
     price: '',
     rooms: '',
     bathrooms: '',
@@ -185,6 +190,11 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
         },
         country: 'ישראל',
         propertyCategory: 'residential',
+        elevator: false,
+        secureRoom: false,
+        accessibleEntrance: false,
+        airConditioning: false,
+        terrace: false,
         area: '',
         landArea: '',
         parkingLots: '',
@@ -221,6 +231,15 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
     setPropertyData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // Handle checkbox (boolean) changes
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setPropertyData(prev => ({
+      ...prev,
+      [name]: checked
     }));
   };
 
@@ -830,6 +849,7 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                 >
                   <option value="residential">מגורים</option>
                   <option value="commercial">מסחרי</option>
+                  <option value="land">קרקע</option>
                 </select>
               </div>
 
@@ -846,16 +866,20 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   required
                 >
                   <option value="house">בית פרטי</option>
-                <option value="apartment">דירה</option>
-                <option value="condo">דירת גן</option>
-                <option value="villa">וילה</option>
-                <option value="land">מגרש</option>
-                <option value="commercial">מסחרי</option>
-                <option value="office">משרד</option>
-                <option value="warehouse">מחסן</option>
-                <option value="other">אחר</option>
-                <option value="cottage">קוטג'/קיר משותף</option>
-                <option value="duplex">דופלקס</option>
+                  <option value="apartment">דירה</option>
+                  <option value="condo">דירת גן</option>
+                  <option value="villa">וילה</option>
+                  <option value="land">מגרש / קרקע</option>
+                  <option value="agriculturalLand">קרקע חקלאית</option>
+                  <option value="residentialLand">קרקע לבנייה (מגורים)</option>
+                  <option value="industrialLand">קרקע תעשייה</option>
+                  <option value="commercialLand">קרקע מסחרית</option>
+                  <option value="commercial">מסחרי</option>
+                  <option value="office">משרד</option>
+                  <option value="warehouse">מחסן</option>
+                  <option value="cottage">קוטג'/קיר משותף</option>
+                  <option value="duplex">דופלקס</option>
+                  <option value="other">אחר</option>
                 </select>
               </div>
               
@@ -1090,23 +1114,6 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   min="0"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
-                  חדרי אמבטיה
-                </label>
-                <input
-                  type="number"
-                  id="bathrooms"
-                  name="bathrooms"
-                  value={propertyData.bathrooms}
-                  onChange={handleInputChange}
-                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="2"
-                  min="0"
-                />
-              </div>
-              
               {propertyData.type === 'apartment' && (
                 <div className="space-y-2">
                   <label htmlFor="floor" className="block text-sm font-medium text-gray-700">
@@ -1124,6 +1131,80 @@ const UploaderWizard = ({ isOpen, onClose, onStartAgain, uploadedMedia = [], onU
                   />
                 </div>
               )}
+              <div className="space-y-2">
+                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
+                  חדרי אמבטיה
+                </label>
+                <input
+                  type="number"
+                  id="bathrooms"
+                  name="bathrooms"
+                  value={propertyData.bathrooms}
+                  onChange={handleInputChange}
+                  className="text-black w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="2"
+                  min="0"
+                />
+              </div>
+
+              {/* Features (checkboxes) */}
+              <div className="space-y-2 md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">תכונות</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      name="elevator"
+                      checked={!!propertyData.elevator}
+                      onChange={handleCheckboxChange}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    מעלית
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      name="secureRoom"
+                      checked={!!propertyData.secureRoom}
+                      onChange={handleCheckboxChange}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    חדר ממ"ד
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      name="accessibleEntrance"
+                      checked={!!propertyData.accessibleEntrance}
+                      onChange={handleCheckboxChange}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    כניסה נגישה
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      name="airConditioning"
+                      checked={!!propertyData.airConditioning}
+                      onChange={handleCheckboxChange}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    מיזוג אוויר
+                  </label>
+                  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      name="terrace"
+                      checked={!!propertyData.terrace}
+                      onChange={handleCheckboxChange}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    מרפסת/טרסה
+                  </label>
+                </div>
+              </div>
+              
+             
               
               <div className="space-y-2">
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700">

@@ -46,7 +46,7 @@ const propertySchema = new mongoose.Schema({
   propertyCategory: {
     type: String,
     required: false,
-    enum: ['residential', 'commercial'],
+    enum: ['residential', 'commercial','land'],
     default: 'residential',
   },
   gardenArea: {
@@ -57,6 +57,26 @@ const propertySchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  elevator:{
+    type: Boolean,
+    required: false,
+  },
+secureRoom:{
+  type: Boolean,
+  required: false,
+},
+accessibleEntrance:{
+  type: Boolean,
+  required: false,
+},
+airConditioning:{
+  type: Boolean,
+  required: false,
+},
+terrace:{
+  type: Boolean,
+  required: false,
+},
 
   address: {
     street: {
@@ -75,7 +95,7 @@ const propertySchema = new mongoose.Schema({
   propertyType: {
     type: String,
     required: true,
-    enum: ['house', 'apartment', 'condo', 'villa', 'land', 'commercial', 'cottage','duplex','office','warehouse','other'],
+    enum: ['house', 'apartment', 'condo', 'villa', 'land', 'commercial', 'cottage','duplex','office','warehouse','other','agriculturalLand','residentialLand', 'industrialLand','commercialLand'],
   },
   status: {
     type: String,

@@ -1,17 +1,44 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar, FaBuilding, FaHome, FaVideo, FaImages, FaLanguage, FaFacebook, FaInstagram, FaStickyNote, FaClock, FaParking } from 'react-icons/fa';
+import { FaBed, FaBath, FaRuler, FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt, FaUserTie, FaCalendar, FaBuilding, FaHome, FaVideo, FaImages, FaLanguage, FaFacebook, FaInstagram, FaStickyNote, FaClock, FaParking, FaShieldAlt, FaAccessibleIcon } from 'react-icons/fa';
 import { notFound } from 'next/navigation';
 import connectDB from '../../lib/mongodb';
 import Property from '../../models/Property';
 import User from '../../models/User';
 import ImageCarousel from '../../components/ui/ImageCarousel';
 import { DealScoreBadgeLarge } from '../../components/ui/DealScoreBadge';
+import { TbElevator,TbAirConditioning  } from "react-icons/tb";
+import { MdBalcony } from "react-icons/md";
 
 // Format price consistently
 const formatPrice = (num) => {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
+
+// Translate property type to Hebrew (including land subtypes)
+const translatePropertyType = (type) => {
+  const translations = {
+    apartment: 'דירה',
+    house: 'בית פרטי',
+    villa: 'וילה',
+    condo: 'דירת גן',
+    land: 'מגרש / קרקע',
+    agriculturalLand: 'קרקע חקלאית',
+    residentialLand: 'קרקע לבנייה (מגורים)',
+    industrialLand: 'קרקע תעשייה',
+    commercialLand: 'קרקע מסחרית',
+    commercial: 'מסחרי',
+    office: 'משרד',
+    warehouse: 'מחסן',
+    cottage: "קוטג'",
+    duplex: 'דופלקס',
+    other: 'אחר',
+  };
+  return translations[type] || type;
+};
+
+// Helper: determine if type is land-category
+const isLandType = (type) => ['land','agriculturalLand','residentialLand','industrialLand','commercialLand'].includes(type);
 
 // Format date in Hebrew
 const formatDate = (dateString) => {
@@ -222,11 +249,13 @@ export default async function PropertyPage({ params }) {
 
                 {/* Property Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-gray-200 mb-6">
-                  <div className="flex flex-col items-center">
-                    <FaBed className="h-6 w-6 text-[#08171f] mb-2" />
-                    <span className="text-lg text-black font-semibold">{property.bedrooms}</span>
-                    <span className="text-sm text-gray-600">חדרים</span>
-                  </div>
+                  {!isLandType(property.propertyType) && (
+                    <div className="flex flex-col items-center">
+                      <FaBed className="h-6 w-6 text-[#08171f] mb-2" />
+                      <span className="text-lg text-black font-semibold">{property.bedrooms}</span>
+                      <span className="text-sm text-gray-600">חדרים</span>
+                    </div>
+                  )}
                   {property.bathrooms && (
                     <div className="flex flex-col items-center">
                       <FaBath className="h-6 w-6 text-[#08171f] mb-2" />
@@ -253,21 +282,47 @@ export default async function PropertyPage({ params }) {
                       <span className="text-sm text-gray-600">{property.parkingLots === 1 ? 'חנייה' : 'חניות'}</span>
                     </div>
                   )}
+                  {property.elevator && (
+                    <div className="flex flex-col items-center">
+                      <TbElevator className="h-6 w-6 text-[#08171f] mb-2" />
+                      <span className="text-lg text-black font-semibold">מעלית</span>
+                      <span className="text-sm text-gray-600">מעלית</span>
+                    </div>
+                  )}
+                  {property.secureRoom && (
+                    <div className="flex flex-col items-center">
+                      <FaShieldAlt className="h-6 w-6 text-[#08171f] mb-2" />
+                      <span className="text-lg text-black font-semibold">ממ"ד</span>
+                      <span className="text-sm text-gray-600">ממ"ד</span>
+                    </div>
+                  )}
+                  {property.accessibleEntrance && (
+                    <div className="flex flex-col items-center">
+                      <FaAccessibleIcon className="h-6 w-6 text-[#08171f] mb-2" />
+                      <span className="text-lg text-black font-semibold">כניסה נגישה</span>
+                      <span className="text-sm text-gray-600">כניסה נגישה</span>
+                    </div>
+                  )}
+                  {property.airConditioning && (
+                    <div className="flex flex-col items-center">
+                      <TbAirConditioning className="h-6 w-6 text-[#08171f] mb-2" />
+                      <span className="text-lg text-black font-semibold">מזגן</span>
+                      <span className="text-sm text-gray-600">מזגן</span>
+                    </div>
+                  )}
+                  {property.terrace && (  
+                    <div className="flex flex-col items-center">
+                      <MdBalcony className="h-6 w-6 text-[#08171f] mb-2" />
+                      <span className="text-lg text-black font-semibold">מרפסת</span>
+                      <span className="text-sm text-gray-600">מרפסת</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Property Type and Status */}
                 <div className="flex flex-wrap gap-2 mb-6">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                    {property.propertyType === 'apartment' ? 'דירה' :
-                     property.propertyType === 'house' ? 'בית פרטי' :
-                     property.propertyType === 'villa' ? 'וילה' :
-                     property.propertyType === 'condo' ? 'דירת גן' :
-                     property.propertyType === 'land' ? 'מגרש' :
-                     property.propertyType === 'commercial' ? 'מסחרי' :
-                     property.propertyType === 'office' ? 'משרד' :
-                     property.propertyType === 'cottage' ? 'קוטג\'' :
-                     property.propertyType === 'duplex' ? 'דופלקס' :
-                     property.propertyType}
+                    {translatePropertyType(property.propertyType)}
                   </span>
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                     property.status === 'For Sale' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
@@ -280,6 +335,7 @@ export default async function PropertyPage({ params }) {
                       {property.agencyName}
                     </span>
                   )}
+                  
                 </div>
 
                 {/* Descriptions */}
@@ -416,7 +472,15 @@ export default async function PropertyPage({ params }) {
                     {property.propertyCategory && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">קטגוריית נכס:</span>
-                        <span className="text-gray-800">{property.propertyCategory === 'residential' ? 'מגורים' : 'מסחרי'}</span>
+                        <span className="text-gray-800">
+                          {property.propertyCategory === 'residential'
+                            ? 'מגורים'
+                            : property.propertyCategory === 'commercial'
+                              ? 'מסחרי'
+                              : property.propertyCategory === 'land'
+                                ? 'קרקע'
+                                : property.propertyCategory}
+                        </span>
                       </div>
                     )}
                     

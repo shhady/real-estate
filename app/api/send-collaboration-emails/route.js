@@ -20,11 +20,32 @@ function normalizeLocation(location) {
 // Helper function to normalize property type
 function normalizePropertyType(type) {
   if (!type) return '';
+  if (Array.isArray(type)) {
+    const first = type[0] || '';
+    return normalizePropertyType(first);
+  }
+  if (typeof type !== 'string') return '';
   return type.toLowerCase()
     .replace(/דירה|شقة|apartment/gi, 'apartment')
-    .replace(/בית|منزل|house/gi, 'house')
+    .replace(/בית|بيت|منزل|house/gi, 'house')
     .replace(/וילה|فيلا|villa/gi, 'villa')
+    .replace(/מסחרי|تجاري|commercial/gi, 'commercial')
+    .replace(/משרד|مكتب|office/gi, 'office')
+    .replace(/מחסן|مخزن|warehouse/gi, 'warehouse')
+    .replace(/קונדו|كوندو|condo/gi, 'condo')
+    .replace(/אחר|أخر|other/gi, 'other')
+    .replace(/agriculturalland|קרקע חקלאית/gi, 'agriculturalLand')
+    .replace(/residentialland|קרקע לבנייה|קרקע למגורים/gi, 'residentialLand')
+    .replace(/industrialland|קרקע תעשייה/gi, 'industrialLand')
+    .replace(/commercialland|קרקע מסחרית/gi, 'commercialLand')
+    .replace(/land|קרקע|מגרש/gi, 'land')
     .trim();
+}
+
+function normalizeTypeList(types) {
+  if (!types) return [];
+  const arr = Array.isArray(types) ? types : [types];
+  return arr.map((t) => normalizePropertyType(t)).filter(Boolean);
 }
 
 // Helper function to check if values match within a range
@@ -46,13 +67,45 @@ function isWithinRange(value, min, max, tolerance = 0) {
   return true;
 }
 
-// Helper function to calculate match score for collaboration
+// Helper function to calculate match score for collaboration (aligned with /api/collaboration-matches)
 function calculateCollaborationMatchScore(property, client) {
   let score = 0;
   let totalCriteria = 0;
   let budgetStatus = 'within';
   let matchReasons = [];
   
+  // STRICT GATES (must match 100% if provided)
+  const propCountry = (property.country || '').trim();
+  const clientCountry = (client.preferredCountry || '').trim();
+  if (clientCountry && propCountry && propCountry !== clientCountry) {
+    return { score: 0, totalCriteria: 0, isMatch: false, budgetStatus: 'within', matchReasons: [] };
+  }
+  const propCategory = (property.propertyCategory || '').trim();
+  const clientCategory = (client.propertyCategory || '').trim();
+  if (propCategory && clientCategory && propCategory !== clientCategory) {
+    return { score: 0, totalCriteria: 0, isMatch: false, budgetStatus: 'within', matchReasons: [] };
+  }
+  if (client.preferredLocation && property.location) {
+    const locProp = normalizeLocation(property.location);
+    const locClient = normalizeLocation(client.preferredLocation);
+    if (locProp !== locClient) {
+      return { score: 0, totalCriteria: 0, isMatch: false, budgetStatus: 'within', matchReasons: [] };
+    }
+  }
+  const normalizedPropType = normalizePropertyType(property.propertyType);
+  const normalizedClientTypes = normalizeTypeList(client.preferredPropertyType);
+  if (normalizedClientTypes.length > 0 && !normalizedClientTypes.includes(normalizedPropType)) {
+    return { score: 0, totalCriteria: 0, isMatch: false, budgetStatus: 'within', matchReasons: [] };
+  }
+  // STRICT price cap: not more than 15% above client's maxPrice
+  if (client.maxPrice && property.price) {
+    const maxBudget = Number(client.maxPrice);
+    const propertyPrice = Number(property.price);
+    if (maxBudget > 0 && propertyPrice > maxBudget * 1.15) {
+      return { score: 0, totalCriteria: 0, isMatch: false, budgetStatus: 'way_above', matchReasons: [] };
+    }
+  }
+
   // 1. Intent/Status matching - Must match for collaboration
   let intentMatch = false;
   if (client.intent) {
@@ -87,10 +140,10 @@ function calculateCollaborationMatchScore(property, client) {
     }
   }
   
-  // 3. Property type matching
-  if (client.preferredPropertyType) {
+  // 3. Property type matching (array-aware)
+  if (normalizedClientTypes.length > 0) {
     totalCriteria++;
-    const typeMatch = normalizePropertyType(property.propertyType) === normalizePropertyType(client.preferredPropertyType);
+    const typeMatch = normalizedClientTypes.includes(normalizedPropType);
     if (typeMatch) {
       score++;
       matchReasons.push('סוג נכס');
@@ -102,34 +155,17 @@ function calculateCollaborationMatchScore(property, client) {
     totalCriteria++;
     const maxBudget = Number(client.maxPrice);
     const propertyPrice = Number(property.price || 0);
-    const budgetPercentage = (propertyPrice / maxBudget) * 100;
-    
-    if (client.intent === 'renter') {
-      // For renters: allow up to 110% of budget
-      const maxAllowed = maxBudget * 1.1;
-      
-      if (propertyPrice <= maxBudget) {
-        score++;
-        budgetStatus = 'within';
-        matchReasons.push('מחיר');
-      } else if (propertyPrice <= maxAllowed) {
-        // Don't add score for above budget (5/6 instead of 6/6)
-        budgetStatus = 'above';
-        matchReasons.push('מחיר (מעל תקציב)');
-      } else {
-        // Above 110% - skip entirely
-        return { score: 0, totalCriteria, isMatch: false, budgetStatus: 'way_above', matchReasons: [] };
-      }
+    const cap = maxBudget * 1.15;
+    if (propertyPrice <= maxBudget) {
+      score++;
+      budgetStatus = 'within';
+      matchReasons.push('מחיר');
+    } else if (propertyPrice <= cap) {
+      // Don't add score when above budget but within 15%
+      budgetStatus = 'above';
+      matchReasons.push('מחיר (מעל תקציב)');
     } else {
-      // For buyers: use original 15% tolerance
-      const priceMatch = isWithinRange(property.price, client.maxPrice, 0.15);
-      if (priceMatch) {
-        score++;
-        matchReasons.push('מחיר');
-      }
-      if (propertyPrice > maxBudget) {
-        budgetStatus = 'above';
-      }
+      return { score: 0, totalCriteria, isMatch: false, budgetStatus: 'way_above', matchReasons: [] };
     }
   }
   

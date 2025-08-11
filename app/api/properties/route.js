@@ -232,7 +232,13 @@ export async function POST(request) {
         neighborhood: listing.address?.neighborhood || data.address?.neighborhood || ''
       },
       propertyCategory: listing.propertyCategory || data.propertyCategory || 'residential',
+      landUse: listing.landUse || data.landUse || undefined,
       country: listing.country || data.country || 'ישראל',
+      elevator: listing.elevator || data.elevator || false,
+      secureRoom: listing.secureRoom || data.secureRoom || false,
+      accessibleEntrance: listing.accessibleEntrance || data.accessibleEntrance || false,
+      terrace: listing.terrace || data.terrace || false,
+      airConditioning: listing.airConditioning || data.airConditioning || false,
       landArea: listing.landArea || data.landArea || '',
       gardenArea: listing.gardenArea || data.gardenArea || '',
       parkingLots: listing.parkingLots || data.parkingLots || '',
