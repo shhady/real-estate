@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function ConditionalFooter() {
@@ -62,6 +63,16 @@ export default function ConditionalFooter() {
         </div>
         <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
           <p>© {new Date().getFullYear()} נדל"ן. כל הזכויות שמורות.</p>
+          <div>
+          <Link 
+  href="https://fikranova.com" 
+  target="_blank" 
+  rel="noopener noreferrer"
+>
+  פיתוח ועיצוב על ידי Fikranova
+</Link>
+          </div>
+          
         </div>
       </div>
     </footer>
