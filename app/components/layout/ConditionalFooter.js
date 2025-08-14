@@ -69,7 +69,7 @@ export default function ConditionalFooter() {
   target="_blank" 
   rel="noopener noreferrer"
 >
-  פיתוח ועיצוב על ידי Fikranova
+  פיתוח ועיצוב על ידי <span className="text-blue-500">Fikranova</span>
 </Link>
           </div>
           
