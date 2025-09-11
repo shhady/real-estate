@@ -34,6 +34,7 @@ export default function EditPropertyPage({ params }) {
     parkingLots: '',
     elevator: false,
     secureRoom: false,
+    storageRoom: false,
     accessibleEntrance: false,
     airConditioning: false,
     terrace: false,
@@ -196,6 +197,7 @@ export default function EditPropertyPage({ params }) {
         gardenArea: property.gardenArea || '',
         elevator: property.elevator || false,
         secureRoom: property.secureRoom || false,
+        storageRoom: property.storageRoom || false,
         accessibleEntrance: property.accessibleEntrance || false,
         airConditioning: property.airConditioning || false,
         terrace: property.terrace || false,
@@ -470,6 +472,7 @@ export default function EditPropertyPage({ params }) {
         gardenArea: formData.gardenArea !== '' ? Number(formData.gardenArea) : undefined,
         elevator: !!formData.elevator,
         secureRoom: !!formData.secureRoom,
+        storageRoom: !!formData.storageRoom,
         accessibleEntrance: !!formData.accessibleEntrance,
         airConditioning: !!formData.airConditioning,
         terrace: !!formData.terrace,
@@ -925,6 +928,16 @@ export default function EditPropertyPage({ params }) {
                     className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   חדר ממ"ד
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"  
+                    name="storageRoom"
+                    checked={!!formData.storageRoom}
+                    onChange={(e)=> setFormData(prev=>({ ...prev, storageRoom: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  מחסן
                 </label>
                 <label className="inline-flex items-center gap-2">
                   <input

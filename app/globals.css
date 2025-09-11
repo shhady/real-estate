@@ -99,3 +99,18 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+script {
+  left: 10px;
+  bottom: 10px;
+}
+/* Enable accessibility widget position: bottom-3 left-3 */
+#enable-accessibility,
+.enable-accessibility,
+#enableAccessibility {
+  position: fixed !important;
+  bottom: 0.75rem !important; /* Tailwind bottom-3 */
+  left: 0.75rem !important;  /* Tailwind left-3 */
+  right: auto !important;
+  z-index: 2147483647 !important;
+}

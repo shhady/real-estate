@@ -1,4 +1,5 @@
 import { Heebo } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import ConditionalNavbar from './components/layout/ConditionalNavbar';
 import ConditionalFooter from './components/layout/ConditionalFooter';
@@ -103,11 +104,15 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#08171f" />
         <meta property="og:site_name" content="KeysMatch - פלטפורמת נדל״ן מתקדמת" />
       </head>
-      <body className={heebo.className}>
+      <body className={heebo.className} suppressHydrationWarning={true}>
         <ConditionalNavbar />
         <main>{children} 
            <Analytics /></main>
         <ConditionalFooter />
+        <Script
+          strategy="afterInteractive"
+          src="https://cdn.enable.co.il/licenses/enable-L47784k8n24pqfm7-0925-74059/init.js"
+        />
       </body>
     </html>
   );
